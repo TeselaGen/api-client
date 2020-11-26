@@ -1,4 +1,4 @@
-*.credentials
+*.credentials*
 *.env
 *.eggs
 *.mypy*
@@ -6,3 +6,6 @@
 *.ipynb_checkpoints*
 venv/
 *.test_configuration
+_*
+.test*
+teselagen.egg-info

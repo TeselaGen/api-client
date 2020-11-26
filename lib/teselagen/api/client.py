@@ -337,11 +337,11 @@ class TeselaGenClient():
 
         Args:
             lab_name (str): The name of the lab. If not set, the method will
-                use the id parameter
+                use the lab_id parameter
             lab_id (int): ID of the lab. If not set the method will use the
                 lab_name parameter as lab identifier
         """
-        identifier = lab_name if lab_id is None else lab_id
+        identifier = lab_name if lab_id is None else str(lab_id)
         search_field = 'name' if lab_id is None else 'id'
         if identifier is None:
             raise ValueError("Received None lab identifiers")
@@ -350,7 +350,7 @@ class TeselaGenClient():
         if len(lab)==0: raise IOError(
             f"Can't find {search_field} {identifier}. Available labs are {labs}")
         # Finally store labid in headers
-        self.headers.update({"tg-active-lab-id": lab[0]['id']})
+        self.headers.update({"tg-active-lab-id": str(lab[0]['id'])})
         print(f"Selected Lab: {lab[0]['name']}")
 
     def unselect_laboratory(self) -> None:

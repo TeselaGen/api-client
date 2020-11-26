@@ -3,12 +3,12 @@
 # License: MIT
 
 import json
-from typing import Any, Dict, List, Optional, TypeVar, Union
+from typing import Any, Dict, List, Optional, TypeVar, Union, Tuple
 
 import requests
 
 from teselagen.api.client import (DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL,
-                                  TeselaGenClient, get, post, put)
+                                  TeselaGenClient, get, post, put, requires_login)
 
 # NOTE : Related to Postman and Python requests
 #       "body" goes into the "json" argument
@@ -43,8 +43,28 @@ class EVOLVEClient(TeselaGenClient):
         self.get_models_url: str = f"{self.api_url_base}/get-models"
         self.get_completed_tasks_url: str = f"{self.api_url_base}/get-completed-tasks"
 
-    def get_model(self, model_id: int):
+        self.crispr_guide_rnas_url: str = f"{self.api_url_base}/crispr-grnas"
+
+    def _get_data_from_content(self, content_dict:dict)->dict:
+        """Checks that an output dict from evolve endpoint is healthy, and returns the 'data' field
+
+        Args:
+            content_dict (dict): content field (as dictionary) from an api endpoint response
+
+        Raises:
+            IOError: If dictionary isn't healthy
+
+        Returns:
+            dict: data field from endpoint response
         """
+        if content_dict["message"] != "Submission success.":
+            raise IOError(f"A problem occured with query: {content_dict['message']}")
+        if 'data' not in content_dict:
+            raise IOError(f"Can`t found 'data' key in response: {content_dict}")
+        return content_dict["data"]
+
+    def get_model_info(self, model_id: int):
+        """ Retrieves model general information
 
         This will return a JSON object with the metadata of a model filtered
         by the provided model ID.
@@ -54,59 +74,50 @@ class EVOLVEClient(TeselaGenClient):
                 Model identifier.
 
         Returns :
-            () :
+            () : A dict containing model info. An example is shown below:
 
         ```
-
         {
-            "message": "Submission success.",
-            "data": {
-                "id": "0",
-                "labId": "1",
-                "modelType": "predictive",
-                "name": "My First Predictive Model",
-                "description": "This is an example model",
-                "status": "completed-successfully",
-                "evolveModelInfo": {
-                    "microserviceQueueId":
-                    "1",
-                    "dataSchema": [{
-                        "id": "1",
-                        "name": "Descriptor1",
-                        "value_type": "numeric",
-                        "type": "descriptor"
-                    }, {
-                        "id": "1",
-                        "name": "Descriptor2",
-                        "value_type": "numeric",
-                        "type": "descriptor"
-                    }, {
-                        "id": "2",
-                        "name": "Target",
-                        "value_type": "numeric",
-                        "type": "target"
-                    }],
-                    "modelStats": {
-                        "MAE": 45
-                    }
+            "id": "0",
+            "labId": "1",
+            "modelType": "predictive",
+            "name": "My First Predictive Model",
+            "description": "This is an example model",
+            "status": "completed-successfully",
+            "evolveModelInfo": {
+                "microserviceQueueId":
+                "1",
+                "dataSchema": [{
+                    "id": "1",
+                    "name": "Descriptor1",
+                    "value_type": "numeric",
+                    "type": "descriptor"
+                }, {
+                    "id": "1",
+                    "name": "Descriptor2",
+                    "value_type": "numeric",
+                    "type": "descriptor"
+                }, {
+                    "id": "2",
+                    "name": "Target",
+                    "value_type": "numeric",
+                    "type": "target"
+                }],
+                "modelStats": {
+                    "MAE": 45
                 }
             }
         }
-
         ```
 
         """
-
         body = {"id": str(model_id)}
-
         response = post(url=self.get_model_url,
                         headers=self.headers,
                         json=body)
-
         response["content"] = json.loads(response["content"])
-
-        return response["content"]
-        #raise NotImplementedError
+        # Check output
+        return self._get_data_from_content(response["content"])
 
     def get_models_by_type(self, model_type: Optional[str] = None):
         """
@@ -199,21 +210,15 @@ class EVOLVEClient(TeselaGenClient):
 
         """
         if model_type not in ALLOWED_MODEL_TYPES:
-            # TODO : Decide if we are going to handle this case
-            pass
-
+            raise ValueError(f"Type: {model_type} not in {ALLOWED_MODEL_TYPES}")
         # body = {"modelType": "null" if model_type is None else model_type}
-
         body = {"modelType": model_type}
-
         response = post(url=self.get_models_by_type_url,
                         headers=self.headers,
                         json=body)
-
         response["content"] = json.loads(response["content"])
+        return self._get_data_from_content(response["content"])
 
-        return response["content"]
-        # raise NotImplementedError
 
     def get_model_datapoints(self, model_id: int, datapoint_type: str,
                              batch_size: int, batch_number: int):
@@ -388,10 +393,37 @@ class EVOLVEClient(TeselaGenClient):
                 This gives the Evolve Model's a description.
 
         Returns :
-            () :
+            (dict) : A dictionary containing info of the submitted job. En example is shown below:
+
+            ```
+            {
+                "authToken": "1d140371-a59f-4ad2-b57c-6fc8e0a20ff8",
+                "checkInInterval": null,
+                "controlToken": null,
+                "id": "36",
+                "input": {
+                    "job": "modeling-tool",
+                    "kwargs": {}
+                },
+                "lastCheckIn": null,
+                "missedCheckInCount": null,
+                "result": null,
+                "resultStatus": null,
+                "service": "ds-tools",
+                "serviceUrl": null,
+                "startedOn": null,
+                "status": "created",
+                "taskId": null,
+                "trackingId": null,
+                "completedOn": null,
+                "createdAt": "2020-10-29T13:18:06.167Z",
+                "updatedAt": "2020-10-29T13:18:06.271Z",
+                "cid": null,
+                "__typename": "microserviceQueue"
+            }
+            ```
 
         """
-
         body = {
             "dataInput": data_input,
             "dataSchema": data_schema,
@@ -400,15 +432,12 @@ class EVOLVEClient(TeselaGenClient):
             "name": name,
             "description": "" if description is None else description
         }
-
         response = post(url=self.submit_model_url,
                         headers=self.headers,
                         json=body)
-
         response["content"] = json.loads(response["content"])
+        return self._get_data_from_content(response["content"])
 
-        return response["content"]
-        # raise NotImplementedError
 
     def delete_model(self, model_id: int):
         """
@@ -423,16 +452,12 @@ class EVOLVEClient(TeselaGenClient):
             () :
 
         """
-
         body = {"id": str(model_id)}
-
         response = post(url=self.delete_model_url,
                         headers=self.headers,
                         json=body)
-
         response["content"] = json.loads(response["content"])
-
-        return response["content"]
+        return self._get_data_from_content(response["content"])
         # raise NotImplementedError
 
     def cancel_model(self, model_id: int):
@@ -448,17 +473,38 @@ class EVOLVEClient(TeselaGenClient):
             () :
 
         """
-
         body = {"id": str(model_id)}
-
         response = post(url=self.cancel_model_url,
                         headers=self.headers,
                         json=body)
-
         response["content"] = json.loads(response["content"])
+        return self._get_data_from_content(response["content"])
 
-        return response["content"]
-        # raise NotImplementedError
+    @requires_login
+    def design_crispr_grnas(self,
+                            sequence: str,
+                            target_indexes: Optional[Tuple[int, int]]=None,
+                            target_sequence: Optional[str]=None,
+                            pam_site: str='NGG',
+                            min_score: float=40.0,
+                            max_number: Optional[int]=50):
+        body = {
+            'data':{
+                'sequence': sequence},
+            'options': {
+                'pamSite': pam_site,
+                'minScore': min_score}}
+        if target_indexes is not None:
+            body['data']['targetStart'] = target_indexes[0]
+            body['data']['targetEnd'] = target_indexes[1]
+        if target_sequence is not None:
+            body['data']['targetSequence'] = target_sequence
+        if max_number is not None:
+            body['options']['maxNumber'] = max_number
+        response = post(url=self.crispr_guide_rnas_url,
+                        headers=self.headers,
+                        json=body)
+        return json.loads(response["content"])
 
     # def get_models(self):
     #     # POST

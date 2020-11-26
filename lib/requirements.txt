@@ -5,3 +5,4 @@ pytest-cov==2.8.1
 pytest-notebook==0.6.1
 requests==2.22.0
 requests-mock==1.8.
+fastaparser==1.1

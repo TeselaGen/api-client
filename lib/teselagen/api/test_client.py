@@ -3,10 +3,12 @@
 # License: MIT
 
 import json
+import pandas as pd
 from pathlib import Path
 from os.path import join
 from io import StringIO
 from typing import Any, BinaryIO, Dict, List, Optional, TypeVar, Union
+from tqdm import tqdm
 
 import requests
 
@@ -31,29 +33,39 @@ class TESTClient(TeselaGenClient):
         # Example :
         #    self.some_endpoint_url: str = f"{self.api_url_base}/some_endpoint"
 
+        # Assay Subjects
+        self.get_assay_subjects_url: str = f"{self.api_url_base}/assay-subjects"
+        self.get_assay_subject_url: str = join(self.api_url_base, "assay-subjects") + "/{}"
+        self.create_assay_subjects_url: str = f"{self.api_url_base}/assay-subjects"
+        self.delete_assay_subject_url: str = join(self.api_url_base, "assay-subjects") + "/{}"
+        self.put_assay_subject_descriptors_url: str = f"{self.api_url_base}/assay-subjects/descriptors"
+
         # Experiments
         self.get_experiments_url: str = f"{self.api_url_base}/experiments"
-        self.create_experiment_url: str = f"{self.api_url_base}/experiment"
+        self.create_experiment_url: str = f"{self.api_url_base}/experiments"
         self.delete_experiment_url: str = join(self.api_url_base,
-                                               "experiment") + "/{}"
+                                               "experiments") + "/{}"
 
         # Assays
         self.get_assays_url: str = f"{self.api_url_base}/assays"
         self.get_assays_by_experiment_url: str = join(
             self.api_url_base, "experiments") + "/{}/assays"
         self.create_assay_url: str = join(self.api_url_base,
-                                          "experiments") + "/{}/assay"
-        self.delete_assay_url: str = join(self.api_url_base, "assay") + "/{}"
+                                          "experiments") + "/{}/assays"
+        self.delete_assay_url: str = join(self.api_url_base, "assays") + "/{}"
+        self.assay_results_url: str = join(self.api_url_base, "assays") + "/{}/results"
 
         # Files
-        self.get_files_info_url: str = f"{self.api_url_base}/files-info"
+        self.get_files_info_url: str = f"{self.api_url_base}/files/info"
         self.get_files_info_by_assay_url: str = join(
-            self.api_url_base, "assays") + "/{}/files-info"
-        self.get_file_data_url: str = join(self.api_url_base, "file") + "/{}"
-        self.delete_file_url: str = join(self.api_url_base, "file") + "/{}"
-        self.upload_file_url: str = join(self.api_url_base, "file")
+            self.api_url_base, "assays") + "/{}/files/info"
+        self.get_file_data_url: str = join(self.api_url_base, "files") + "/{}"
+        self.delete_file_url: str = join(self.api_url_base, "files") + "/{}"
+        self.upload_file_url: str = join(self.api_url_base, "files")
         self.upload_file_into_assay_url: str = join(self.api_url_base,
-                                                    "assays") + "/{}/file"
+                                                    "assays") + "/{}/files"
+        self.upload_file_into_experiment_url: str = join(self.api_url_base,
+                                                    "experiments") + "/{}/files"                                                    
 
         # Metadata
         self.get_metadata_url: str = join(self.api_url_base,
@@ -61,6 +73,54 @@ class TESTClient(TeselaGenClient):
         self.create_metadata_url: str = join(self.api_url_base, "metadata")
         self.delete_metadata_url: str = join(self.api_url_base,
                                              "metadata") + "/{}/{}"
+
+
+    # Assay Subject Endpoints
+    def create_assay_subject(self, name: str, assaySubjectClassId: int):
+        body = [{
+            "name": assay_name,
+            "assaySubjectClassId": str(assaySubjectClassId)
+        }]
+
+        response = post(url=self.create_assay_subjects_url,
+                        headers=self.headers,
+                        json=body)
+        
+        response["content"] = json.loads(response["content"])
+
+        return response["content"]
+
+    def get_assay_subject(self, assay_subject_id: Optional[int] = None):
+        url = self.get_assay_subject_url.format(assay_subject_id) if assay_subject_id else self.get_assay_subjects_url
+        response = get(
+            url=url, 
+            headers=self.headers
+        )
+
+        # response["content"] = [{"id" : str, "name": str}, ...]
+        response["content"] = json.loads(response["content"])
+
+        return response["content"][0]
+
+    def get_assay_subjects(self, assay_subject_ids: List[int], _iter: bool = True):
+        assay_subjects = []
+        for assay_subject_id in assay_subject_ids:
+            yield self.get_assay_subject(assay_subject_id)
+
+    def put_assay_subject_descriptors(self, file_id: int, mapper: dict, createSubjectsFromFile: bool = False):
+        body = {
+            "fileId": file_id,
+            "mapper": mapper,
+            "createSubjectsFromFile": createSubjectsFromFile
+        }
+
+        response = put(url=self.put_assay_subject_descriptors_url,
+                        headers=self.headers,
+                        json=body)
+
+        response["content"] = json.loads(response["content"])
+
+        return response["content"]
 
     # Experiments Endpoints
 
@@ -182,7 +242,7 @@ class TESTClient(TeselaGenClient):
         assay = list(filter(lambda x: x['id']==assay_res['id'],
                             self.get_assays(experiment_id=experiment_id)))
         if len(assay)==0:
-            raise IOError(f"Can't find new id {x['id']}")
+            raise IOError(f"Can't find new id {assay_res['id']}")
         return assay[0]
 
     def delete_assay(self, assay_id: int) -> None:
@@ -192,6 +252,57 @@ class TESTClient(TeselaGenClient):
 
         return None
 
+    def put_assay_results(
+                        self, 
+                        file_id: int, 
+                        assay_id: int, 
+                        mapper: dict, 
+                        assay_name: str = None, 
+                        experiment_id: int = None, 
+                        createSubjectsFromFile: bool = True,
+                        createMeasurementTargetsFromFile: bool = True
+                        ):
+        if (assay_id is None):
+            if (assay_name is not None and experiment_id is not None):
+                result = self.create_assay(experiment_id=experiment_id, assay_name=assay_name)
+                assay_id = result['id']
+        body = {
+            "assayId": assay_id,
+            "fileId": file_id,
+            "mapper": mapper,
+            "createSubjectsFromFile": createSubjectsFromFile,
+            "createMeasurementTargetsFromFile": createMeasurementTargetsFromFile
+        }
+
+        response = put(url=self.assay_results_url.format(assay_id),
+                        headers=self.headers,
+                        json=body)
+
+        response["content"] = json.loads(response["content"])
+
+        return response["content"]
+    
+    def get_assay_results(self, assay_id: int, as_tabular: bool = True):
+        url = self.assay_results_url.format(assay_id)
+        response = get(
+            url=url, 
+            headers=self.headers
+        )
+
+        api_result = json.loads(response["content"])
+        assay_results = api_result['results']
+        formatted_assay_results = self._format_assay_result_data(api_result['results'])
+        final_results = []
+        
+        assaySubjectIds = [assay_result['assaySubjectId'] for assay_result in assay_results]
+        assay_subjects = [self._format_assay_subject_data(assaySubject) for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
+        final_results = [{**{"Assay": api_result['name']}, **assay_subject, **formatted_assay_result} for (formatted_assay_result, assay_subject) in zip(formatted_assay_results, assay_subjects)]
+
+        # TODO: Think about a way of 
+        if (as_tabular):
+            final_results = pd.DataFrame(data=final_results)
+        return final_results
+    
     # File Endpoints
 
     def get_files_info(self,
@@ -217,12 +328,14 @@ class TESTClient(TeselaGenClient):
                 "assay": {
                     "id": "1",
                     "name": "Assay 1"
-                }
+                },
+                "experiment": {...}
             },
             {
                 "id": "2",
                 "name": "File 2",
-                "assay": null
+                "assay": null,
+                "experiment": {...}
             }]
         ```
 
@@ -236,7 +349,7 @@ class TESTClient(TeselaGenClient):
 
         return response["content"]
 
-    def upload_file(self, filepath: str, assay_id: Optional[int] = None):
+    def upload_file(self, filepath: str, experiment_id: Optional[int] = None, assay_id: Optional[int] = None):
         """
 
         Uploads a file. The request body is of type "multipart/form-data".
@@ -252,6 +365,9 @@ class TESTClient(TeselaGenClient):
         Args :
             filepath (str) :
                 Path to the file to be uploaded.
+
+            experiment_id (Optional[int]) :
+                Experiment identifier.
 
             assay_id (Optional[int]) :
                 Assay identifier.
@@ -269,18 +385,18 @@ class TESTClient(TeselaGenClient):
         headers = self.headers.copy()
         del headers['Content-Type']
 
-        response = post(url=self.upload_file_into_assay_url.format(assay_id)
-                        if assay_id else self.upload_file_url,
+        
+        upload_file_url = self.upload_file_into_assay_url.format(assay_id) if assay_id else self.upload_file_into_experiment_url.format(experiment_id) if experiment_id else self.upload_file_url
+        response = post(url=upload_file_url,
                         headers=headers,
                         files=multipart_form_data)
         res_files_info = json.loads(response["content"])
-        if not(isinstance(res_files_info, list) and len(res_files_info)==1):
+        if not isinstance(res_files_info, dict):
             raise IOError(f"There was a problem with upload (maybe check assay_id): response: {response}")
-
         # Build our object to be returned (new file_info)
         # Get the file info with the right id
-        files_info = list(filter(lambda x: x['id']==res_files_info[0]['id'],
-                                 self.get_files_info(assay_id=assay_id)))
+        files_info = list(filter(lambda x: x['id']==res_files_info['id'],
+                                 self.get_files_info()))
         if len(files_info)==0:
             raise IOError(f"Name {multipart_form_data['file'][0]} not found in uploaded files")
         return files_info[0]
@@ -369,10 +485,38 @@ class TESTClient(TeselaGenClient):
 
         return response["content"]
 
-    def delete_metadata(self):
-        pass
+    def delete_metadata(self, metadataType: str, metadataId: int):
+        response = delete(url=self.delete_metadata_url.format(metadataType, metadataId),
+                        headers=self.headers)
+
+        # response["content"] = json.loads(response["content"])
+
+        return True
 
     # Others
+
+    # Utils
+
+    def _format_assay_subject_data(self, assay_subject_data: Any):
+        formatted_assay_subject_dict = {
+            "subject id": assay_subject_data['id'],
+            "subject name": assay_subject_data['name'],
+            "subject class": assay_subject_data['assaySubjectClass']['name']
+        }
+        for descriptor in assay_subject_data['descriptors']:
+            formatted_assay_subject_dict[descriptor['descriptorType']['name']] = descriptor['value']
+
+        return formatted_assay_subject_dict
+
+    def _format_assay_result_data(self, assay_result_data: Any):
+        formatted_assay_results = []
+        for result in assay_result_data:
+            formatted_assay_result_dict = {}
+            formatted_assay_result_dict[f"{result['result']['name']} ({result['result']['unit']})"] = result['result']['value']
+            formatted_assay_result_dict[f"{result['reference']['name']} ({result['reference']['unit']})"] = result['reference']['value']
+            formatted_assay_results.append(formatted_assay_result_dict)
+
+        return formatted_assay_results
 
     # TODO: We should read the file, parse the contents and then upload it.
     def _DEPRECATED_upload_assay(self, filename: str, contents: str,
@@ -556,3 +700,4 @@ class TESTClient(TeselaGenClient):
         contents: str = path.read_text()
 
         return contents
+

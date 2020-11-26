@@ -243,5 +243,5 @@ class TestTeselaGenClient:
             get_lab_mock.return_value = labs
             client = logged_client
             client.select_laboratory(lab_name='b')
-        assert client.headers['tg-active-lab-id'] == labs[1]['id']
+        assert int(client.headers['tg-active-lab-id']) == labs[1]['id']
 
