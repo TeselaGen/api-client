@@ -1,0 +1,8 @@
+*.credentials
+*.env
+*.eggs
+*.mypy*
+*.pytest*
+*.ipynb_checkpoints*
+venv/
+*.test_configuration
