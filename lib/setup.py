@@ -67,6 +67,6 @@ setup(name=name,
       author=author,
       url=url,
       setup_requires=setup_requires,
-      install_requires=_load_requirements(PATH_ROOT)
+      install_requires=_load_requirements(PATH_ROOT),
       tests_require=tests_require
       )
