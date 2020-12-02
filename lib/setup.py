@@ -13,7 +13,7 @@ from setuptools import find_packages, setup
 name: str = "teselagen"
 
 # https://packaging.python.org/guides/distributing-packages-using-setuptools/#standards-compliance-for-interoperability
-version: str = "0.0.1.dev1"
+version: str = "20.48.2"
 
 description: str = 'Teselagen\'s Python Package'
 

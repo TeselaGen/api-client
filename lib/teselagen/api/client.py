@@ -115,20 +115,26 @@ class TeselaGenClient():
 
                 Default: None
 
+            apiKey (Optional[str]) : An exclusive API password obtained from the TeselaGen Browser Application Settings.
+                It has 1 day expiration.
+
+                Default: None
+
             expiration_time (Optional[str]) : Expiration time for the
                 authentication (token), in zeit/ms format.
 
                 Default = "1d"
 
         """
-        if (apiKey is None):
-            username, password = get_credentials(username=username, password=password)
-            auth_token = self.create_token(username=username,
-                                        password=password,
-                                        expiration_time=expiration_time)
-            del username, password
-        else:
-            auth_token = apiKey
+        # NOTE: the apiKey is obtained as an alternative password with 1 day expiration.
+        _password = apiKey if apiKey is not None else password
+        username, password = get_credentials(username=username, password=_password)
+        auth_token = self.create_token(username=username,
+                                    password=password,
+                                    expiration_time=expiration_time)
+        del username, password
+        # else:
+        #     auth_token = apiKey
         # It will update the auth token and headers.
         self.update_token(token=auth_token)
         return None
