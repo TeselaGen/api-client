@@ -5,6 +5,8 @@ from typing import Dict, List
 
 from setuptools import find_packages, setup
 
+PATH_ROOT = os.path.dirname(__file__)
+
 # Configuration setuptools
 
 # NOTE : The name we chose would be the name displayed
@@ -38,6 +40,26 @@ tests_require: List[str] = ["pytest"]
 
 # packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
+def _load_requirements(path_dir, file_name='requirements.txt', comment_char='#'):
+    """Load requirements from a file
+    >>> _load_requirements(PROJECT_ROOT)  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    ['numpy...', 'torch...', ...]
+    """
+    with open(os.path.join(path_dir, file_name), 'r') as file:
+        lines = [ln.strip() for ln in file.readlines()]
+    reqs = []
+    for ln in lines:
+        # filer all comments
+        if comment_char in ln:
+            ln = ln[:ln.index(comment_char)].strip()
+        # skip directly installed dependencies
+        if ln.startswith('http'):
+            continue
+        if ln:  # if requirement is not empty
+            reqs.append(ln)
+    return reqs
+
+
 setup(name=name,
       version=version,
       packages=find_packages(),
@@ -45,4 +67,6 @@ setup(name=name,
       author=author,
       url=url,
       setup_requires=setup_requires,
-      tests_require=tests_require)
+      install_requires=_load_requirements(PATH_ROOT)
+      tests_require=tests_require
+      )
