@@ -41,9 +41,8 @@ tests_require: List[str] = ["pytest"]
 # packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
 def _load_requirements(path_dir, file_name='requirements.txt', comment_char='#'):
-    """Load requirements from a file
-    >>> _load_requirements(PROJECT_ROOT)  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-    ['numpy...', 'torch...', ...]
+    """
+        From: https://github.com/PyTorchLightning/pytorch-lightning/blob/eeae426b33d0b51d1f7a9795fb4cb6ad26c1b550/pytorch_lightning/setup_tools.py#L40-L58
     """
     with open(os.path.join(path_dir, file_name), 'r') as file:
         lines = [ln.strip() for ln in file.readlines()]
