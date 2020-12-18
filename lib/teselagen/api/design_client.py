@@ -268,7 +268,7 @@ class DESIGNClient(TeselaGenClient):
             fewest number of consecutive genomic mutations. ([Optimize Expression Levels](https://salislab.net/software/design_rbs_library_calculator)).
 
 
-        For more information on how the RBS Calculator tools work please refer to their Web Appliaction at: https://salislab.net/software/.
+        For more information on how the RBS Calculator tools work please refer to their Web Application at: https://salislab.net/software/
         For more information on who the RBS Calculator API works please refer to their Swagger documentation page at: https://app.swaggerhub.com/apis-docs/DeNovoDNA/JobControl/1.0.1
 
 
@@ -276,7 +276,7 @@ class DESIGNClient(TeselaGenClient):
             algorithm (str): This should be one for the three algorithm described above currently suppoprted by the TeselaGen/RBS Integration.
             params (dict): This are the parameters required by the chosen algorithms according to the RBS Calculator API Swagger specifications mentioned above.
         Returns:
-            dict: {authenticated: boolean, success: boolean}
+            JSON with RBS Calculator job response. This may depend on the chosen tool.
         """
 
 
@@ -286,4 +286,5 @@ class DESIGNClient(TeselaGenClient):
         except Exception as e:
             return e
         
-        return result["content"]
+        result = json.loads(result["content"])
+        return result
