@@ -70,7 +70,7 @@ class DESIGNClient(TeselaGenClient):
 
         # POST
         # /rbs-calculator/submit
-        self.rbs_calculator_submit_url: str = f"{self.api_url_base}/rbs-calculator/submit"
+        self.rbs_calculator_submit_url: str = f"{self.api_url_base}/mock/rbs-calculator/submit"
 
         # GET
         # /rbs-calculator/job/:jobId
@@ -214,7 +214,7 @@ class DESIGNClient(TeselaGenClient):
         return result["content"]
 
     @requires_login
-    def rbs_calculator_job(self, job_id: str)->dict:
+    def rbs_calculator_get_job(self, job_id: str)->dict:
         """
         Fetches an RBS Calculator Job with the provided job_id.
 
@@ -248,3 +248,42 @@ class DESIGNClient(TeselaGenClient):
         result = json.loads(result["content"])
         result = pd.DataFrame(result) if as_dataframe else result
         return result
+
+        @requires_login
+    
+    @requires_login
+    def rbs_calculator_submit_job(self, algorithm: str, params: Any)->dict:
+        """
+        Submits a job to the RBS Calculator API Version v2.1. The TeselaGen/RBS Integration currently supports one of the three following RBS Calculator Tools:
+
+        - "ReverseRBS": Calls the RBS Calculator in Reverse Engineering mode to predict the translation 
+            initiation rate of each start codon in a mRNA sequence. ([Predict Translation Rates](https://salislab.net/software/predict_rbs_calculator))
+
+        - "RBSLibraryCalculator_SearchMode": Calls the RBS Library Calculator in Search mode to design a ribosome binding site library 
+            to maximally cover a selected  translation rate space between a targeted minimum and maximum rate 
+            using the fewest number of RBS variants ([Optimize Expression Levels](https://salislab.net/software/design_rbs_library_calculator)).
+        
+        - "RBSLibraryCalculator_GenomeSearchMode": Calls the RBS Library Calculator in Genome Editing mode to design a genomic ribosome binding site library 
+            to maximally cover a selected translation rate space between a targeted minimum and maximum rate,  while introducing the 
+            fewest number of consecutive genomic mutations. ([Optimize Expression Levels](https://salislab.net/software/design_rbs_library_calculator)).
+
+
+        For more information on how the RBS Calculator tools work please refer to their Web Appliaction at: https://salislab.net/software/.
+        For more information on who the RBS Calculator API works please refer to their Swagger documentation page at: https://app.swaggerhub.com/apis-docs/DeNovoDNA/JobControl/1.0.1
+
+
+        Args:
+            algorithm (str): This should be one for the three algorithm described above currently suppoprted by the TeselaGen/RBS Integration.
+            params (dict): This are the parameters required by the chosen algorithms according to the RBS Calculator API Swagger specifications mentioned above.
+        Returns:
+            dict: {authenticated: boolean, success: boolean}
+        """
+
+
+        params = {**params, **{"algorithm": algorithm}}
+        try:
+            result = post(url=self.rbs_calculator_submit_url, params=params, headers=self.headers)
+        except Exception as e:
+            return e
+        
+        return result["content"]
