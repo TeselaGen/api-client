@@ -3,6 +3,9 @@
 # License: MIT
 
 import json
+import getpass
+import pandas as pd
+from os.path import join
 from urllib.parse import urlencode, urlparse, urljoin
 from typing import Any, Dict, List, Optional, TypeVar, Union
 
@@ -57,6 +60,26 @@ class DESIGNClient(TeselaGenClient):
         # POST
         # /designs
         #self.post_designs_url: str = f"{self.api_url_base}/designs"
+
+
+        ## RBS Calculator API Tesealgen Integration endpoints
+
+        # GET
+        # /rbs-calculator/status
+        self.rbs_calculator_status_url: str = f"{self.api_url_base}/rbs-calculator/status"
+
+        # POST
+        # /rbs-calculator/submit
+        self.rbs_calculator_submit_url: str = f"{self.api_url_base}/rbs-calculator/submit"
+
+        # GET
+        # /rbs-calculator/job/:jobId
+        self.rbs_calculator_job_url: str = join(self.api_url_base, "rbs-calculator/job") + "/{}"
+
+        # GET
+        # /rbs-calculator/organisms
+        self.rbs_calculator_organisms_url: str = f"{self.api_url_base}/rbs-calculator/organisms"
+
 
     @requires_login
     def get_dna_sequence(self, seq_id: int, out_format:str='json', out_filepath:Optional[str]=None)->Union[str, dict]:
@@ -156,3 +179,72 @@ class DESIGNClient(TeselaGenClient):
             local_filename = f"report_{report_id}.zip"
         url = f"{self.api_url_base}{self.URL_GET_ASSEMBLY_REPORT}/{report_id}"
         return download_file(url=url, local_filename=local_filename, headers=self.headers)
+
+    
+    
+    ## RBS Calculator Methods.
+
+    @requires_login
+    def rbs_calculator_set_token(self, rbs_token: str = None)->None:
+        """
+        Sets TeselaGen-RBS calculator integration token.
+
+        Args:
+            rbs_token(str): Integration token. This is required to consume Tesealgen/RBS Calculator API. Please ask TeselaGen for your integration token. 
+
+        Returns:
+            dict: {authenticated: boolean, success: boolean}
+        """
+        rbs_token = getpass.getpass(prompt="Enter x-tg-rbs-token: ") if rbs_token is None else rbs_token
+        self.headers = {**self.headers, "x-tg-rbs-token": rbs_token}
+
+    @requires_login
+    def rbs_calculator_status(self)->dict:
+        """
+        Checks the status of the RBS Calculator Integration API.
+
+        Returns:
+            dict: {authenticated: boolean, success: boolean}
+        """
+        try:
+            result = get(url=self.rbs_calculator_status_url, headers=self.headers)
+        except Exception as e:
+            return e
+        
+        return result["content"]
+
+    @requires_login
+    def rbs_calculator_job(self, job_id: str)->dict:
+        """
+        Fetches an RBS Calculator Job with the provided job_id.
+
+        Args:
+            job_id (str): ID of an RBS Calculator Job
+        Returns:
+            dict: {authenticated: boolean, success: boolean}
+        """
+
+        try:
+            result = get(url=self.rbs_calculator_job_url.format(job_id), headers=self.headers)
+        except Exception as e:
+            return e
+        
+        return result["content"]
+    
+    @requires_login
+    def rbs_calculator_organisms(self, as_dataframe: bool = True)->dict:
+        """
+        Fetches all available organisms or host supported by the RBS Calculator tools.
+
+        Returns:
+            List[Dict[str, str]]: A list of all the available organisms/hosts with their names and NCBI Accession IDs.
+        """
+
+        try:
+            result = get(url=self.rbs_calculator_organisms_url, headers=self.headers)
+        except Exception as e:
+            return e
+        
+        result = json.loads(result["content"])
+        result = pd.DataFrame(result) if as_dataframe else result
+        return result

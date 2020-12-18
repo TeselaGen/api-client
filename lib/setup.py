@@ -15,7 +15,7 @@ PATH_ROOT = os.path.dirname(__file__)
 name: str = "teselagen"
 
 # https://packaging.python.org/guides/distributing-packages-using-setuptools/#standards-compliance-for-interoperability
-version: str = "20.48.2"
+version: str = "20.51.0"
 
 description: str = 'Teselagen\'s Python Package'
 
