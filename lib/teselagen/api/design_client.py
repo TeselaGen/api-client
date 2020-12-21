@@ -73,8 +73,12 @@ class DESIGNClient(TeselaGenClient):
         self.rbs_calculator_submit_url: str = f"{self.api_url_base}/mock/rbs-calculator/submit"
 
         # GET
-        # /rbs-calculator/job/:jobId
-        self.rbs_calculator_job_url: str = join(self.api_url_base, "rbs-calculator/job") + "/{}"
+        # /rbs-calculator/jobs/
+        self.rbs_calculator_jobs_url: str = join(self.api_url_base, "rbs-calculator/jobs")
+        
+        # GET
+        # /rbs-calculator/jobs/:jobId
+        self.rbs_calculator_job_url: str = join(self.api_url_base, "rbs-calculator/jobs") + "/{}"
 
         # GET
         # /rbs-calculator/organisms
@@ -214,7 +218,7 @@ class DESIGNClient(TeselaGenClient):
         return result["content"]
 
     @requires_login
-    def rbs_calculator_get_job(self, job_id: str)->dict:
+    def rbs_calculator_get_jobs(self, job_id: str = None)->dict:
         """
         Fetches an RBS Calculator Job with the provided job_id.
 
@@ -225,7 +229,9 @@ class DESIGNClient(TeselaGenClient):
         """
 
         try:
-            result = get(url=self.rbs_calculator_job_url.format(job_id), headers=self.headers)
+            result = get(
+                url=self.rbs_calculator_job_url.format(job_id) if job_id is not None else self.rbs_calculator_jobs_url, 
+                headers=self.headers)
         except Exception as e:
             return e
         
@@ -248,8 +254,6 @@ class DESIGNClient(TeselaGenClient):
         result = json.loads(result["content"])
         result = pd.DataFrame(result) if as_dataframe else result
         return result
-
-        @requires_login
     
     @requires_login
     def rbs_calculator_submit_job(self, algorithm: str, params: Any)->dict:
