@@ -70,7 +70,7 @@ class DESIGNClient(TeselaGenClient):
 
         # POST
         # /rbs-calculator/submit
-        self.rbs_calculator_submit_url: str = f"{self.api_url_base}/mock/rbs-calculator/submit"
+        self.rbs_calculator_submit_url: str = f"{self.api_url_base}/rbs-calculator/submit"
 
         # GET
         # /rbs-calculator/jobs/
@@ -284,9 +284,9 @@ class DESIGNClient(TeselaGenClient):
         """
 
 
-        params = {**params, **{"algorithm": algorithm}}
+        params = json.dumps({**params, **{"algorithm": algorithm}})
         try:
-            result = post(url=self.rbs_calculator_submit_url, params=params, headers=self.headers)
+            result = post(url=self.rbs_calculator_submit_url, data=params, headers=self.headers)
         except Exception as e:
             return e
         

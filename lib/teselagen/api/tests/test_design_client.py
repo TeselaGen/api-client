@@ -9,6 +9,11 @@ import requests_mock
 
 from teselagen.api.design_client import DESIGNClient
 from teselagen.utils import load_from_json
+from teselagen.api.client import (get, post)
+
+# RBS MOCK DATA. These IDs are safe to be public.
+JOB_ID_ONE = 'lowxt1rzramybxeelijsctypix9vk6fl'
+JOB_ID_TWO = 'ouqzbuviolphyjasg0syhkseq6anltxz'
 
 #@pytest.mark.incremental
 class TestDESIGNClient():
@@ -115,3 +120,46 @@ class TestDESIGNClient():
             gql_filter={'id': params['gqlFilter']['id']})
         assert res == [{"id": 12, "name": "hola"}]
 
+
+    ## RBS Calculator Tests
+    def test_rbs_calculator_requires_token(self, logged_client: DESIGNClient):
+        res = logged_client.rbs_calculator_status()
+        assert type(res) is Exception
+        assert 'access is unauthorized' in str(res) #TODO: Maybe there's a better way of checking for the specific unauthorized error.
+
+    def test_rbs_calculator_jobs(self, logged_client: DESIGNClient):
+        """ Hits a mock CLI API endpoint, it tests that its correctly calling it with the expected mock response. """
+        mock_url = f"{logged_client.api_url_base}/mock/rbs-calculator/jobs"
+        res = get(url=mock_url, headers=logged_client.headers)
+        res = json.loads(res["content"])
+        assert sorted(list(res.keys())) == sorted(['authenticated', 'id_list', 'success'])
+        assert res['authenticated'] == True
+        assert res['success'] == True
+        assert sorted(res['id_list']) == sorted([JOB_ID_ONE, JOB_ID_TWO])
+
+    def test_rbs_calculator_organisms(self, logged_client: DESIGNClient):
+        mock_url = f"{logged_client.api_url_base}/mock/rbs-calculator/organisms"
+        res = get(url=mock_url, headers=logged_client.headers)
+        res = json.loads(res["content"])
+        assert type(res) is list
+        assert len(res) is 4
+        assert sorted(list(res[0].keys())) == sorted(['accession', 'name'])
+
+    def test_rbs_calculator_job(self, logged_client: DESIGNClient):
+        mock_url = f"{logged_client.api_url_base}/mock/rbs-calculator/jobs/{JOB_ID_ONE}"
+        res = get(url=mock_url, headers=logged_client.headers)
+        res = json.loads(res["content"])
+        assert sorted(list(res.keys())) == sorted(['authenticated', 'inputData', 'jobInfo', 'message', 'outputData', 'success'])
+        assert sorted(list(res['inputData'].keys())) == sorted(['algorithm', 'algorithm_version', 'long_UTR', 'mRNA', 'organism', 'title'])
+        assert sorted(list(res['outputData'].keys())) == sorted(['Max_translation_initiation_rate', 'Min_translation_initiation_rate', 'Number_start_codons', 'ReverseRBS', 'TranslationRateAcrossPositions'])
+        assert res['jobInfo']['jobId'] == JOB_ID_ONE
+
+    def test_rbs_calculator_submit(self, logged_client: DESIGNClient):
+        mock_url = f"{logged_client.api_url_base}/mock/rbs-calculator/submit"
+        params = json.dumps({"algorithm": "ReverseRBS"})
+        res = post(url=mock_url, data=params, headers=logged_client.headers)
+        res = json.loads(res["content"])
+        assert sorted(list(res.keys())) == sorted(['authenticated', 'inputData', 'jobInfo', 'message', 'outputData', 'success'])
+        assert sorted(list(res['inputData'].keys())) == sorted(['algorithm', 'algorithm_version', 'long_UTR', 'mRNA', 'organism', 'title'])
+        assert res['outputData'] == {}
+        assert res['jobInfo']['jobId'] == JOB_ID_ONE
