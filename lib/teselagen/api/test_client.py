@@ -117,7 +117,7 @@ class TESTClient(TeselaGenClient):
                     should be a list of Python Dictionary representing each structured header with a 'name', 'class' and 'subClassId' key.
                     For more information on the mappers structure refer to https://api-docs.teselagen.com/#operation/SubjectsPutAssaySubjectDecriptors
                 file_id (Optional[int]) : File identifier.
-                filepath (Optional[int]) : Local location of the file.
+                filepath (Optional[str]) : Local location of the file.
                 createSubjectsFromFile (bool) : Flag that indicates whether to create new Assay Subject found in the file.
 
             Returns: a JSON object with a success status, the number of results inserted, and whether new assay subjects
