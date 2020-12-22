@@ -101,8 +101,8 @@ class TeselaGenClient():
               expiration_time: str = "1d") -> None:
         """
 
-        Login to the CLI, given a username address. A password is
-        required and will be prompted.
+        Login to the CLI with the username used to login through the UI.
+        A password or an apiKey is required. If none is provided password will be prompted.
 
         Args:
             username (Optional[str]) : A valid username (usually their email)
