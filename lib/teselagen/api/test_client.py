@@ -103,9 +103,31 @@ class TESTClient(TeselaGenClient):
         return response["content"][0]
 
     def get_assay_subjects(self, assay_subject_ids: List[int]):
+        """ 
+        There's currenly no direct endpoint that the full information on many assay subject at once, 
+        so this helper function fetches each assay subject information one at a time.
+
+        TODO: refactor this logic once a direct TEST API endpoint for querying multiple assay subjects is implemented.
+        """
         assay_subjects = []
         for assay_subject_id in assay_subject_ids:
             yield self.get_assay_subject(assay_subject_id)
+
+    def delete_assay_subjects(self, assay_subject_ids: Union[int, List[int]]):
+        """ 
+        This functions deletes one or many assay subject records from TEST. It receives an int ID or a list of int IDs
+        through the 'assay_subject_ids' argument, which corresond to the the assay subject IDs.
+        """
+        if isinstance(assay_subject_ids, list):
+            data = assay_subject_ids
+        elif isinstance(assay_subject_ids, int):
+            data = [assay_subject_ids]
+        else:
+            raise TypeError(f"Argument 'assay_subject_ids' must of type int or List[int]. Not type: {type(assay_subject_ids)}")
+        
+        response = delete(url=self.delete_assay_subject_url.format(""), json=data, headers=self.headers)
+        
+        return response["content"]
 
     def put_assay_subject_descriptors(self, mapper: List[dict], file_id: Optional[int] = None, filepath: Optional[str] = None, createSubjectsFromFile: Optional[bool] = False):
         """
