@@ -47,7 +47,7 @@ class DESIGNClient(TeselaGenClient):
         ## DESIGN
         # GET
         # /designs/{id}
-        #self.get_design_url: str = f"{self.api_url_base}/designs"
+        self.get_design_url: str = f"{self.api_url_base}/designs"
         # DEL
         # /designs/{id}
         #self.delete_design_url: str = f"{self.api_url_base}/designs"
@@ -57,6 +57,13 @@ class DESIGNClient(TeselaGenClient):
         # POST
         # /designs
         #self.post_designs_url: str = f"{self.api_url_base}/designs"
+        # POST
+        # /codon-optimization-jobs
+        self.post_codon_op: str = f"{self.api_url_base}/codon-optimization-jobs"
+        # GET
+        # /codon-optimization-jobs
+        self.get_codon_op_result: str = f"{self.api_url_base}/codon-optimization-jobs"
+
 
     @requires_login
     def get_dna_sequence(self, seq_id: int, out_format:str='json', out_filepath:Optional[str]=None)->Union[str, dict]:
@@ -140,6 +147,24 @@ class DESIGNClient(TeselaGenClient):
         return out
 
     @requires_login
+    def get_design(self, design_id: Union[int, str])->dict:
+        """ Retrieves the design with specified id
+
+        Raises error if design_id is not found
+
+        Args:
+            design_id (str, int):  Design's id
+
+        Returns:
+            dict: A dict containing designs information
+        """
+        response = get(url=f"{self.get_design_url}/{design_id}",
+                       headers=self.headers)
+                       #params=args)
+        out = json.loads(response["content"])
+        return out
+
+    @requires_login
     def get_assembly_report(self, report_id: int, local_filename=None)->str:
         """
         Retrieves an assembly report given an id
@@ -156,3 +181,20 @@ class DESIGNClient(TeselaGenClient):
             local_filename = f"report_{report_id}.zip"
         url = f"{self.api_url_base}{self.URL_GET_ASSEMBLY_REPORT}/{report_id}"
         return download_file(url=url, local_filename=local_filename, headers=self.headers)
+
+    def post_codon_optimization_job(self, algorithm="crickit", parameters={}):
+        body = {
+            "algorithm": algorithm,
+            "parameters": parameters
+        }
+        response = post(url=self.post_codon_op,
+                        headers=self.headers,
+                        json=body)
+        return json.loads(response["content"])
+
+    def get_codon_optimization_job_results(self, job_id):
+        response = get(url=f"{self.get_codon_op_result}/{job_id}",
+                       headers=self.headers)
+                       #params=args)
+        out = json.loads(response["content"])
+        return out
