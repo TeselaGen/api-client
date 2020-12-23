@@ -107,7 +107,7 @@ class TESTClient(TeselaGenClient):
         for assay_subject_id in assay_subject_ids:
             yield self.get_assay_subject(assay_subject_id)
 
-    def put_assay_subject_descriptors(self, mapper: dict, file_id: Optional[int] = None, filepath: Optional[str] = None, createSubjectsFromFile: Optional[bool] = False):
+    def put_assay_subject_descriptors(self, mapper: List[dict], file_id: Optional[int] = None, filepath: Optional[str] = None, createSubjectsFromFile: Optional[bool] = False):
         """
             Calls Teselagen TEST API endpoint: `PUT /assay-subjects/descriptors`.
             The data can be passed via a local filepath or either the file ID after already uploading it.
@@ -116,8 +116,8 @@ class TESTClient(TeselaGenClient):
                 mapper (List[dict]): This is the JSON mapper used by the endpoint to understand each of the file columns. This mapper
                     should be a list of Python Dictionary representing each structured header with a 'name', 'class' and 'subClassId' key.
                     For more information on the mappers structure refer to https://api-docs.teselagen.com/#operation/SubjectsPutAssaySubjectDecriptors
-                file_id (int) : File identifier.
-                filepath (int) : Local location of the file.
+                file_id (Optional[int]) : File identifier.
+                filepath (Optional[str]) : Local location of the file.
                 createSubjectsFromFile (bool) : Flag that indicates whether to create new Assay Subject found in the file.
 
             Returns: a JSON object with a success status, the number of results inserted, and whether new assay subjects

@@ -3,7 +3,8 @@ import os
 import sys
 from typing import Dict, List
 
-from setuptools import find_packages, setup
+from setuptools import find_packages
+from setuptools import setup
 
 PATH_ROOT = os.path.dirname(__file__)
 
@@ -40,17 +41,20 @@ tests_require: List[str] = ["pytest"]
 
 # packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
-def _load_requirements(path_dir, file_name='requirements.txt', comment_char='#'):
+
+def _load_requirements(path_dir: str,
+                       file_name: str = 'requirements.txt',
+                       comment_char: str = '#') -> List[str]:
     """
         From: https://github.com/PyTorchLightning/pytorch-lightning/blob/eeae426b33d0b51d1f7a9795fb4cb6ad26c1b550/pytorch_lightning/setup_tools.py#L40-L58
     """
     with open(os.path.join(path_dir, file_name), 'r') as file:
-        lines = [ln.strip() for ln in file.readlines()]
-    reqs = []
+        lines: List[str] = [ln.strip() for ln in file.readlines()]
+    reqs: List[str] = []
     for ln in lines:
         # filer all comments
         if comment_char in ln:
-            ln = ln[:ln.index(comment_char)].strip()
+            ln: str = ln[:ln.index(comment_char)].strip()
         # skip directly installed dependencies
         if ln.startswith('http'):
             continue
@@ -67,5 +71,4 @@ setup(name=name,
       url=url,
       setup_requires=setup_requires,
       install_requires=_load_requirements(PATH_ROOT),
-      tests_require=tests_require
-      )
+      tests_require=tests_require)
