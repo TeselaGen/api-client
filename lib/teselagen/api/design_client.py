@@ -182,7 +182,7 @@ class DESIGNClient(TeselaGenClient):
         url = f"{self.api_url_base}{self.URL_GET_ASSEMBLY_REPORT}/{report_id}"
         return download_file(url=url, local_filename=local_filename, headers=self.headers)
 
-    def post_codon_optimization_job(self, algorithm="crickit", parameters={}):
+    def post_codon_optimization_job(self, algorithm="ALGORITHMS_NAME", parameters={}):
         body = {
             "algorithm": algorithm,
             "parameters": parameters
