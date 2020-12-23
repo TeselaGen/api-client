@@ -102,12 +102,35 @@ class TESTClient(TeselaGenClient):
 
         return response["content"][0]
 
-    def get_assay_subjects(self, assay_subject_ids: List[int], _iter: bool = True):
+    def get_assay_subjects(self, assay_subject_ids: List[int]):
         assay_subjects = []
         for assay_subject_id in assay_subject_ids:
             yield self.get_assay_subject(assay_subject_id)
 
-    def put_assay_subject_descriptors(self, file_id: int, mapper: dict, createSubjectsFromFile: bool = False):
+    def put_assay_subject_descriptors(self, mapper: List[dict], file_id: Optional[int] = None, filepath: Optional[str] = None, createSubjectsFromFile: Optional[bool] = False):
+        """
+            Calls Teselagen TEST API endpoint: `PUT /assay-subjects/descriptors`.
+            The data can be passed via a local filepath or either the file ID after already uploading it.
+
+            Args:
+                mapper (List[dict]): This is the JSON mapper used by the endpoint to understand each of the file columns. This mapper
+                    should be a list of Python Dictionary representing each structured header with a 'name', 'class' and 'subClassId' key.
+                    For more information on the mappers structure refer to https://api-docs.teselagen.com/#operation/SubjectsPutAssaySubjectDecriptors
+                file_id (Optional[int]) : File identifier.
+                filepath (Optional[str]) : Local location of the file.
+                createSubjectsFromFile (bool) : Flag that indicates whether to create new Assay Subject found in the file.
+
+            Returns: a JSON object with a success status, the number of results inserted, and whether new assay subjects
+                were created during the insert.
+        """
+        # Implements the ability to do the file upload behind the scenes.
+        if (file_id is None):
+            if (Path(filepath).exists()):
+                file=self.upload_file(filepath=filepath)
+                file_id = file['id']
+            else:
+                raise FileNotFoundError(f"File: {filepath} not found")
+
         body = {
             "fileId": file_id,
             "mapper": mapper,
@@ -151,17 +174,23 @@ class TESTClient(TeselaGenClient):
         return response["content"]
 
     def create_experiment(self, experiment_name: str) -> List[Dict[str, Any]]:
-        body = {"name": experiment_name}
-        response = post(url=self.create_experiment_url,
-                        headers=self.headers,
-                        json=body)
-        exp_response: dict = json.loads(response["content"])[0]
-        # Now we GET experiments from db in order to return
-        # the complete experiment to the user
-        experiment: list = list(filter(lambda x: x['id']==exp_response['id'],
-                                       self.get_experiments()))
+
+        experiment = None
+        experiments = self.get_experiments()
+        experiment = list(filter(lambda x: x['name'] == experiment_name, experiments))
+        if len(experiment) != 1:
+            body = {"name": experiment_name}
+            response = post(url=self.create_experiment_url,
+                            headers=self.headers,
+                            json=body)
+            exp_response: dict = json.loads(response["content"])[0]
+            # Now we GET experiments from db in order to return
+            # the complete experiment to the user
+            experiment: list = list(filter(lambda x: x['id']==exp_response['id'],
+                                        self.get_experiments()))
         if len(experiment)==0:
             raise IOError(f"Error while looking for new id {exp_response['id']}")
+
         return experiment[0]
 
     def delete_experiment(self, experiment_id: int) -> None:
@@ -253,19 +282,58 @@ class TESTClient(TeselaGenClient):
         return None
 
     def put_assay_results(
-                        self, 
-                        file_id: int, 
-                        assay_id: int, 
-                        mapper: dict, 
-                        assay_name: str = None, 
-                        experiment_id: int = None, 
-                        createSubjectsFromFile: bool = True,
-                        createMeasurementTargetsFromFile: bool = True
+                        self,
+                        mapper: List[dict], 
+                        assay_id: Optional[int] = None, 
+                        file_id: Optional[int] = None, 
+                        filepath: Optional[str] = None,
+                        assay_name: Optional[str] = None, 
+                        experiment_id: Optional[int] = None, 
+                        createSubjectsFromFile: Optional[bool] = True,
+                        createMeasurementTargetsFromFile: Optional[bool] = True
                         ):
+        """
+            Calls Teselagen TEST API endpoint: `PUT /assays/:assayId/results`.
+            The data can be passed via a local filepath or either the file ID after already uploading it.
+
+            Args:
+                mapper (List[dict]): This is the JSON mapper used by the endpoint to understand each of the file columns. This mapper
+                    should be a list of Python Dictionary representing each structured header with a 'name', 'class' and 'subClassId' key.
+                    For more information on the mappers structure refer to https://api-docs.teselagen.com/#operation/AssaysPutAssayResults
+                assay_id (int) : Assay identifier. 
+                file_id (int) : File identifier.
+                filepath (int) : Local location of the file.
+                assay_name (str) : Name of the assay into which insert the assay results.
+                experiment_id (number) : Experiment identifier. Only used when passed and 'assay_name' an no 'assay_id'.
+                createSubjectsFromFile (bool) : Flag that indicates whether to create new Assay Subject found in the file.
+                createMeasurementTargetsFromFile (bool) : Flag that indicates whether to create new Measurement Target metadata records found in the file.
+
+            Returns: a JSON object with a success status, the number of results inserted, and whether new assay subjects and/or mesurement targets
+                were created during the insert.
+        """
         if (assay_id is None):
-            if (assay_name is not None and experiment_id is not None):
-                result = self.create_assay(experiment_id=experiment_id, assay_name=assay_name)
-                assay_id = result['id']
+            # Supports creating a new assay by providing an assay name and an experiment ID.
+            if (assay_name is not None):
+                if (experiment_id is not None):
+                    assays = self.get_assays()
+                    assay = list(filter(lambda x: x['name'] == assay_name and x['experiment']['id'] == experiment_id, assays))
+                    assay_id = assay[0]['id'] if len(assay) == 1 else self.create_assay(experiment_id=experiment_id, assay_name=assay_name)['id']
+                else:
+                    raise Exception(f"Please provide a valid 'experiment_id'.")
+        # Implements the ability to do the file upload behind the scenes.
+        if (file_id is None):
+            if (Path(filepath).exists()):
+                # See the current files already uploaded to the assay.
+                files = self.get_files_info()
+                assay_files = list(filter(lambda x: x['assay'] is not None and x['assay']['id'] == assay_id and Path(x['name']).name == Path(filepath).name, files))
+                if (len(assay_files) > 0):
+                    file_id = assay_files[0]['id']
+                # NOTE: When a file with the same name has already been uploaded into the Assay, do not upload the file again.
+                else:
+                    file=self.upload_file(filepath=filepath, assay_id=assay_id)
+                    file_id = file['id']
+     
+        
         body = {
             "assayId": assay_id,
             "fileId": file_id,
@@ -273,49 +341,84 @@ class TESTClient(TeselaGenClient):
             "createSubjectsFromFile": createSubjectsFromFile,
             "createMeasurementTargetsFromFile": createMeasurementTargetsFromFile
         }
-
-        response = put(url=self.assay_results_url.format(assay_id),
-                        headers=self.headers,
-                        json=body)
-
+        try:
+            response = put(url=self.assay_results_url.format(assay_id),
+                            headers=self.headers,
+                            json=body)
+        except Exception as e:
+            # TODO : Use a logger
+            print("Error:", e)
+            return None
         response["content"] = json.loads(response["content"])
 
         return response["content"]
     
-    def get_assay_results(self, assay_id: int, as_tabular: bool = True):
+    def get_assay_results(self, assay_id: int, as_dataframe: bool = True, with_subject_data: bool = True, group: bool = True):
+        """
+            Calls Teselagen TEST API endpoint: `GET /assays/:assayId/results`.
+            More information at https://api-docs.teselagen.com/#operation/AssaysGetAssayResults.
+
+            Args:
+                assay_id (int): Assay identifier.
+                as_dataframe (bool): Flag indicating whether to return the data as a dataframe (default=True).
+                with_subject_data (bool): Flag indicating whether to return the assay results together with a more complete
+                    information on the assay subjects (default=True).
+                group (bool): Flag indicating whether to group the assay results and assay subjects by the corresponding tabular indexes.
+                    Only used when the 'as_dataframe' is set to True (default=True).
+
+            Returns: Either a dataframe or a JSON Array. The information included in the returned object is all the assay results,
+                plus the assay name, and assay subject information (if 'with_subject_data' is set to True).
+        """
+        # NOTE: depending on the different flags, the order of the columns may vary.
+        api_result = self._get_assay_results_from_api(assay_id=assay_id)
+
+        assay_results = api_result['results']
+        tabular_assay_results, assay_result_indexes = self._tabular_format_assay_result_data(assay_results)
+            
+        if (as_dataframe):
+            final_results = pd.DataFrame(tabular_assay_results).set_index(assay_result_indexes[0])
+            final_results.insert(0, "Assay", api_result['name'])
+            # If required, group by the assay results and assay subject indexes.
+            # Usually these indexes are going to be the assay subject id and any reference dimension found in the assay results.
+            final_results = final_results.groupby(by=[*assay_result_indexes]).first().reset_index() if group else final_results
+
+            if (with_subject_data):
+                assaySubjectIds = [assay_result['assaySubjectId'] for assay_result in assay_results]
+                assay_subjects = [assaySubject for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
+                tabular_assay_subjects, assay_subject_indexes = self._tabular_format_assay_subject_data(assay_subjects)
+                assay_subjects_df = pd.DataFrame(tabular_assay_subjects).set_index(assay_subject_indexes)
+                
+                # Here we merge both dataframes.
+                final_results = assay_subjects_df.merge(final_results, left_on=assay_subject_indexes, right_on=assay_subject_indexes)
+                
+        else:
+            if(with_subject_data):
+                assaySubjectIds = [assay_result['assaySubjectId'] for assay_result in assay_results]
+                assay_subjects = [assaySubject for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
+                tabular_assay_subjects, assay_subject_indexes = self._tabular_format_assay_subject_data(assay_subjects)
+                final_results = [{**{"Assay": api_result['name']}, **assay_subject, **assay_result} for (assay_subject, assay_result) in zip(tabular_assay_subjects, tabular_assay_results)]
+            else:
+                final_results = [{**{"Assay": api_result['name']}, **assay_result} for assay_result in tabular_assay_results]
+        return final_results
+    
+    def _get_assay_results_from_api(self, assay_id: int):
         url = self.assay_results_url.format(assay_id)
+        
         response = get(
             url=url, 
             headers=self.headers
         )
 
         api_result = json.loads(response["content"])
-        assay_results = api_result['results']
-        formatted_assay_results = self._format_assay_result_data(api_result['results'])
-        final_results = []
-        
-        assaySubjectIds = [assay_result['assaySubjectId'] for assay_result in assay_results]
-        assay_subjects = [self._format_assay_subject_data(assaySubject) for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
-        final_results = [{**{"Assay": api_result['name']}, **assay_subject, **formatted_assay_result} for (formatted_assay_result, assay_subject) in zip(formatted_assay_results, assay_subjects)]
 
-        # TODO: Think about a way of 
-        if (as_tabular):
-            final_results = pd.DataFrame(data=final_results)
-        return final_results
+        return api_result
     
     # File Endpoints
 
-    def get_files_info(self,
-                  assay_id: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_files_info(self) -> List[Dict[str, Any]]:
         """
 
-        Fetches all files from the Assay with ID=`assay_id`.
-        If no `assay_id` is passed it returns all Files from the selected
-        Laboratory.
-
-        Args :
-
-            assay_id (Optional[int]): Assay identifier.
+        Fetches all files from the selected Laboratory.
 
         Returns :
             () :
@@ -341,9 +444,7 @@ class TESTClient(TeselaGenClient):
 
         """
 
-        response = get(url=self.get_files_info_by_assay_url.format(assay_id)
-                       if assay_id else self.get_files_info_url,
-                       headers=self.headers)
+        response = get(url=self.get_files_info_url, headers=self.headers)
 
         response["content"] = json.loads(response["content"])
 
@@ -434,7 +535,7 @@ class TESTClient(TeselaGenClient):
     def get_metadata(self, metadataType: str, metadataTypeFields: str = None):
         """
 
-        Return metadata record according to the 'metaDataType' path parameter. Available metaDataTypes are:
+        Returns metadata records according to the 'metaDataType' path parameter. Available metaDataTypes are:
 
             - assaySubjectClass
             - measurementTarget
@@ -446,14 +547,9 @@ class TESTClient(TeselaGenClient):
 
         Args :
 
-            metadataType (str):
-                The type of a metadata. Must be one of the available metadata types listed above.
-            metadataTypeFields (str):
-                TODO: Field names of a metadata type.
+            metadataType (str): The type of a metadata. Must be one of the available metadata types listed above.
 
-        Returns :
-            () :
-                A JSON object with the metadata records belonging to the requested metadata type.
+        Returns : A JSON object with the metadata records belonging to the requested metadata type.
 
         ```
             [
@@ -471,7 +567,17 @@ class TESTClient(TeselaGenClient):
 
         return response["content"]
 
-    def create_metadata(self, metadataType: str, metadataRecord: dict):
+    def create_metadata(self, metadataType: str, metadataRecord: Union[List[dict], dict]):
+        """
+            Calls Teselagen TEST API endpoint: `POST /metadata`.
+            More information at https://api-docs.teselagen.com/#operation/MetadataCreateMetadata.
+
+            Args:
+                metadataType (str): Name of the metadata type/class.
+                metadataRecord (Union[List[dict], dict]): Either an array of metadata records or a single one.
+                    These should follow the required structure of a metadata record. For more information on this 
+                    refer to the above API documentation link.
+        """
         body = {
             "metaData": {metadataType: metadataRecord}
         }
@@ -495,209 +601,54 @@ class TESTClient(TeselaGenClient):
 
     # Others
 
-    # Utils
+    # TEST Client Utils
 
-    def _format_assay_subject_data(self, assay_subject_data: Any):
-        formatted_assay_subject_dict = {
-            "subject id": assay_subject_data['id'],
-            "subject name": assay_subject_data['name'],
-            "subject class": assay_subject_data['assaySubjectClass']['name']
-        }
-        for descriptor in assay_subject_data['descriptors']:
-            formatted_assay_subject_dict[descriptor['descriptorType']['name']] = descriptor['value']
+    def _tabular_format_assay_subject_data(self, assay_subjects_data: Any):
+        tabular_assay_subjects = []
+        for assay_subject_data in assay_subjects_data:
+            assay_subject_row_dict = {
+                "Subject ID": assay_subject_data['id'], 
+                "Subject Name": assay_subject_data['name'],
+                "Subject Class": assay_subject_data['assaySubjectClass']['name']
+            }
+            for descriptor in assay_subject_data['descriptors']:
+                assay_subject_row_dict[descriptor['descriptorType']['name']] = descriptor['value']
+            
+            tabular_assay_subjects.append(assay_subject_row_dict)
 
-        return formatted_assay_subject_dict
+        indexes = ["Subject ID"]
+        return tabular_assay_subjects, indexes
 
-    def _format_assay_result_data(self, assay_result_data: Any):
-        formatted_assay_results = []
+    def _tabular_format_assay_result_data(self, assay_result_data: Any):
+        tabular_assay_results = []
+        assaySubjectColumnName = 'Subject ID'
+        assaySubjectIds = set()
+        referenceDimensions = set()
+        measurementTypes = set()
         for result in assay_result_data:
-            formatted_assay_result_dict = {}
-            formatted_assay_result_dict[f"{result['result']['name']} ({result['result']['unit']})"] = result['result']['value']
-            formatted_assay_result_dict[f"{result['reference']['name']} ({result['reference']['unit']})"] = result['reference']['value']
-            formatted_assay_results.append(formatted_assay_result_dict)
+            # The assay subject ID is important because a tabular form would be indexed by these.
+            assaySubjectId = result['assaySubjectId']
+            assaySubjectIds.add(assaySubjectId)
+            tabular_row_assay_result_dict = {assaySubjectColumnName: assaySubjectId}
 
-        return formatted_assay_results
+            # reference dimensions are important when formatting assay results, because a tabular form 
+            # would be indexed by these.
+            referenceDimension = f"{result['reference']['name']} ({result['reference']['unit']})"
+            referenceDimensions.add(referenceDimension)
 
-    # TODO: We should read the file, parse the contents and then upload it.
-    def _DEPRECATED_upload_assay(self, filename: str, contents: str,
-                                 experiment_id: int, parser_id: int,
-                                 assay_name: str) -> int:
-        """
+            # These do not need specal index treatment for a tabular form.
+            # However these are still collected and returned in case of need.
+            measurementType = f"{result['result']['name']} ({result['result']['unit']})"
+            measurementTypes.add(measurementType)
 
-        Create and upload content to a new assay.
+            tabular_row_assay_result_dict[measurementType] = result['result']['value']
+            tabular_row_assay_result_dict[referenceDimension] = result['reference']['value']
+            tabular_assay_results.append(tabular_row_assay_result_dict)
+        
+        if len(referenceDimensions) > 1:
+            # TODO: add support for multiple reference dimensions.
+            raise Exception("Multiple Reference Dimensions not supported.")
 
-        Args:
-            filename (str) : The name of the file to upload.
+        indexes = [assaySubjectColumnName, *list(referenceDimensions)]
 
-            contents (str) : A raw string containing the contents of the file
-                to upload.
-
-            experiment_id (int) : Experiment identifier.
-
-            parser_id (int) : Parser identifier.
-
-            assay_name (str) : Assay Name.
-
-        Returns:
-            ( ) : It returns the assay identifier associated with the
-                uploaded (new) assay.
-
-        """
-        body = {
-            "filename": filename,
-            "contents": contents,
-            "experimentId": str(experiment_id),
-            "parserId": str(parser_id),
-            "assay": assay_name
-        }
-
-        response = post(url=self.importer_url, headers=self.headers, json=body)
-
-        response["content"] = json.loads(response["content"])
-
-        return response["content"]
-
-    def _DEPRECATED_download_assay(self,
-                                   assay_id: int,
-                                   full_list: bool = False,
-                                   columns: Optional[str] = None,
-                                   page_number: int = 1,
-                                   page_size: int = None):
-        """
-
-        Download the content of an assay given the assay identifier.
-
-        NOTE : If you want to download all the content, set full_list = True.
-
-        Args :
-            assay_id (int) : The Assay identifier.
-
-            full_list (bool) : Download all the content of an assay.
-
-                    NOTE : It overrides page_number and page_size arguments
-
-                    Default = False
-
-            columns (Optional[str]) :
-
-                    Default = None
-
-            page_number (int) :
-
-                    NOTE : Does not apply when full_list = True
-
-                    Default = 1
-
-            page_size (int) :
-
-                    NOTE : Does not apply when full_list = True
-
-                    Default = None
-
-        Returns :
-            () :
-
-        """
-        # TODO : Rename full_list argument to something more explainatory for
-        #        the user.
-        #        If it makes sense, set this as private method and add a new
-        #        (and simpler) method for the user.
-
-        # NOTE : The following arguments are not being used by the actual API
-        #        Endpoint : select_all, sort, graph_ql_filter
-        select_all: Optional[bool] = True
-        sort: Optional[str] = None
-        graph_ql_filter: Optional[str] = None
-
-        query_params = {
-            "assayId": str(assay_id),
-            "fullList": full_list,
-            "selectAll": select_all,
-            "columns": columns,
-            "sort": sort,
-            "gqlFilter": graph_ql_filter,
-            "pageNumber": str(None) if full_list else str(page_number),
-            "pageSize": str(None) if full_list else str(page_size)
-        }
-
-        response = post(url=self.results_url,
-                        headers=self.headers,
-                        params=query_params)
-
-        response["content"] = json.loads(response["content"])
-        # response["content"].keys() : "data", "totalResults", "measurementAnalysis"
-
-        return response["content"]["data"]
-
-    def _DEPRECATED_get_length_of_an_assay(self, assay_id: int) -> int:
-        """
-
-        Dummy query to get the length of an assay that already exists in the
-        platform.
-
-        Args:
-            assay_id (int) : The assay identifier.
-
-        Returns:
-            (int) : The length of the assay (number of rows).
-
-        """
-        # TODO : RENAME THIS METHOD, OR ASK FOR AN ENDPOINT
-        full_list: bool = False
-        select_all: bool = False  # True
-        columns = None
-        sort: Optional[str] = None
-        graph_ql_filter: Optional[str] = None
-        page_number: int = 1
-        page_size: int = 1
-
-        query_params = {
-            "assayId": str(assay_id),
-            "fullList": full_list,
-            "selectAll": select_all,
-            "columns": columns,
-            "sort": sort,
-            "gqlFilter": graph_ql_filter,
-            "pageNumber": str(page_number),
-            "pageSize": str(page_size)
-        }
-
-        response = post(url=self.results_url,
-                        headers=self.headers,
-                        params=query_params)
-
-        response["content"] = json.loads(response["content"])
-
-        total_results = int(response["content"]["totalResults"])
-
-        del response
-
-        return total_results
-
-    def _DEPRECATED_load_content(self, path_to_file: Union[str, Path]):
-        """
-
-        Read the content from a CSV file.
-
-        Args :
-            path_to_file (Union[str, Path]) : Path to the CSV file to read
-                from.
-
-        Returns :
-            (str) : It returns a raw string containing the content  of the
-                file.
-
-        """
-        # NOTE: This is still work in progress.
-        path: Path = Path(path_to_file)
-
-        if not path.is_file():
-            raise OSError(0, "File not found", str(path.absolute()))
-
-        extension: str = path.suffix
-        filename: str = path.stem
-
-        contents: str = path.read_text()
-
-        return contents
-
+        return tabular_assay_results, indexes
