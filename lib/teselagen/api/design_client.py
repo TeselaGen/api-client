@@ -50,7 +50,7 @@ class DESIGNClient(TeselaGenClient):
         ## DESIGN
         # GET
         # /designs/{id}
-        #self.get_design_url: str = f"{self.api_url_base}/designs"
+        self.get_design_url: str = f"{self.api_url_base}/designs"
         # DEL
         # /designs/{id}
         #self.delete_design_url: str = f"{self.api_url_base}/designs"
@@ -60,6 +60,13 @@ class DESIGNClient(TeselaGenClient):
         # POST
         # /designs
         #self.post_designs_url: str = f"{self.api_url_base}/designs"
+        # POST
+        # /codon-optimization-jobs
+        self.post_codon_op: str = f"{self.api_url_base}/codon-optimization-jobs"
+        # GET
+        # /codon-optimization-jobs
+        self.get_codon_op_result: str = f"{self.api_url_base}/codon-optimization-jobs"
+
 
 
         ## RBS Calculator API Tesealgen Integration endpoints
@@ -75,7 +82,7 @@ class DESIGNClient(TeselaGenClient):
         # GET
         # /rbs-calculator/jobs/
         self.rbs_calculator_jobs_url: str = join(self.api_url_base, "rbs-calculator/jobs")
-        
+
         # GET
         # /rbs-calculator/jobs/:jobId
         self.rbs_calculator_job_url: str = join(self.api_url_base, "rbs-calculator/jobs") + "/{}"
@@ -167,6 +174,24 @@ class DESIGNClient(TeselaGenClient):
         return out
 
     @requires_login
+    def get_design(self, design_id: Union[int, str])->dict:
+        """ Retrieves the design with specified id
+
+        Raises error if design_id is not found
+
+        Args:
+            design_id (str, int):  Design's id
+
+        Returns:
+            dict: A dict containing designs information
+        """
+        response = get(url=f"{self.get_design_url}/{design_id}",
+                       headers=self.headers)
+                       #params=args)
+        out = json.loads(response["content"])
+        return out
+
+    @requires_login
     def get_assembly_report(self, report_id: int, local_filename=None)->str:
         """
         Retrieves an assembly report given an id
@@ -184,8 +209,24 @@ class DESIGNClient(TeselaGenClient):
         url = f"{self.api_url_base}{self.URL_GET_ASSEMBLY_REPORT}/{report_id}"
         return download_file(url=url, local_filename=local_filename, headers=self.headers)
 
-    
-    
+    def post_codon_optimization_job(self, algorithm="ALGORITHMS_NAME", parameters={}):
+        body = {
+            "algorithm": algorithm,
+            "parameters": parameters
+        }
+        response = post(url=self.post_codon_op,
+                        headers=self.headers,
+                        json=body)
+        return json.loads(response["content"])
+
+    def get_codon_optimization_job_results(self, job_id):
+        response = get(url=f"{self.get_codon_op_result}/{job_id}",
+                       headers=self.headers)
+                       #params=args)
+        out = json.loads(response["content"])
+        return out
+
+
     ## RBS Calculator Methods.
 
     @requires_login
@@ -194,7 +235,7 @@ class DESIGNClient(TeselaGenClient):
         Sets TeselaGen-RBS calculator integration token.
 
         Args:
-            rbs_token(str): Integration token. This is required to consume Tesealgen/RBS Calculator API. Please ask TeselaGen for your integration token. 
+            rbs_token(str): Integration token. This is required to consume Tesealgen/RBS Calculator API. Please ask TeselaGen for your integration token.
 
         Returns:
             dict: {authenticated: boolean, success: boolean}
@@ -214,7 +255,7 @@ class DESIGNClient(TeselaGenClient):
             result = get(url=self.rbs_calculator_status_url, headers=self.headers)
         except Exception as e:
             return e
-        
+
         return result["content"]
 
     @requires_login
@@ -230,13 +271,13 @@ class DESIGNClient(TeselaGenClient):
 
         try:
             result = get(
-                url=self.rbs_calculator_job_url.format(job_id) if job_id is not None else self.rbs_calculator_jobs_url, 
+                url=self.rbs_calculator_job_url.format(job_id) if job_id is not None else self.rbs_calculator_jobs_url,
                 headers=self.headers)
         except Exception as e:
             return e
-        
+
         return result["content"]
-    
+
     @requires_login
     def rbs_calculator_organisms(self, as_dataframe: bool = True)->dict:
         """
@@ -252,11 +293,11 @@ class DESIGNClient(TeselaGenClient):
             result = get(url=self.rbs_calculator_organisms_url, headers=self.headers)
         except Exception as e:
             return e
-        
+
         result = json.loads(result["content"])
         result = pd.DataFrame(result) if as_dataframe else result
         return result
-    
+
     @requires_login
     def rbs_calculator_submit_job(self, algorithm: str, params: dict)->dict:
         """
@@ -265,11 +306,11 @@ class DESIGNClient(TeselaGenClient):
         - Paper: https://www.researchgate.net/publication/51155303_The_Ribosome_Binding_Site_Calculator.
         - Browser Application: https://salislab.net/software/
         - Swagger API Documentation: https://app.swaggerhub.com/apis-docs/DeNovoDNA/JobControl/1.0.1
-        
+
 
         The TeselaGen/RBS Integration currently supports one of the three following RBS Calculator Tools:
 
-        - "ReverseRBS": Calls the RBS Calculator in Reverse Engineering mode to predict the translation 
+        - "ReverseRBS": Calls the RBS Calculator in Reverse Engineering mode to predict the translation
             initiation rate of each start codon in a mRNA sequence. ([Predict Translation Rates](https://salislab.net/software/predict_rbs_calculator))
 
             parameters:
@@ -278,15 +319,15 @@ class DESIGNClient(TeselaGenClient):
                 organism (str): Valid organism name. (for all available organism names, please call the 'rbs_calculator_organisms' function)
 
 
-        - "RBSLibraryCalculator_SearchMode": Calls the RBS Library Calculator in Search mode to design a ribosome binding site library 
-            to maximally cover a selected  translation rate space between a targeted minimum and maximum rate 
+        - "RBSLibraryCalculator_SearchMode": Calls the RBS Library Calculator in Search mode to design a ribosome binding site library
+            to maximally cover a selected  translation rate space between a targeted minimum and maximum rate
             using the fewest number of RBS variants ([Optimize Expression Levels](https://salislab.net/software/design_rbs_library_calculator)).
 
             parameters:
                 CDS (str): Valid 'GATCU' coding sequence.
                 RBS_Constrains (str): Either an empty string or a valid degenerate nucleotide sequence ('GATCURYSWKMBDHVN').
-                initial_RBS_sequence (str): Either an empty string or a valid 'GATCU' RBS sequence. 
-                    This is used to initialize ther RBS sequence exploration algorithm. If an empty string is provided, 
+                initial_RBS_sequence (str): Either an empty string or a valid 'GATCU' RBS sequence.
+                    This is used to initialize ther RBS sequence exploration algorithm. If an empty string is provided,
                     a random RBS sequence will be used as the initilizing sequence.
                 library_size (int): Number of RBS sequences in your library.
                 maximum_consecutive_degeneracy (int): The maximum number of consecutive degeneracy nucleotides for the RBS library designs.
@@ -294,18 +335,18 @@ class DESIGNClient(TeselaGenClient):
                 maximum_translation_initiation_rate (int): Highest translation rate desired for your RBS library (proportional scale varies from 1 to 1,000,000).
                 organism (str): Valid organism name. (for all available organism names, please call the 'rbs_calculator_organisms' function).
                 pre_sequence (str): Either an empty string or a valid 'GATCU' mRNA sequence that is required to appear upstream (5') of the RBS sequence.
-                
-        
-        - "RBSLibraryCalculator_GenomeSearchMode": Calls the RBS Library Calculator in Genome Editing mode to design a genomic ribosome binding site library 
-            to maximally cover a selected translation rate space between a targeted minimum and maximum rate,  while introducing the 
+
+
+        - "RBSLibraryCalculator_GenomeSearchMode": Calls the RBS Library Calculator in Genome Editing mode to design a genomic ribosome binding site library
+            to maximally cover a selected translation rate space between a targeted minimum and maximum rate,  while introducing the
             fewest number of consecutive genomic mutations. ([Optimize Expression Levels](https://salislab.net/software/design_rbs_library_calculator)).
 
             parameters:
                 CDS (str): Valid 'GATCU' coding sequence.
                 RBS_Constrains (str): Either an empty string or a valid degenerate nucleotide sequence ('GATCURYSWKMBDHVN').
                 genomic_RBS_sequence (str): Genomic RBS sequence. Must be a valid 'GATCU' sequence.
-                initial_RBS_sequence (str): Either an empty string or a valid 'GATCU' RBS sequence. 
-                    This is used to initialize ther RBS sequence exploration algorithm. If an empty string is provided, 
+                initial_RBS_sequence (str): Either an empty string or a valid 'GATCU' RBS sequence.
+                    This is used to initialize ther RBS sequence exploration algorithm. If an empty string is provided,
                     a random RBS sequence will be used as the initilizing sequence.
                 library_size (int): Number of RBS sequences in your library.
                 maximum_consecutive_degeneracy (int): The maximum number of consecutive degeneracy nucleotides for the RBS library designs.
@@ -319,7 +360,7 @@ class DESIGNClient(TeselaGenClient):
             algorithm (str): This should be one for the three algorithm described above currently suppoprted by the TeselaGen/RBS Integration.
             params (dict): These are the parameters required by the chosen algorithms according to the RBS Calculator API Swagger specifications mentioned above.
                         For more information on the parameters meaning refer to the https://salislab.net/software/ browser application.
-                                                
+
                         Examples for the tools parameter inputs are as folows:
 
                         'ReverseRBS' params:
@@ -365,6 +406,6 @@ class DESIGNClient(TeselaGenClient):
             result = post(url=self.rbs_calculator_submit_url, data=params, headers=self.headers)
         except Exception as e:
             return e
-        
+
         result = json.loads(result["content"])
         return result
