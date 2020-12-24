@@ -559,7 +559,7 @@ def requires_login(func):
         if self.auth_token is None:
             self.login()
             if self.auth_token is None:
-                raise Exception("Can't login")
+                raise Exception("Could not access API, access token missing. Please use the 'login' function to obtain access.")
         return func(self, *args, **kwargs)
     return wrapper
 
