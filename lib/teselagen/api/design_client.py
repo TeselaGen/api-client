@@ -242,6 +242,8 @@ class DESIGNClient(TeselaGenClient):
         """
         Fetches all available organisms or host supported by the RBS Calculator tools.
 
+        Args:
+            as_dataframe(bool): Whether to return the response as a dataframe.
         Returns:
             List[Dict[str, str]]: A list of all the available organisms/hosts with their names and NCBI Accession IDs.
         """
@@ -256,29 +258,103 @@ class DESIGNClient(TeselaGenClient):
         return result
     
     @requires_login
-    def rbs_calculator_submit_job(self, algorithm: str, params: Any)->dict:
+    def rbs_calculator_submit_job(self, algorithm: str, params: dict)->dict:
         """
-        Submits a job to the RBS Calculator API Version v2.1. The TeselaGen/RBS Integration currently supports one of the three following RBS Calculator Tools:
+        Submits a job to the RBS Calculator API Version v2.1. For deeper information on the RBS Calculator tools please refer to the following documentation:
+
+        - Paper: https://www.researchgate.net/publication/51155303_The_Ribosome_Binding_Site_Calculator.
+        - Browser Application: https://salislab.net/software/
+        - Swagger API Documentation: https://app.swaggerhub.com/apis-docs/DeNovoDNA/JobControl/1.0.1
+        
+
+        The TeselaGen/RBS Integration currently supports one of the three following RBS Calculator Tools:
 
         - "ReverseRBS": Calls the RBS Calculator in Reverse Engineering mode to predict the translation 
             initiation rate of each start codon in a mRNA sequence. ([Predict Translation Rates](https://salislab.net/software/predict_rbs_calculator))
 
+            parameters:
+                mRNA (str): Valid 'GATCU' mRNA sequence.
+                long_UTR (boolean): Enables long UTRs.
+                organism (str): Valid organism name. (for all available organism names, please call the 'rbs_calculator_organisms' function)
+
+
         - "RBSLibraryCalculator_SearchMode": Calls the RBS Library Calculator in Search mode to design a ribosome binding site library 
             to maximally cover a selected  translation rate space between a targeted minimum and maximum rate 
             using the fewest number of RBS variants ([Optimize Expression Levels](https://salislab.net/software/design_rbs_library_calculator)).
+
+            parameters:
+                CDS (str): Valid 'GATCU' coding sequence.
+                RBS_Constrains (str): Either an empty string or a valid degenerate nucleotide sequence ('GATCURYSWKMBDHVN').
+                initial_RBS_sequence (str): Either an empty string or a valid 'GATCU' RBS sequence. 
+                    This is used to initialize ther RBS sequence exploration algorithm. If an empty string is provided, 
+                    a random RBS sequence will be used as the initilizing sequence.
+                library_size (int): Number of RBS sequences in your library.
+                maximum_consecutive_degeneracy (int): The maximum number of consecutive degeneracy nucleotides for the RBS library designs.
+                minimum_translation_initiation_rate (int): Lowest translation rate desired for your RBS library (proportional scale varies from 1 to 1,000,000).
+                maximum_translation_initiation_rate (int): Highest translation rate desired for your RBS library (proportional scale varies from 1 to 1,000,000).
+                organism (str): Valid organism name. (for all available organism names, please call the 'rbs_calculator_organisms' function).
+                pre_sequence (str): Either an empty string or a valid 'GATCU' mRNA sequence that is required to appear upstream (5') of the RBS sequence.
+                
         
         - "RBSLibraryCalculator_GenomeSearchMode": Calls the RBS Library Calculator in Genome Editing mode to design a genomic ribosome binding site library 
             to maximally cover a selected translation rate space between a targeted minimum and maximum rate,  while introducing the 
             fewest number of consecutive genomic mutations. ([Optimize Expression Levels](https://salislab.net/software/design_rbs_library_calculator)).
 
-
-        For more information on how the RBS Calculator tools work please refer to their Web Application at: https://salislab.net/software/
-        For more information on who the RBS Calculator API works please refer to their Swagger documentation page at: https://app.swaggerhub.com/apis-docs/DeNovoDNA/JobControl/1.0.1
+            parameters:
+                CDS (str): Valid 'GATCU' coding sequence.
+                RBS_Constrains (str): Either an empty string or a valid degenerate nucleotide sequence ('GATCURYSWKMBDHVN').
+                genomic_RBS_sequence (str): Genomic RBS sequence. Must be a valid 'GATCU' sequence.
+                initial_RBS_sequence (str): Either an empty string or a valid 'GATCU' RBS sequence. 
+                    This is used to initialize ther RBS sequence exploration algorithm. If an empty string is provided, 
+                    a random RBS sequence will be used as the initilizing sequence.
+                library_size (int): Number of RBS sequences in your library.
+                maximum_consecutive_degeneracy (int): The maximum number of consecutive degeneracy nucleotides for the RBS library designs.
+                minimum_translation_initiation_rate (int): Lowest translation rate desired for your RBS library (proportional scale varies from 1 to 1,000,000).
+                maximum_translation_initiation_rate (int): Highest translation rate desired for your RBS library (proportional scale varies from 1 to 1,000,000).
+                organism (str): Valid organism name. (for all available organism names, please call the 'rbs_calculator_organisms' function).
+                pre_sequence (str): Either an empty string or a valid 'GATCU' mRNA sequence that is required to appear upstream (5') of the RBS sequence.
 
 
         Args:
             algorithm (str): This should be one for the three algorithm described above currently suppoprted by the TeselaGen/RBS Integration.
-            params (dict): This are the parameters required by the chosen algorithms according to the RBS Calculator API Swagger specifications mentioned above.
+            params (dict): These are the parameters required by the chosen algorithms according to the RBS Calculator API Swagger specifications mentioned above.
+                        For more information on the parameters meaning refer to the https://salislab.net/software/ browser application.
+                                                
+                        Examples for the tools parameter inputs are as folows:
+
+                        'ReverseRBS' params:
+                            {
+                                "mRNA": "YOUR_mRNA_ SEQUENCE",
+                                "long_UTR": false,
+                                "organism": "Acetobacter pomorum"
+                            }
+
+                        'RBSLibraryCalculator_SearchMode' params:
+                            {
+                                "CDS": "YOUR_CDS_SEQUENCE",
+                                "RBS_Constraints": 'TCTAGANNNNNNNNNNNNNNNNNNNNNNNNNGAATTC',
+                                "initial_RBS_sequence": "GATTGCGTGTGAGTTCTGGCACGGAGGAGCACGTA",
+                                "library_size": 16,
+                                "maximum_consecutive_degeneracy": 6,
+                                "maximum_translation_initiation_rate": 100,
+                                "minimum_translation_initiation_rate": 10,
+                                "organism": "Escherichia coli str. K-12 substr. MG1655",
+                                "pre_sequence": ""
+                            }
+                        'RBSLibraryCalculator_GenomeSearchMode' params:
+                            {
+                                "CDS": "YOUR_CDS_SEQUENCE",
+                                "RBS_Constraints": "",
+                                "genomic_RBS_sequence": "CUCGUACGGUGCUAACGUGCUUAGU",
+                                "initial_RBS_sequence": "",
+                                "library_size": 16,
+                                "maximum_consecutive_degeneracy": 6,
+                                "maximum_translation_initiation_rate": 100,
+                                "minimum_translation_initiation_rate": 10,
+                                "organism": "Escherichia coli str. K-12 substr. MG1655",
+                                "pre_sequence": ""
+                            }
+
         Returns:
             JSON with RBS Calculator job response. This may depend on the chosen tool.
         """
