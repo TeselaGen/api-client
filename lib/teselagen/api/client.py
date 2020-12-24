@@ -101,8 +101,8 @@ class TeselaGenClient():
               expiration_time: str = "1d") -> None:
         """
 
-        Login to the CLI, given a username address. A password is
-        required and will be prompted.
+        Login to the CLI with the username used to login through the UI.
+        A password or an apiKey is required. If none is provided password will be prompted.
 
         Args:
             username (Optional[str]) : A valid username (usually their email)
@@ -115,20 +115,26 @@ class TeselaGenClient():
 
                 Default: None
 
+            apiKey (Optional[str]) : An exclusive API password obtained from the TeselaGen Browser Application Settings.
+                It has 1 day expiration.
+
+                Default: None
+
             expiration_time (Optional[str]) : Expiration time for the
                 authentication (token), in zeit/ms format.
 
                 Default = "1d"
 
         """
-        if (apiKey is None):
-            username, password = get_credentials(username=username, password=password)
-            auth_token = self.create_token(username=username,
-                                        password=password,
-                                        expiration_time=expiration_time)
-            del username, password
-        else:
-            auth_token = apiKey
+        # NOTE: the apiKey is obtained as an alternative password with 1 day expiration.
+        _password = apiKey if apiKey is not None else password
+        username, password = get_credentials(username=username, password=_password)
+        auth_token = self.create_token(username=username,
+                                    password=password,
+                                    expiration_time=expiration_time)
+        del username, password
+        # else:
+        #     auth_token = apiKey
         # It will update the auth token and headers.
         self.update_token(token=auth_token)
         return None
@@ -553,7 +559,7 @@ def requires_login(func):
         if self.auth_token is None:
             self.login()
             if self.auth_token is None:
-                raise Exception("Can't login")
+                raise Exception("Could not access API, access token missing. Please use the 'login' function to obtain access.")
         return func(self, *args, **kwargs)
     return wrapper
 
