@@ -1,6 +1,7 @@
 #!/usr/local/bin/python3
 import os
 import sys
+from teselagen import __version__
 from typing import Dict, List
 
 from setuptools import find_packages
@@ -16,7 +17,6 @@ PATH_ROOT = os.path.dirname(__file__)
 name: str = "teselagen"
 
 # https://packaging.python.org/guides/distributing-packages-using-setuptools/#standards-compliance-for-interoperability
-version: str = "20.51.0"
 
 description: str = 'Teselagen\'s Python Package'
 
@@ -64,7 +64,7 @@ def _load_requirements(path_dir: str,
 
 
 setup(name=name,
-      version=version,
+      version=__version__,
       packages=find_packages(),
       description=description,
       author=author,

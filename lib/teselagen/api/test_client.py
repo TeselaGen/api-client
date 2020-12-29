@@ -90,28 +90,52 @@ class TESTClient(TeselaGenClient):
 
         return response["content"]
 
-    def get_assay_subject(self, assay_subject_id: Optional[int] = None):
-        url = self.get_assay_subject_url.format(assay_subject_id) if assay_subject_id else self.get_assay_subjects_url
+    def get_assay_subjects(self, assay_subject_ids: Optional[Union[int, List[int]]] = None, summarized: bool = True):
+        """ 
+        This functions fetches one or many assay subject records from TEST. It receives either an integer ID or a list of integer IDs
+        through the 'assay_subject_ids' argument, which corresond to the the assay subject IDs.
+
+        Args:
+            assay_subject_ids(Optional[Union[int, List[int]]]): Either an integer, a list of integers or None. When integers are passed,
+                these are treated as the assay subject IDs used to query the database, if None, all assay subjects are returned.
+            
+            summarized (bool): Flag indicating whether the returned assay subject records should be summarized or if full assay subject objects
+                should be returned. Default is True.
+
+        Returns:
+            - An list of assay subject records (summarized or full). Depending on the summarized parameter each object in the list are listed below:
+
+            Assay Subject record structure:
+                - id (str): ID of the Assay Subject (summarized and full).
+                - name (str): Name of the Assay Subject (summarized and full).
+                - assaySubjectClass (dict): A JSON with assay subject class information two keys (summarized and full).
+                - descriptors (List[dict]): A list of JSON records with the assay subject descriptors information (full).
+                - assaySubjectGroups (List[dict]): A list of JSON records with the assay subject groups information (full).
+                - experiments (List[dict]): A list of JSON records with the assay subject experiments information (full).
+                - assays (List[dict]): A list of JSON records with the assay subject assays information (full).
+        """
+        
+        url = ""
+        params = {"summarized": str(summarized).lower()}
+        if isinstance(assay_subject_ids, list):
+            url = self.get_assay_subjects_url
+            params["ids[]"] = assay_subject_ids
+        elif isinstance(assay_subject_ids, int):
+            url = self.get_assay_subject_url.format(assay_subject_ids)
+        elif assay_subject_ids is None:
+            url = self.get_assay_subjects_url
+        else:
+            raise TypeError(f"Argument 'assay_subject_ids' must of type int or List[int]. Not type: {type(assay_subject_ids)}")
         response = get(
-            url=url, 
+            url=url,
+            params=params,
             headers=self.headers
         )
 
         # response["content"] = [{"id" : str, "name": str}, ...]
         response["content"] = json.loads(response["content"])
 
-        return response["content"][0]
-
-    def get_assay_subjects(self, assay_subject_ids: List[int]):
-        """ 
-        There's currenly no direct endpoint that the full information on many assay subject at once, 
-        so this helper function fetches each assay subject information one at a time.
-
-        TODO: refactor this logic once a direct TEST API endpoint for querying multiple assay subjects is implemented.
-        """
-        assay_subjects = []
-        for assay_subject_id in assay_subject_ids:
-            yield self.get_assay_subject(assay_subject_id)
+        return response["content"]
 
     def delete_assay_subjects(self, assay_subject_ids: Union[int, List[int]]):
         """ 
@@ -119,13 +143,13 @@ class TESTClient(TeselaGenClient):
         through the 'assay_subject_ids' argument, which corresond to the the assay subject IDs.
         """
         if isinstance(assay_subject_ids, list):
-            data = assay_subject_ids
+            params["ids[]"] = assay_subject_ids
         elif isinstance(assay_subject_ids, int):
-            data = [assay_subject_ids]
+            params["ids[]"] = [assay_subject_ids]
         else:
             raise TypeError(f"Argument 'assay_subject_ids' must of type int or List[int]. Not type: {type(assay_subject_ids)}")
         
-        response = delete(url=self.delete_assay_subject_url.format(""), json=data, headers=self.headers)
+        response = delete(url=self.delete_assay_subject_url.format(""), params=params, headers=self.headers)
         
         return response["content"]
 
@@ -406,7 +430,8 @@ class TESTClient(TeselaGenClient):
 
             if (with_subject_data):
                 assaySubjectIds = [assay_result['assaySubjectId'] for assay_result in assay_results]
-                assay_subjects = [assaySubject for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
+                # assay_subjects = [assaySubject for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
+                assay_subjects = self.get_assay_subjects(assay_subject_ids=assaySubjectIds, summarized=False)
                 tabular_assay_subjects, assay_subject_indexes = self._tabular_format_assay_subject_data(assay_subjects)
                 assay_subjects_df = pd.DataFrame(tabular_assay_subjects).set_index(assay_subject_indexes)
                 
@@ -416,7 +441,8 @@ class TESTClient(TeselaGenClient):
         else:
             if(with_subject_data):
                 assaySubjectIds = [assay_result['assaySubjectId'] for assay_result in assay_results]
-                assay_subjects = [assaySubject for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
+                # assay_subjects = [assaySubject for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
+                assay_subjects = self.get_assay_subjects(assay_subject_ids=assaySubjectIds, summarized=False)
                 tabular_assay_subjects, assay_subject_indexes = self._tabular_format_assay_subject_data(assay_subjects)
                 final_results = [{**{"Assay": api_result['name']}, **assay_subject, **assay_result} for (assay_subject, assay_result) in zip(tabular_assay_subjects, tabular_assay_results)]
             else:
