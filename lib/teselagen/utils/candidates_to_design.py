@@ -22,7 +22,8 @@ def build_design_from_candidates(
     bin_cols: List[str],
     #lab_id: str,
     #user_id: str,
-    name: str)->dict:
+    name: str,
+    priority_col='Priority')->dict:
     ''' Builds design dict from candidates data
 
     Args:
@@ -37,7 +38,7 @@ def build_design_from_candidates(
     '''
     designs = {'design':{}}
     # Use just the elements with valid priority (suggested candidates)
-    data = [d for d in candidates_data if not math.isnan(d['Priority'])]
+    data = [d for d in candidates_data if not math.isnan(d[priority_col])]
     print(f"Generating design using {len(data)} candidates")
     # Create bins
     designs['design']['bin'] = {f"{i+1}":{'id':f"{i+1}",

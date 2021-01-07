@@ -350,7 +350,11 @@ class TeselaGenClient():
         identifier = lab_name if lab_id is None else str(lab_id)
         search_field = 'name' if lab_id is None else 'id'
         if identifier is None:
-            raise ValueError("Received None lab identifiers")
+            print("Received None lab identifiers")
+            identifier = "common"
+        if isinstance(identifier, str) and identifier.lower() == 'common':
+            self.unselect_laboratory()
+            return
         labs = self.get_laboratories()
         lab = list(filter(lambda x: x[search_field]==identifier,labs))
         if len(lab)==0: raise IOError(
@@ -361,8 +365,9 @@ class TeselaGenClient():
 
     def unselect_laboratory(self) -> None:
         """ Clear the selection of a laboratory and removes it from instance headers."""
-        del self.headers["tg-active-lab-id"]
-        print(f"No Lab is now selected.")
+        if "tg-active-lab-id" in self.headers:
+            del self.headers["tg-active-lab-id"]
+        print(f"Selected Common Lab")
 
     def get(self, url: str, **kwargs) -> Any:
         """
