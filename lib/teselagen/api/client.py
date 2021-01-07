@@ -343,7 +343,8 @@ class TeselaGenClient():
 
         Args:
             lab_name (str): The name of the lab. If not set, the method will
-                use the lab_id parameter
+                use the lab_id parameter. If both parameters are ommited, Lab
+                is set to "Common".
             lab_id (int): ID of the lab. If not set the method will use the
                 lab_name parameter as lab identifier
         """
@@ -367,7 +368,7 @@ class TeselaGenClient():
         """ Clear the selection of a laboratory and removes it from instance headers."""
         if "tg-active-lab-id" in self.headers:
             del self.headers["tg-active-lab-id"]
-        print(f"Selected Common Lab")
+        print(f"Selected Lab: Common")
 
     def get(self, url: str, **kwargs) -> Any:
         """

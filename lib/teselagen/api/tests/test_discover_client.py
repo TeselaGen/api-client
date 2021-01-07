@@ -9,7 +9,7 @@ import pytest
 import requests_mock
 import fastaparser
 
-from teselagen.api.evolve_client import EVOLVEClient
+from teselagen.api import DISCOVERClient
 from teselagen.utils import load_from_json, get_project_root
 
 MODEL_TYPES_TO_BE_TESTED: List[Optional[str]] = [
@@ -17,29 +17,29 @@ MODEL_TYPES_TO_BE_TESTED: List[Optional[str]] = [
 ]
 
 @pytest.mark.incremental
-class TestEVOLVEClient():
+class TestDISCOVERClient():
     @pytest.fixture
-    def client(self, host_url, api_token_name) -> EVOLVEClient:
+    def client(self, host_url, api_token_name) -> DISCOVERClient:
         """
 
         A EVOLVE client instance.
 
         Returns:
-            (EVOLVEClient) : An instance of the EVOLVE client.
+            (DISCOVERClient) : An instance of the EVOLVE client.
 
         """
-        evolve_client = EVOLVEClient(api_token_name=api_token_name,
+        evolve_client = DISCOVERClient(api_token_name=api_token_name,
                                      host_url=host_url)
         return evolve_client
 
     @pytest.fixture
-    def logged_client(self, client: EVOLVEClient) -> EVOLVEClient:
+    def logged_client(self, client: DISCOVERClient) -> DISCOVERClient:
         """
 
         A logged EVOLVE client instance.
 
         Returns:
-            (EVOLVEClient) : An instance of the EVOLVE client.
+            (DISCOVERClient) : An instance of the EVOLVE client.
 
         """
         expiration_time: str = "30m"
@@ -62,7 +62,7 @@ class TestEVOLVEClient():
         result = logged_client.submit_model(**params)
         return params['name']
 
-    def test_client_attributes(self, client: EVOLVEClient):
+    def test_client_attributes(self, client: DISCOVERClient):
 
         # Here we check if the client inherit the required parents attributes.
         assert hasattr(client, "api_url_base")
@@ -78,7 +78,7 @@ class TestEVOLVEClient():
         assert hasattr(client, "get_models_url")
         assert hasattr(client, "get_completed_tasks_url")
 
-    def test_login(self, client: EVOLVEClient, api_token_name):
+    def test_login(self, client: DISCOVERClient, api_token_name):
         # Before login, the client has no tokens
         assert client.auth_token is None
         assert api_token_name not in client.headers.keys()
@@ -94,7 +94,7 @@ class TestEVOLVEClient():
 
     @pytest.mark.skip(reason="Test not finished")
     #@pytest.mark.parametrize("model_type", MODEL_TYPES_TO_BE_TESTED)
-    def test_get_models_by_type(self, logged_client: EVOLVEClient,
+    def test_get_models_by_type(self, logged_client: DISCOVERClient,
                                 model_type: Optional[str]):
 
         client = logged_client
@@ -137,7 +137,7 @@ class TestEVOLVEClient():
                     else:
                         assert isinstance(data[key], str)
 
-    # def test_get_model(self, logged_client: EVOLVEClient, model_id: int):
+    # def test_get_model(self, logged_client: DISCOVERClient, model_id: int):
     #     client = logged_client
     #     response = client.get_model(model_id=model_id)
     #     assert isinstance(response, dict)

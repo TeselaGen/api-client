@@ -192,7 +192,19 @@ class DESIGNClient(TeselaGenClient):
         return out
 
     @requires_login
-    def post_design(self, design_dict, allow_duplicates=False):
+    def post_design(self, design_dict:dict, allow_duplicates:bool=False):
+        """ Sumbits a new design into DESIGN module
+
+        Args:
+            design_dict (dict): A dictionary with the design. This dictionary
+                is very complex, but it can be generated easily with the
+                `build_design_from_candidates` method at *utils*
+            allow_duplicates (bool): Set to True to avoid raising errors on
+                detection of parts duplication (default value is False).
+
+        Returns:
+            dict: On success, returns a dict containing the id of the new design (ex: `{'id': 5}` )
+        """
         body = {
             "designJson": design_dict,
             "allowDuplicates": allow_duplicates

@@ -19,12 +19,12 @@ ALLOWED_MODEL_TYPES: List[Union[str, None]] = [
 ]
 
 
-class EVOLVEClient(TeselaGenClient):
+class DISCOVERClient(TeselaGenClient):
     def __init__(self,
                  api_token_name: str = DEFAULT_API_TOKEN_NAME,
                  host_url: str = DEFAULT_HOST_URL):
         module_name: str = "evolve"
-        super(EVOLVEClient, self).__init__(module_name=module_name,
+        super(DISCOVERClient, self).__init__(module_name=module_name,
                                            host_url=host_url,
                                            api_token_name=api_token_name)
         # Here we define the client endpoints
