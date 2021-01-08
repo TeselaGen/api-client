@@ -367,6 +367,7 @@ class TeselaGenClient():
     def unselect_laboratory(self) -> None:
         """ Clear the selection of a laboratory and removes it from instance headers."""
         if "tg-active-lab-id" in self.headers:
+            # Removing the lab header is interpreted as Common lab in the server
             del self.headers["tg-active-lab-id"]
         print(f"Selected Lab: Common")
 

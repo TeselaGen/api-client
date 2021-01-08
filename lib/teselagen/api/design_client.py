@@ -192,7 +192,7 @@ class DESIGNClient(TeselaGenClient):
         return out
 
     @requires_login
-    def post_design(self, design_dict:dict, allow_duplicates:bool=False):
+    def post_design(self, design:dict, allow_duplicates:bool=False):
         """ Sumbits a new design into DESIGN module
 
         Args:
@@ -206,7 +206,7 @@ class DESIGNClient(TeselaGenClient):
             dict: On success, returns a dict containing the id of the new design (ex: `{'id': 5}` )
         """
         body = {
-            "designJson": design_dict,
+            "designJson": design,
             "allowDuplicates": allow_duplicates
         }
         response = post(url=self.post_designs_url,
