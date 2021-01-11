@@ -351,8 +351,7 @@ class TeselaGenClient():
         identifier = lab_name if lab_id is None else str(lab_id)
         search_field = 'name' if lab_id is None else 'id'
         if identifier is None:
-            print("Received None lab identifiers")
-            identifier = "common"
+            raise ValueError("Received None lab identifiers")
         if isinstance(identifier, str) and identifier.lower() == 'common':
             self.unselect_laboratory()
             return

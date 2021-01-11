@@ -196,7 +196,7 @@ class DESIGNClient(TeselaGenClient):
         """ Sumbits a new design into DESIGN module
 
         Args:
-            design_dict (dict): A dictionary with the design. This dictionary
+            design (dict): A dictionary with the design. This dictionary
                 is very complex, but it can be generated easily with the
                 `build_design_from_candidates` method at *utils*
             allow_duplicates (bool): Set to True to avoid raising errors on

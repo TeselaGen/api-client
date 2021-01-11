@@ -13,6 +13,8 @@ def show_crispr_grna_results(sequence:str, guides: List[dict], indexes: Optional
             of the guide in sequence's index.
         indexes(list): Indexes (start and end) of the targeted sequence within the
             complete sequence. If not set, the targeting sequence is not shown.
+        scoreField (str): Select which score from GRNA tool show in the chart. Available
+            scores are "onTargetScore" (default) and "offTargetScore"
     """
     targeting_seq_feat = []
     # Show main targeted sequence if index are set. If not, we calculate indexes
