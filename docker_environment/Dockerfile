@@ -61,6 +61,11 @@ RUN ln -sfn /usr/bin/python3.6 /usr/bin/python & \
 # Upgrade pip
 RUN pip install --upgrade pip
 
+# Install poetry
+RUN pip install poetry==1.1.4 & \
+    poetry config virtualenvs.create false
+
+
 # We set the current working directory
 WORKDIR /tmp
 
