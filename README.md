@@ -103,4 +103,26 @@ It is the equivalent to make an install after deleting the `lock` file.
     the `docker_environment` folder. Then just run the container with `sh run_dev.sh`. Once inside (`docker exec -ti tgclient bash`), go to
     `home/development/lib` and you are ready to run the test command shown above.
 
+### Publishing
+
+Publishing is limited to administrators. PyPi publishing is made by using (poetry)[https://python-poetry.org/docs/]. 
+
+To publish:
+
+1. Run `poetry build` from the project's root folder (same directory as *pyproject.toml*)
+
+1. Be sure you have set the credentials with the api token:
+
+```
+poetry config pypi-token.pypi <TOKEN>
+```
+
+Ask for a token to administrators if needed
+
+1. Publish (check you have set a new version tag in `pyproject.toml`):
+
+```
+poetry publish
+```
+
 
