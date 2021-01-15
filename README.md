@@ -105,7 +105,7 @@ It is the equivalent to make an install after deleting the `lock` file.
 
 ### Publishing
 
-Publishing is limited to administrators. PyPi publishing is made by using (poetry)[https://python-poetry.org/docs/]. 
+Publishing is limited to administrators. PyPi publishing is made by using [poetry](https://python-poetry.org/docs/). 
 
 To publish:
 
