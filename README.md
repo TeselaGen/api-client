@@ -9,45 +9,60 @@ This library contains the TeselaGen Python API Client.
 
 To install it locally,
 
-1. Install the requirements for the library. Go to `lib/' folder and:
+1. Install it with pip
 
     ```
-    pip3 install --requirement ./requirements.txt --no-cache-dir
-    ```
-
-1. Install the library.
-
-    ```
-    python3 setup.py install
+    pip3 install teselagen
     ```
 
 ## Examples
 
-To be able to run the `examples`, you need to
+To be able to run the `examples`, you need to (after installing the library)
 
-1. Install the requirements for the `examples`, located in the `./teselagen/examples/` folder.
+1. Clone or download `lib/examples` 
 
-    ```
-    pip3 install --requirement ./teselagen/examples/requirements.txt --no-cache-dir
-    ```
+1. Open any notebook in the `examples` folder with Jupyter Notebook
 
-1. Open the Jupyter Notebook example
+## Use the provided environment
 
-    If you are not using the provided docker environment (see docker_environment folder), first install jupyter in your own environment (if you don't have it yet). You can specify the port the notebook server will listen on, by using the following flag `--port:PORT`. Just replace `PORT` value with your own.
+You can use the provided docker environment that contains a ready to use installation
+of all required packages to run the notebooks. Here are the instructions according to your OS
 
-    For example, by running the following command, the Jupyter Notebook example may start running on port `8888`
+### Linux/MacOS
 
-    ```
-    jupyter notebook ./teselagen/examples/Hello_World.ipynb --port 8888
-    ```
+1. After clone/download, go to `docker_environment` and run the build script with `sh build.sh`
 
-    Access to it, opening a browser and going to the following address:
+1. Run the container with `sh run.sh`
 
-    ```
-    http://localhost:8888
-    ```
+1. Open your browser and set the address: `localhost:8888`. From there you can explore all example notebooks
 
-## Tests
+## Development (Linux/MacOS)
+
+### Docker environment 
+
+1. Build the docker environment with command `sh build.sh`
+
+2. Run the container as a developer with the command `sh run_dev.sh`. With this command the `teselagen` library
+   will be installed in [editable](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs) mode.
+
+### Dependencies
+
+#### Install dependencies
+
+If lock file exists (the lock file contains fixed versions of dependencies), the `poetry install` command will install
+all dependencies according to the lock file (lock file **must** be added to the repo). If the file doens't exist it will generate
+the lock file again.
+
+#### Update dependencies
+
+Use this command if you made changes on the dependencies at the *toml* file:
+```
+poetry update
+``` 
+
+It is the equivalent to make an install after deleting the `lock` file.
+
+### Tests
 
 1. Add your credentials
 

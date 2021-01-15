@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "teselagen"
-version = "0.1.0"
+version = "0.1.1"
 description = "Teselagen Biotechnology API client"
 authors = ["Your Name <you@example.com>"]
 license = "MIT"
-readme = ""
+readme = "README.md"
 homepage = ""
 repository = "https://github.com/TeselaGen/api-client"
 documentation = ""
@@ -17,7 +17,7 @@ keywords = [
 ]
 
 [tool.poetry.dependencies]
-python = "~3.6.9"
+python = "^3.6.1"
 setuptools = "^45.1.0"
 pytest = "^5.3.5"
 pytest-xdist = "^1.31.0"
@@ -26,15 +26,13 @@ pytest-notebook = "^0.6.1"
 requests = "^2.22.0"
 requests-mock = "^1.8"
 fastaparser = "^1.1"
-pandas = "^1.1.4"
+pandas = "^1.0.0"
 dna_features_viewer="^3.0.3"
 tqdm="^4.53.0"
 
 [tool.poetry.dev-dependencies]
 seaborn = "^0.11.1"
-jupyter = "*"
-jupyter-console = "*"
-jupyter_contrib_nbextensions = "*"
+notebook = "^6.2.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

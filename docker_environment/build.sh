@@ -46,10 +46,10 @@ echo "building ${imageName}:${versionTag}"
 
 docker builder build . \
     --tag ${imageName}:${versionTag} \
-    --squash \
-    --force-rm \
-    --rm \
-    --no-cache \
+#    --squash \
+#    --force-rm \
+#    --rm \
+#    --no-cache \
 #   --build-arg notebookPort=${notebookPort}
 
 echo "built ${imageName}:${versionTag}"
