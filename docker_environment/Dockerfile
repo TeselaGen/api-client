@@ -78,25 +78,6 @@ ARG PATH_TO_EXAMPLES=lib/teselagen/examples/
 ARG PATH_TO_MODULE_REQUIREMENTS=lib/requirements.txt
 ARG PATH_TO_EXAMPLES_REQUIREMENTS=lib/teselagen/examples/requirements.txt
 
-# Install Library requirements
-#RUN python -m pip install  \
-#   --no-cache-dir  \
-#   --requirement=${PATH_TO_MODULE_REQUIREMENTS}
-
-# Install Library
-#RUN cd lib/ && python setup.py install && cd ..
-
-# Install Library
-#RUN cd lib/ && python setup.py install && cd ..
-
-# Install requirements for the Examples
-#RUN python -m pip install \
-#    --no-cache-dir \
-#    --requirement=$PATH_TO_EXAMPLES_REQUIREMENTS
-
-# Install Library requirementss
-# Poetry install 
-#--no-root doesn't install our library, just its dependencies
 # Poetry installations are not editable
 RUN cd lib/ && poetry install && cd ..
 
