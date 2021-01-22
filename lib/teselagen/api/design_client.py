@@ -59,7 +59,7 @@ class DESIGNClient(TeselaGenClient):
         self.get_designs_url: str = f"{self.api_url_base}/designs"
         # POST
         # /designs
-        #self.post_designs_url: str = f"{self.api_url_base}/designs"
+        self.post_designs_url: str = f"{self.api_url_base}/designs"
         # POST
         # /codon-optimization-jobs
         self.post_codon_op: str = f"{self.api_url_base}/codon-optimization-jobs"
@@ -190,6 +190,29 @@ class DESIGNClient(TeselaGenClient):
                        #params=args)
         out = json.loads(response["content"])
         return out
+
+    @requires_login
+    def post_design(self, design:dict, allow_duplicates:bool=False):
+        """ Sumbits a new design into DESIGN module
+
+        Args:
+            design (dict): A dictionary with the design. This dictionary
+                is very complex, but it can be generated easily with the
+                `build_design_from_candidates` method at *utils*
+            allow_duplicates (bool): Set to True to avoid raising errors on
+                detection of parts duplication (default value is False).
+
+        Returns:
+            dict: On success, returns a dict containing the id of the new design (ex: `{'id': 5}` )
+        """
+        body = {
+            "designJson": design,
+            "allowDuplicates": allow_duplicates
+        }
+        response = post(url=self.post_designs_url,
+                        headers=self.headers,
+                        json=body)
+        return json.loads(response["content"])
 
     @requires_login
     def get_assembly_report(self, report_id: int, local_filename=None)->str:

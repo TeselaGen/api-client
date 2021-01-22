@@ -343,7 +343,8 @@ class TeselaGenClient():
 
         Args:
             lab_name (str): The name of the lab. If not set, the method will
-                use the lab_id parameter
+                use the lab_id parameter. If both parameters are ommited, Lab
+                is set to "Common".
             lab_id (int): ID of the lab. If not set the method will use the
                 lab_name parameter as lab identifier
         """
@@ -351,6 +352,9 @@ class TeselaGenClient():
         search_field = 'name' if lab_id is None else 'id'
         if identifier is None:
             raise ValueError("Received None lab identifiers")
+        if isinstance(identifier, str) and identifier.lower() == 'common':
+            self.unselect_laboratory()
+            return
         labs = self.get_laboratories()
         lab = list(filter(lambda x: x[search_field]==identifier,labs))
         if len(lab)==0: raise IOError(
@@ -361,8 +365,10 @@ class TeselaGenClient():
 
     def unselect_laboratory(self) -> None:
         """ Clear the selection of a laboratory and removes it from instance headers."""
-        del self.headers["tg-active-lab-id"]
-        print(f"No Lab is now selected.")
+        if "tg-active-lab-id" in self.headers:
+            # Removing the lab header is interpreted as Common lab in the server
+            del self.headers["tg-active-lab-id"]
+        print(f"Selected Lab: Common")
 
     def get(self, url: str, **kwargs) -> Any:
         """
