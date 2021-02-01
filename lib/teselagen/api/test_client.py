@@ -142,6 +142,7 @@ class TESTClient(TeselaGenClient):
         This functions deletes one or many assay subject records from TEST. It receives an int ID or a list of int IDs
         through the 'assay_subject_ids' argument, which corresond to the the assay subject IDs.
         """
+        params = {}
         if isinstance(assay_subject_ids, list):
             params["ids[]"] = assay_subject_ids
         elif isinstance(assay_subject_ids, int):
