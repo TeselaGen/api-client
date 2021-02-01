@@ -40,13 +40,13 @@ class DESIGNClient(TeselaGenClient):
         self.export_dna_sequences_url: str = f"{self.api_url_base}/export/sequences/json"
         # GET
         # /export/aminoacids/{format}/{sequenceId}
-        #self.export_aminoacid_sequence_url: str = f"{self.api_url_base}/export/aminoacids"
+        self.export_aminoacid_sequence_url: str = f"{self.api_url_base}/export/aminoacids"
 
         ## IMPORT
         # POST
         #self.import_dna_sequence_url: str = f"{self.api_url_base}/import/sequence"
         # POST
-        #self.import_aminoacid_sequence_url: str = f"{self.api_url_base}/import/aminoacids"
+        self.import_aminoacid_sequence_url: str = f"{self.api_url_base}/import/aminoacids"
         ## DESIGN
         # GET
         # /designs/{id}
@@ -221,6 +221,56 @@ class DESIGNClient(TeselaGenClient):
 
     def get_codon_optimization_job_results(self, job_id):
         response = get(url=f"{self.get_codon_op_result}/{job_id}",
+                       headers=self.headers)
+                       #params=args)
+        out = json.loads(response["content"])
+        return out
+
+    def post_amino_acid_sequence(
+        self,
+        name: str,
+        contents: str,
+        tags:Optional[List[str]]=None,
+        allow_duplicates: bool=False,
+        lab_id: Optional[int]=None)->dict:
+        """Posts an amino-acid sequence into the platform
+
+        Args:
+            name (str): Name of the sequence.
+            contents (str): Amino-acid sequence, ex: "SCNCVCGVCCSCSP".
+            tags (Optional[List[str]], optional): Tags to be associated with the sequence. Defaults to None.
+            allow_duplicates (bool, optional): If False, checks the database for sequence duplication and
+                returns an error if found. Defaults to False.
+
+        Returns:
+            dict: [description]
+        """
+        tags = [] if tags is None else tags
+        lab_id = int(self.headers["tg-active-lab-id"]) if lab_id is None else lab_id
+        body = {
+            "name": name,
+            "contents": contents,
+            "tags": tags,
+            "allow_duplicates": allow_duplicates,
+            "labId": lab_id
+        }
+        response = post(url=self.import_aminoacid_sequence_url,
+                        headers=self.headers,
+                        json=body)
+        return json.loads(response["content"])
+
+    def get_amino_acid_sequence(self, sequence_id: str, format: Optional[str]='json'):
+        """Get amino acid sequence from the platform
+
+        Args:
+            sequence_id (str): Id of the sequence
+            format (str, optional): Output format. Available formats are 'json', 'fasta'.
+                Defaults to 'json'.
+
+        Returns:
+            [type]: [description]
+        """
+        response = get(url=f"{self.export_aminoacid_sequence_url}/{format}/{sequence_id}",
                        headers=self.headers)
                        #params=args)
         out = json.loads(response["content"])
