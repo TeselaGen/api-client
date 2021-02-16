@@ -29,6 +29,7 @@ ARG notebookPort=8888
 ARG USERNAME=root
 
 FROM $BASE_CONTAINER AS base
+ENV LANG C.UTF-8
 USER $USERNAME
 EXPOSE $notebookPort
 ARG DEBIAN_FRONTEND=noninteractive
@@ -59,7 +60,11 @@ RUN ln -sfn /usr/bin/python3.6 /usr/bin/python & \
     ln -s /usr/bin/pip3 /usr/bin/pip
 
 # Upgrade pip
-RUN pip install --upgrade pip
+RUN pip3 install --upgrade pip
+
+# Install poetry
+RUN pip3 install poetry && poetry config virtualenvs.create false
+
 
 # We set the current working directory
 WORKDIR /tmp
@@ -73,25 +78,15 @@ ARG PATH_TO_EXAMPLES=lib/teselagen/examples/
 ARG PATH_TO_MODULE_REQUIREMENTS=lib/requirements.txt
 ARG PATH_TO_EXAMPLES_REQUIREMENTS=lib/teselagen/examples/requirements.txt
 
-# Install Library requirements
-RUN python -m pip install  \
-    --no-cache-dir  \
-    --requirement=${PATH_TO_MODULE_REQUIREMENTS}
-
-# Install Library
-RUN cd lib/ && python setup.py install && cd ..
-
-# Install requirements for the Examples
-RUN python -m pip install \
-    --no-cache-dir \
-    --requirement=$PATH_TO_EXAMPLES_REQUIREMENTS
+# Poetry installations are not editable
+RUN cd lib/ && poetry install && cd ..
 
 # Generate Jupyter Config
 RUN jupyter notebook --generate-config
 
 # Install Jupyter Extensions
-RUN jupyter contrib nbextension install --system && \
-    jupyter nbextensions_configurator enable --user
+#RUN jupyter contrib nbextension install --system && \
+#    jupyter nbextensions_configurator enable --user
 
 # After the installation, we copy the examples folder to the home directory
 # And then we delete the content of the working directory that was used for
