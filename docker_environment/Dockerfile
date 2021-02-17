@@ -41,6 +41,7 @@ RUN apt-get update && \
     python3-setuptools\
     python3 \
     python3-pip \
+    python3-venv \
     wget \
     nano \
     bzip2 \
@@ -64,8 +65,14 @@ RUN set -x \
 	&& pip3 install pip==21.0.1 setuptools==53.0.0 wheel==0.36.2 --no-cache-dir
 
 # Install poetry
-RUN pip3 install poetry && poetry config virtualenvs.create false
-
+RUN set -x \
+    && apt-get update \
+    && apt-get install -y curl \
+    && curl -sSL  https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py \
+    && python3 get-poetry.py --version 1.1.4 \
+    && rm -rf get-poetry.py
+ENV PATH="/root/.poetry/bin:$PATH"
+RUN poetry config virtualenvs.create false
 
 # We set the current working directory
 WORKDIR /tmp
@@ -83,6 +90,7 @@ ARG PATH_TO_EXAMPLES_REQUIREMENTS=lib/teselagen/examples/requirements.txt
 RUN cd lib/ && poetry install && cd ..
 
 # Generate Jupyter Config
+ENV PATH="~/.local/bin/jupyter-notebook:$PATH"
 RUN jupyter notebook --generate-config
 
 # Install Jupyter Extensions
