@@ -60,7 +60,8 @@ RUN ln -sfn /usr/bin/python3.6 /usr/bin/python & \
     ln -s /usr/bin/pip3 /usr/bin/pip
 
 # Upgrade pip
-RUN pip3 install --upgrade pip
+RUN set -x \
+	&& pip3 install pip==21.0.1 setuptools==53.0.0 wheel==0.36.2 --no-cache-dir
 
 # Install poetry
 RUN pip3 install poetry && poetry config virtualenvs.create false
