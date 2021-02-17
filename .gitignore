@@ -5,6 +5,7 @@
 *.pytest*
 *.ipynb_checkpoints*
 venv/
+dist/
 *.test_configuration
 _*
 .test*

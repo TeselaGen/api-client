@@ -29,6 +29,7 @@ ARG notebookPort=8888
 ARG USERNAME=root
 
 FROM $BASE_CONTAINER AS base
+ENV LANG C.UTF-8
 USER $USERNAME
 EXPOSE $notebookPort
 ARG DEBIAN_FRONTEND=noninteractive
@@ -40,6 +41,7 @@ RUN apt-get update && \
     python3-setuptools\
     python3 \
     python3-pip \
+    python3-venv \
     wget \
     nano \
     bzip2 \
@@ -59,7 +61,18 @@ RUN ln -sfn /usr/bin/python3.6 /usr/bin/python & \
     ln -s /usr/bin/pip3 /usr/bin/pip
 
 # Upgrade pip
-RUN pip install --upgrade pip
+RUN set -x \
+	&& pip3 install pip==21.0.1 setuptools==53.0.0 wheel==0.36.2 --no-cache-dir
+
+# Install poetry
+RUN set -x \
+    && apt-get update \
+    && apt-get install -y curl \
+    && curl -sSL  https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py \
+    && python3 get-poetry.py --version 1.1.4 \
+    && rm -rf get-poetry.py
+ENV PATH="/root/.poetry/bin:$PATH"
+RUN poetry config virtualenvs.create false
 
 # We set the current working directory
 WORKDIR /tmp
@@ -73,25 +86,16 @@ ARG PATH_TO_EXAMPLES=lib/teselagen/examples/
 ARG PATH_TO_MODULE_REQUIREMENTS=lib/requirements.txt
 ARG PATH_TO_EXAMPLES_REQUIREMENTS=lib/teselagen/examples/requirements.txt
 
-# Install Library requirements
-RUN python -m pip install  \
-    --no-cache-dir  \
-    --requirement=${PATH_TO_MODULE_REQUIREMENTS}
-
-# Install Library
-RUN cd lib/ && python setup.py install && cd ..
-
-# Install requirements for the Examples
-RUN python -m pip install \
-    --no-cache-dir \
-    --requirement=$PATH_TO_EXAMPLES_REQUIREMENTS
+# Poetry installations are not editable
+RUN cd lib/ && poetry install && cd ..
 
 # Generate Jupyter Config
+ENV PATH="~/.local/bin/jupyter-notebook:$PATH"
 RUN jupyter notebook --generate-config
 
 # Install Jupyter Extensions
-RUN jupyter contrib nbextension install --system && \
-    jupyter nbextensions_configurator enable --user
+#RUN jupyter contrib nbextension install --system && \
+#    jupyter nbextensions_configurator enable --user
 
 # After the installation, we copy the examples folder to the home directory
 # And then we delete the content of the working directory that was used for
