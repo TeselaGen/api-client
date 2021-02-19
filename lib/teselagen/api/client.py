@@ -22,7 +22,7 @@ DEFAULT_API_TOKEN_NAME: str = "x-tg-cli-token"
 class TeselaGenClient():
     """Python TeselaGen Client."""
     def __init__(self,
-                 module_name: str,
+                 module_name: str = 'design', # For cross-module endpoints use the DESIGN module as default.
                  host_url: str = DEFAULT_HOST_URL,
                  api_token_name: str = DEFAULT_API_TOKEN_NAME) -> None:
         """
@@ -34,8 +34,8 @@ class TeselaGenClient():
 
                     Available Modules :
                                         "test"
-                                        "evolve" (WIP),
-                                        "design" (WIP),
+                                        "discover",
+                                        "design",
                                         "build" (WIP)
 
             host_url (str) : The Host URL of the API.
@@ -49,26 +49,24 @@ class TeselaGenClient():
         """
         # NOTE: Do not add passwords to the class attributes.
         #       Delete all passwords once they've been used.
-        self.module_name: str = module_name
+        # self.module_name: str = module_name
         self.host_url: str = host_url
         self.api_token_name: str = api_token_name
 
-        # Here we define the Base URL.
-        self.module_url: str = f"{self.host_url}/{self.module_name}"
-        self.api_url_base: str = f"{self.module_url}/cli-api"
+        # Here we define a common Base URL. Using the DESIGN Module as the target server for these common endpoints.
+        _module_name: str = module_name if module_name is not "discover" else "evolve"
+        module_url: str = f"{self.host_url}/{_module_name}"
+        api_url_base: str = f"{module_url}/cli-api"
 
-        # Here we define the client endpoints.
-        self.register_url: str = f"{self.module_url}/register"
-        self.login_url: str = f"{self.module_url}/login"
-        self.info_url: str = f"{self.api_url_base}/info"
-        self.status_url: str = f"{self.api_url_base}/public/status"
-        self.auth_url: str = f"{self.api_url_base}/public/auth"
+        # Here we define the client endpoints. Using the DESIGN Module as the target server for these common endpoints.
+        self.register_url: str = f"{module_url}/register"
+        self.login_url: str = f"{module_url}/login"
+        self.info_url: str = f"{api_url_base}/info"
+        self.status_url: str = f"{api_url_base}/public/status"
+        self.auth_url: str = f"{api_url_base}/public/auth"
 
         # Laboratories
-        # NOTE : Currently, laboratories information only exists in TEST,
-        #        and its probably global.
-        #  self.labs_url: str = f"{self.api_url_base}/laboratories"
-        self.labs_url: str = f"{self.host_url}/test/cli-api/laboratories"
+        self.labs_url: str = f"{api_url_base}/laboratories"
 
         # NOTE : The authorization token will be updated with the
         #        "login" method.
@@ -515,7 +513,6 @@ def handler(func):
             raise
 
     return wrapper
-
 
 def parser(func):
     """

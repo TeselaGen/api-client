@@ -5,9 +5,10 @@
 import json
 import getpass
 import pandas as pd
+import numpy as np
 from os.path import join
 from urllib.parse import urlencode, urlparse, urljoin
-from typing import Any, Dict, List, Optional, TypeVar, Union
+from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
 
 import requests
 
@@ -15,6 +16,8 @@ from teselagen.api.client import (DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL,
                                   TeselaGenClient, get, post, put, requires_login,
                                   download_file)
 
+
+SUPPORTED_AA_EXPORT_FORMATS = ['JSON', 'FASTA', 'GENBANK']
 # NOTE : Related to Postman and Python requests
 #       "body" goes into the "json" argument
 #       "Query Params" goes into "params" argument
@@ -26,46 +29,53 @@ class DESIGNClient(TeselaGenClient):
 
     def __init__(self,
                  api_token_name: str = DEFAULT_API_TOKEN_NAME,
-                 host_url: str = DEFAULT_HOST_URL):
+                 host_url: str = DEFAULT_HOST_URL,
+                 tg_client: TeselaGenClient = None):
         module_name: str = "design"
-        super(DESIGNClient, self).__init__(module_name=module_name,
+        if (tg_client is not None):
+            self.__dict__ = tg_client.__dict__ # This allows the four tg modules to share common endpoints (s.a. labs/login/register/logout)
+        else:
+            super(DESIGNClient, self).__init__(module_name=module_name,
                                            host_url=host_url,
                                            api_token_name=api_token_name)
+        
+        # Here we define the Base CLI URL.
+        api_url_base: str = f"{self.host_url}/{module_name}/cli-api"
         # EXPORT
         # GET
         # /export/sequence/{format}/{sequenceId}
-        self.export_dna_sequence_url: str = f"{self.api_url_base}/export/sequence/"
+        self.export_dna_sequence_url: str = f"{api_url_base}/export/sequence/"
         # GET
         # /export/sequences/{format}/
-        self.export_dna_sequences_url: str = f"{self.api_url_base}/export/sequences/json"
+        self.export_dna_sequences_url: str = f"{api_url_base}/export/sequences/json"
         # GET
         # /export/aminoacids/{format}/{sequenceId}
-        #self.export_aminoacid_sequence_url: str = f"{self.api_url_base}/export/aminoacids"
+        #self.export_aminoacid_sequence_url: str = f"{api_url_base}/export/aminoacids"
 
         ## IMPORT
         # POST
-        #self.import_dna_sequence_url: str = f"{self.api_url_base}/import/sequence"
+        #self.import_dna_sequence_url: str = f"{api_url_base}/import/sequence"
         # POST
-        #self.import_aminoacid_sequence_url: str = f"{self.api_url_base}/import/aminoacids"
+        #self.import_aminoacid_sequence_url: str = f"{api_url_base}/import/aminoacids"
         ## DESIGN
         # GET
         # /designs/{id}
-        self.get_design_url: str = f"{self.api_url_base}/designs"
+        self.get_design_url: str = f"{api_url_base}/designs"
         # DEL
         # /designs/{id}
-        #self.delete_design_url: str = f"{self.api_url_base}/designs"
+        #self.delete_design_url: str = f"{api_url_base}/designs"
         # GET
         # /designs
-        self.get_designs_url: str = f"{self.api_url_base}/designs"
+        self.get_designs_url: str = f"{api_url_base}/designs"
         # POST
         # /designs
-        #self.post_designs_url: str = f"{self.api_url_base}/designs"
+        #self.post_designs_url: str = f"{api_url_base}/designs"
         # POST
         # /codon-optimization-jobs
-        self.post_codon_op: str = f"{self.api_url_base}/codon-optimization-jobs"
+        self.post_codon_op: str = f"{api_url_base}/codon-optimization-jobs"
         # GET
         # /codon-optimization-jobs
-        self.get_codon_op_result: str = f"{self.api_url_base}/codon-optimization-jobs"
+        self.get_codon_op_result: str = f"{api_url_base}/codon-optimization-jobs"
 
 
 
@@ -73,23 +83,35 @@ class DESIGNClient(TeselaGenClient):
 
         # GET
         # /rbs-calculator/status
-        self.rbs_calculator_status_url: str = f"{self.api_url_base}/rbs-calculator/status"
+        self.rbs_calculator_status_url: str = f"{api_url_base}/rbs-calculator/status"
 
         # POST
         # /rbs-calculator/submit
-        self.rbs_calculator_submit_url: str = f"{self.api_url_base}/rbs-calculator/submit"
+        self.rbs_calculator_submit_url: str = f"{api_url_base}/rbs-calculator/submit"
 
         # GET
         # /rbs-calculator/jobs/
-        self.rbs_calculator_jobs_url: str = join(self.api_url_base, "rbs-calculator/jobs")
+        self.rbs_calculator_jobs_url: str = join(api_url_base, "rbs-calculator/jobs")
 
         # GET
         # /rbs-calculator/jobs/:jobId
-        self.rbs_calculator_job_url: str = join(self.api_url_base, "rbs-calculator/jobs") + "/{}"
+        self.rbs_calculator_job_url: str = join(api_url_base, "rbs-calculator/jobs") + "/{}"
 
         # GET
         # /rbs-calculator/organisms
-        self.rbs_calculator_organisms_url: str = f"{self.api_url_base}/rbs-calculator/organisms"
+        self.rbs_calculator_organisms_url: str = f"{api_url_base}/rbs-calculator/organisms"
+
+        # POST
+        # /import/aminoacids
+        self.import_aa_url: str = f"{api_url_base}/import/aminoacids"
+
+        # GET
+        # /export/aminoacids/:format/:sequenceId
+        # The aa export url accepts to url params: 
+        #  - the first one being the format ("FASTA", "GENBANK", "JSON")
+        #  - the second one being the sequence id.
+        # example: `self.export_aa_url.format("JSON", 2)`
+        self.export_aa_url: str = join(api_url_base, "export", "aminoacids") + "/{}/{}"
 
 
     @requires_login
@@ -409,3 +431,198 @@ class DESIGNClient(TeselaGenClient):
 
         result = json.loads(result["content"])
         return result
+
+
+    ## Amino acid sequence Methods.
+    @requires_login
+    def import_aa_sequences(self, aa_sequences: Union[pd.DataFrame, List[List[str]], List[Tuple[str, str]], List[Dict[str,str]]], tags: Optional[List[Dict[str, int]]] = None):
+        '''
+        This function imports one or many amino acid sequences by means of TeselaGen's DESIGN API.
+
+        Args:
+            aa_sequences(Union[pd.DataFrame, List[Dict[str,str]], List[List[str]]): Amino acid sequences data. The data can come in three different ways:
+                - as a pandas dataframe with 2 columns. Where the first column contains the sequence names and the second column contains the amino acid sequence string.
+                - as a list of python dictionaries, where each dictionary is of the form `{"AA_NAME": SEQUENCE_NAME, "AA_SEQUENCE": SEQUENCE_STRING}`.
+                - as a list of 2-element lists, where the firt element is the sequence name and the second element the sequence string.
+
+            tags(Optional[List[int]]): A list of integer tag IDs with which each amino acid sequence will be tagged with.
+                (NOTE: tags cannot be created on-the-fly through this function, it only accepts tag IDs that are already created in the DESIGN Module).
+
+        Returns:
+            A JSON object with the following two key/values:
+                - createdAminoAcidSequences(): 'id' and 'name' of the created amino acid sequences.
+                - existingAminoAcidSequences(): 'id' of the updated amino acid sequences.
+        '''
+        params = {}
+        if (aa_sequences is not None):
+            if isinstance(aa_sequences, pd.DataFrame):
+                params['name'] = aa_sequences.iloc[:,0].values.tolist()
+                params['contents'] = aa_sequences.iloc[:,1].values.tolist()
+            
+            elif isinstance(aa_sequences, list):
+                if all(isinstance(x, list) and len(x) == 2 for x in aa_sequences):
+                    params['name'] = list(map(lambda x: x[0], aa_sequences))
+                    params['contents'] = list(map(lambda x: x[1], aa_sequences))
+
+                if all(isinstance(x, tuple) and len(x) == 2 for x in aa_sequences):
+                    params['name'] = list(map(lambda x: x[0], aa_sequences))
+                    params['contents'] = list(map(lambda x: x[1], aa_sequences))
+            
+                elif all(isinstance(x, dict) for x in aa_sequences):
+                    params['name'] = list(map(lambda x: x['AA_NAME'], aa_sequences))
+                    params['contents'] = list(map(lambda x: x['AA_SEQUENCE'], aa_sequences))
+
+                else:
+                    raise ValueError("All elements in list argument 'aa_sequences' must either be 2-element tuples/list or dictionaries.")
+            else:
+                raise ValueError("Type of argument 'aa_sequences' is not supported.")
+
+        else:
+            raise Exception("The 'aa_sequences' is mandatory.")
+
+        if (tags is not None and isinstance(tags, list)):
+            params["tags"] = list(map(lambda x: {"id": x}, tags))
+
+
+        try:
+            result = post(
+                url=self.import_aa_url,
+                data=json.dumps(params),
+                headers=self.headers)
+        except Exception as e:
+            return e
+
+        parsed_api_result = json.loads(result["content"])
+
+        formatted_response = {}
+
+        created_aa_seqs_key = 'createdAminoAcidSequences'
+        updated_aa_seqs_key = 'existingAminoAcidSequences'
+
+        if (created_aa_seqs_key in parsed_api_result.keys() and len(parsed_api_result[created_aa_seqs_key]) > 0):
+            formatted_response[created_aa_seqs_key] = list(map(lambda x: {"id": x['id'], "name": x["name"]}, parsed_api_result[created_aa_seqs_key]))
+        
+        if (updated_aa_seqs_key in parsed_api_result.keys() and len(parsed_api_result[updated_aa_seqs_key]) > 0):
+            formatted_response[updated_aa_seqs_key] = list(map(lambda x: {"id": x['id']}, parsed_api_result[updated_aa_seqs_key]))
+
+        return formatted_response
+
+
+    @requires_login
+    def export_aa_sequence(self, aa_sequence_id: int, format: str = "JSON"):
+        '''
+        This functions exports one amino acid sequence from TeselaGen DESIGN Module. It requires the amino acid sequence ID.
+
+        Args:
+            aa_sequence_id(int): This is an integer ID of the DESIGN amino acid sequence.
+
+            format(str): This is the format in which the amino acid sequence will be parsed into.
+                Available formats are:
+                    - JSON (teselagen specific)
+                    - FASTA
+                    - GENBANK
+
+        Returns:
+            (Any): Amino acid sequence information depending on the format chosen. The 'JSON' format will provide the following properties:
+
+                - id: Amino acid sequence DESIGN ID.
+                - name: Amino acid sequence name.
+                - size: Number of residues for the amino acid sequence.
+                - molecularWeight: Teselagen calculated molecular weight of the amino acid sequence.
+                - extinctioCoefficient: Teselagen calculated extinction coefficient of the amino acid sequence.
+                - proteinSequence: String with the amino acid sequence.
+                - createdAt: Date in which the amino acid sequence record was created in TeselaGen.
+                - createdAt: Date in which the amino acid sequence record was last updated in TeselaGen.
+                - regionAnnotations: Teselagen region annotations (optional).
+                - isoPoint: Sequence isoelectric point (optional).
+                - uniprotId: UniProt ID for the amino acid sequence (optional).
+                - tags: any TeselaGen tags with which the amino acid sequence has been tagged (optional).
+        '''
+        if not isinstance(aa_sequence_id, int):
+            raise ValueError(f"Argument 'aa_sequence_id' must be of type 'int', but received type '{type(aa_sequence_id)}'.")
+        if format not in SUPPORTED_AA_EXPORT_FORMATS:
+            raise ValueError(f"Argument 'format' can only be one of this three strings: JSON, FASTA or GENBANK.")
+        try:
+            result = get(url=self.export_aa_url.format(format, aa_sequence_id), headers=self.headers)
+        except Exception as e:
+            return e
+
+        if format == 'JSON':
+            parsed_response = json.loads(result['content'])
+            formatted_response = {
+                "id": parsed_response["id"],
+                "name": parsed_response['name'],
+                'isoPoint': parsed_response['isoPoint'],
+                'uniprotId': parsed_response['uniprotId'],
+                'size': parsed_response['size'],
+                'molecularWeight': parsed_response['molecularWeight'],
+                'extinctionCoefficient': parsed_response['extinctionCoefficient'],
+                'proteinSequence': parsed_response['proteinSequence'],
+                'regionAnnotations': parsed_response['regionAnnotations'],
+                'tags': list(map(lambda x: {'id': x['tag']['id'], 'name': x['tag']['name']}, parsed_response['taggedItems'])),
+                'createdAt': parsed_response['createdAt'],
+                'updatedAt': parsed_response['updatedAt'],
+            }
+        else:
+            formatted_response = result['content']
+
+        return formatted_response
+
+
+    @requires_login
+    def export_aa_sequences(self, aa_sequence_ids: Union[int, np.ndarray, List[int]], format: str = "JSON"):
+        '''
+        This functions exports one or many amino acid sequences from TeselaGen DESIGN Module. It requires one or a list of DESIGN amino acid sequence IDs.
+
+        Args:
+            aa_sequence_ids(Union[np.ndarray, List[int]]): This can be either a single integer ID or a list of them. 
+
+            format(str): This is the format in which the amino acid sequence will be parsed into.
+                Available formats are:
+                    - JSON (teselagen specific)
+                    - FASTA
+                    - GENBANK
+
+        Returns:
+            Returns:
+            (List[Any]): A list of amino acid sequence information depending on the format chosen. The 'JSON' format will provide the following properties:
+
+                - id: Amino acid sequence DESIGN ID.
+                - name: Amino acid sequence name.
+                - size: Number of residues for the amino acid sequence.
+                - molecularWeight: Teselagen calculated molecular weight of the amino acid sequence.
+                - extinctioCoefficient: Teselagen calculated extinction coefficient of the amino acid sequence.
+                - proteinSequence: String with the amino acid sequence.
+                - createdAt: Date in which the amino acid sequence record was created in TeselaGen.
+                - createdAt: Date in which the amino acid sequence record was last updated in TeselaGen.
+                - regionAnnotations: Teselagen region annotations (optional).
+                - isoPoint: Sequence isoelectric point (optional).
+                - uniprotId: UniProt ID for the amino acid sequence (optional).
+                - tags: any TeselaGen tags with which the amino acid sequence has been tagged (optional).
+        '''
+        
+        _sequence_ids = []
+        if isinstance(aa_sequence_ids, int):
+            _sequence_ids.append(aa_sequence_ids)
+        if isinstance(aa_sequence_ids, np.ndarray):
+            if all(isinstance(x, int) for x in aa_sequence_ids):
+                _sequence_ids.extend(aa_sequence_ids.tolist())
+            else:
+                raise ValueError("All elements in list argument 'aa_sequence_ids' must be of type int.")
+        if isinstance(aa_sequence_ids, list):
+            if all(isinstance(x, int) for x in aa_sequence_ids):
+                _sequence_ids.extend(aa_sequence_ids)
+            else:
+                raise ValueError("All elements in list argument 'aa_sequence_ids' must be of type int.")
+        else:
+            raise ValueError("Argument 'aa_sequence_ids' must either be of type int, List[int] or numpy array of int element.")
+        
+        #TODO: Optimize exporting multiple amino acid sequences by extending DESIGN API such that implements an endpoint supporting this.
+        
+        formatted_response = []
+        for sequence_id in _sequence_ids:
+            aa_sequence = self.export_aa_sequence(aa_sequence_id=sequence_id, format=format)
+            formatted_response.append(aa_sequence)
+            
+        return formatted_response
+        

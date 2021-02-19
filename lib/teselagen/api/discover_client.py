@@ -3,10 +3,11 @@
 # License: MIT
 
 import json
+from os.path import join
+import pandas as pd
+import numpy as np
 from typing import Any, Dict, List, Optional, TypeVar, Union, Tuple
-
 import requests
-
 from teselagen.api.client import (DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL,
                                   TeselaGenClient, get, post, put, requires_login)
 
@@ -18,33 +19,49 @@ ALLOWED_MODEL_TYPES: List[Union[str, None]] = [
     "predictive", "evolutive", "generative", None
 ]
 
+PREDICTIVE_MODEL = 'predictive'
+EVOLUTIVE_MODEL = 'evolutive'
+GENERATIVE_MODEL = 'generative'
+GENERATIVE_MODEL_DATA_SCHEMA = [{'id': 0, 'name': 'sequence', 'type': 'target', 'value_type': 'aa-sequence'}]
 
-class EVOLVEClient(TeselaGenClient):
+
+
+class DISCOVERClient(TeselaGenClient):
     def __init__(self,
                  api_token_name: str = DEFAULT_API_TOKEN_NAME,
-                 host_url: str = DEFAULT_HOST_URL):
-        module_name: str = "evolve"
-        super(EVOLVEClient, self).__init__(module_name=module_name,
-                                           host_url=host_url,
-                                           api_token_name=api_token_name)
+                 host_url: str = DEFAULT_HOST_URL,
+                 tg_client: TeselaGenClient = None):
+        module_name: str = "evolve" #(now the 'discover' module)
+        if (tg_client is not None):
+            self.__dict__ = tg_client.__dict__ # This allows the four tg modules to share common endpoints (s.a. labs/login/register/logout)
+        else:
+            super(DISCOVERClient, self).__init__(module_name=module_name,
+                                            host_url=host_url,
+                                            api_token_name=api_token_name)
+
+                                            
+        # Here we define the Base CLI URL.
+        api_url_base: str = f"{self.host_url}/{module_name}/cli-api"                                            
         # Here we define the client endpoints
         # Example :
         #    self.some_endpoint_url: str = f"{self.api_url_base}/some_endpoint"
-        self.create_model_url: str = f"{self.api_url_base}/create-model"
+        self.create_model_url: str = f"{api_url_base}/create-model"
 
-        self.get_model_url: str = f"{self.api_url_base}/get-model"
-        self.get_models_by_type_url: str = f"{self.api_url_base}/get-models-by-type"
-        self.get_model_datapoints_url: str = f"{self.api_url_base}/get-model-datapoints"
+        self.get_model_url: str = f"{api_url_base}/get-model"
+        self.get_models_by_type_url: str = f"{api_url_base}/get-models-by-type"
+        self.get_model_datapoints_url: str = f"{api_url_base}/get-model-datapoints"
 
-        self.submit_model_url: str = f"{self.api_url_base}/submit-model"
-        self.delete_model_url: str = f"{self.api_url_base}/delete-model"
-        self.cancel_model_url: str = f"{self.api_url_base}/cancel-model"
+        self.submit_model_url: str = f"{api_url_base}/submit-model"
+        self.delete_model_url: str = f"{api_url_base}/delete-model"
+        self.cancel_model_url: str = f"{api_url_base}/cancel-model"
 
-        self.get_models_url: str = f"{self.api_url_base}/get-models"
-        self.get_completed_tasks_url: str = f"{self.api_url_base}/get-completed-tasks"
+        self.get_models_url: str = f"{api_url_base}/get-models"
+        self.get_completed_tasks_url: str = f"{api_url_base}/get-completed-tasks"
 
-        self.crispr_guide_rnas_url: str = f"{self.api_url_base}/crispr-grnas"
+        self.crispr_guide_rnas_url: str = f"{api_url_base}/crispr-grnas"
 
+    
+    @requires_login
     def _get_data_from_content(self, content_dict:dict)->dict:
         """Checks that an output dict from evolve endpoint is healthy, and returns the 'data' field
 
@@ -62,7 +79,8 @@ class EVOLVEClient(TeselaGenClient):
         if 'data' not in content_dict:
             raise IOError(f"Can`t found 'data' key in response: {content_dict}")
         return content_dict["data"]
-
+    
+    @requires_login
     def get_model_info(self, model_id: int):
         """ Retrieves model general information
 
@@ -118,7 +136,8 @@ class EVOLVEClient(TeselaGenClient):
         response["content"] = json.loads(response["content"])
         # Check output
         return self._get_data_from_content(response["content"])
-
+    
+    @requires_login
     def get_models_by_type(self, model_type: Optional[str] = None):
         """
 
@@ -219,7 +238,7 @@ class EVOLVEClient(TeselaGenClient):
         response["content"] = json.loads(response["content"])
         return self._get_data_from_content(response["content"])
 
-
+    @requires_login
     def get_model_datapoints(self, model_id: int, datapoint_type: str,
                              batch_size: int, batch_number: int):
         """
@@ -297,6 +316,7 @@ class EVOLVEClient(TeselaGenClient):
         return response["content"]
         # raise NotImplementedError
 
+    @requires_login
     def submit_model(self,
                      data_input: List[Any],
                      data_schema: List[Any],
@@ -376,9 +396,9 @@ class EVOLVEClient(TeselaGenClient):
 
                 Either "predictive", "evolutive" or "generative".
 
-                NOTE : If submitting a "generative" model, there's no "target"
-                       column, in fact there should only be one "descriptor"
-                       column. This needs to be properly set in the dataSchema
+                NOTE : If submitting a "generative" model, there's no "descriptor"
+                       column, in fact there should only be one "target"
+                       column with the amino acid sequence. This needs to be properly set in the dataSchema
                        field according to the documentation.
 
             configs (Optional[Any]) :
@@ -438,7 +458,7 @@ class EVOLVEClient(TeselaGenClient):
         response["content"] = json.loads(response["content"])
         return self._get_data_from_content(response["content"])
 
-
+    @requires_login
     def delete_model(self, model_id: int):
         """
 
@@ -460,6 +480,7 @@ class EVOLVEClient(TeselaGenClient):
         return self._get_data_from_content(response["content"])
         # raise NotImplementedError
 
+    @requires_login
     def cancel_model(self, model_id: int):
         """
 
@@ -505,69 +526,84 @@ class EVOLVEClient(TeselaGenClient):
                         headers=self.headers,
                         json=body)
         return json.loads(response["content"])
+            
 
-    # def get_models(self):
-    #     # POST
-    #     """This will return an object of an evolveModel [[ IEvolveModelEntity ]] filtered by the provided model ID.c"""
-    #     raise NotImplementedError
+    def submit_generative_model(self, 
+        aa_sequences: Optional[Union[np.ndarray, List[str]]] = None, 
+        aa_sequence_ids: Optional[Union[np.ndarray, List[int]]] = None,
+        model_name: Optional[str] = 'Unnamed Generative Model (Python Package)',
+        model_description: Optional[str] = None,
+        model_configs: Optional[dict] = {}
+        ):
+        """
+        Calls DISCOVER API 'POST /submit-model' endpoint to train an amino acid sequence Generative Model.
 
-    # def create_model(self):
-    #     # POST
-    #     """
+        Args:
+            aa_sequences(Optional[List[str]]): List of amino acid sequences string. 
+                Currently, generative models only support training sequences of 10 to 50 amino acids. Only IUPAC 20 amino acids are supported.
 
-    #     This interface represents the standard request object for the
-    #     CreateModel REST API. The following properties must be included in the
-    #     REST request body.
+            aa_sequence_ids(Optional[List[int]]): List of amino acid sequence IDs. These IDs correspond to TeselaGen's DESIGN Module IDs.
+                These IDs are returned by the 'DESIGNClient.import_aa_sequences(...)' function when importing new or existant aa sequences. 
+                But you can also obtain your amino acid sequence IDs via the DESIGN Module Web Browser App from the 'Molecules > Amino Acid Sequences' Library viewer.
 
-    #     Args:
-    #         taskInput: Any necessary inputs for the create model task (it can
-    #             be an empty object).
+            model_name(Optional[str]): String as an optional name for your model. Default name is going to be: 'Unnamed Generative Model (Python Package)'.
 
-    #         dataInput: This is required and must contain an array of objects
-    #             with the input training data. These objects must be consistent
-    #             with the dataSchema property.
+            model_description(Optional[str]): String as an optional description for your model.
 
-    #         dataSchema: This is an array of the schema of the input data
-    #             columns. The name property corresponds to the column's name.
-    #             The type property says whether the column is a target or a
-    #             descriptor (feature). The value_type property says the type of
-    #             the column's values.
+            model_configs(Optional[dict]): This is an advanced property containing advanced configuration
+                for the training execution. Please refer to Teselagen's Data Science Team.
 
-    #                         {
-    #                             name	string
-    #                             type	string
-    #                             value_type	string
-    #                         }
+        Returns:
+            (dict) : A Python Dictionary with information about the model submission, inlcuding the task id used to check ther status of the training.
 
-    #         configs: This is an advanced property containing advanced
-    #             configuration for the training execution. Please refer to
-    #             Teselagen's Data Science Python Library.
+            ```
+            {
+                "id": "36",
+                "lastCheckIn": null,
+                "result": null,
+                "status": "created",
+                "completedOn": null,
+                "createdAt": "2020-10-29T13:18:06.167Z",
+                "updatedAt": "2020-10-29T13:18:06.271Z",
+            }
+            ```
 
-    #         name (str): This sets the Evolve Model's name.
+        """
 
-    #         description (str): This gives the Evolve Model's a description.
+        kwargs = {
+            'data_schema': GENERATIVE_MODEL_DATA_SCHEMA,
+            'model_type': GENERATIVE_MODEL,
+            'name': model_name,
+            'description': model_description,
+            'configs': model_configs
+        }
 
-    #     Returns:
+        if (aa_sequences is not None):
+            if isinstance(aa_sequences, list) or isinstance(aa_sequences, np.ndarray):
+                if all(isinstance(x, str) for x in aa_sequences):
+                    kwargs['data_input'] = list(map(lambda x: {'sequence': x}, aa_sequences))
+                else:
+                    raise ValueError("All amino acid sequences must be of type string.")
+        elif (aa_sequence_ids is not None):
+            if isinstance(aa_sequence_ids, list) or isinstance(aa_sequence_ids, np.ndarray):
+                if all(isinstance(x, int) for x in aa_sequence_ids):
+                    pass
+                    # TODO: import sequences from DESIGN using the IDs in aa_sequence_ids.
+                    # exported_sequences = DESIGNClient.export_aa_sequences(...)
+                    # kwargs['data_input'] = list(map(lambda x: {'sequence': x}, exported_sequences))
 
-    #     """
+        response = self.submit_model(**kwargs)
 
-    #     body = {
-    #         "taskInput": {},
-    #         "dataInput": [{}],
-    #         "dataSchema": [{
-    #             "name": "string",
-    #             "type": "string",
-    #             "value_type": "string"
-    #         }],
-    #         "configs": {},
-    #         "name":
-    #         "string",
-    #         "description":
-    #         "string"
-    #     }
+        formatted_response = {
+            # When submitting a model a new microservice job is created with ID=response['id']
+            "jobId": response['id'],
+            # When submitting a model a new model record is created with ID=response['modelId']
+            "modelId": response['modelId'],
+            "status": response['status'],
+            "createdAt": response['createdAt'],
+            "updatedAt": response['updatedAt'],
+        }
+        return formatted_response
+            
 
-    #     raise NotImplementedError
-
-    # def get_completed_tasks(self):
-    #     # GET
-    #     raise NotImplementedError
+            

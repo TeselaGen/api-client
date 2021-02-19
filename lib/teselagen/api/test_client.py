@@ -25,53 +25,59 @@ class TESTClient(TeselaGenClient):
                  api_token_name: str = DEFAULT_API_TOKEN_NAME,
                  host_url: str = DEFAULT_HOST_URL):
         module_name: str = "test"
-        super(TESTClient, self).__init__(module_name=module_name,
-                                         host_url=host_url,
-                                         api_token_name=api_token_name)
+        if (tg_client is not None):
+            self.__dict__ = tg_client.__dict__ # This allows the four tg modules to share common endpoints (s.a. labs/login/register/logout)
+        else:
+            super(TESTClient, self).__init__(module_name=module_name,
+                                            host_url=host_url,
+                                            api_token_name=api_token_name)
 
+
+        # Here we define the Base CLI URL.
+        api_url_base: str = f"{self.host_url}/{module_name}/cli-api"
         # Here we define the client endpoints
         # Example :
-        #    self.some_endpoint_url: str = f"{self.api_url_base}/some_endpoint"
+        #    self.some_endpoint_url: str = f"{api_url_base}/some_endpoint"
 
         # Assay Subjects
-        self.get_assay_subjects_url: str = f"{self.api_url_base}/assay-subjects"
-        self.get_assay_subject_url: str = join(self.api_url_base, "assay-subjects") + "/{}"
-        self.create_assay_subjects_url: str = f"{self.api_url_base}/assay-subjects"
-        self.delete_assay_subject_url: str = join(self.api_url_base, "assay-subjects") + "/{}"
-        self.put_assay_subject_descriptors_url: str = f"{self.api_url_base}/assay-subjects/descriptors"
+        self.get_assay_subjects_url: str = f"{api_url_base}/assay-subjects"
+        self.get_assay_subject_url: str = join(api_url_base, "assay-subjects") + "/{}"
+        self.create_assay_subjects_url: str = f"{api_url_base}/assay-subjects"
+        self.delete_assay_subject_url: str = join(api_url_base, "assay-subjects") + "/{}"
+        self.put_assay_subject_descriptors_url: str = f"{api_url_base}/assay-subjects/descriptors"
 
         # Experiments
-        self.get_experiments_url: str = f"{self.api_url_base}/experiments"
-        self.create_experiment_url: str = f"{self.api_url_base}/experiments"
-        self.delete_experiment_url: str = join(self.api_url_base,
+        self.get_experiments_url: str = f"{api_url_base}/experiments"
+        self.create_experiment_url: str = f"{api_url_base}/experiments"
+        self.delete_experiment_url: str = join(api_url_base,
                                                "experiments") + "/{}"
 
         # Assays
-        self.get_assays_url: str = f"{self.api_url_base}/assays"
+        self.get_assays_url: str = f"{api_url_base}/assays"
         self.get_assays_by_experiment_url: str = join(
-            self.api_url_base, "experiments") + "/{}/assays"
-        self.create_assay_url: str = join(self.api_url_base,
+            api_url_base, "experiments") + "/{}/assays"
+        self.create_assay_url: str = join(api_url_base,
                                           "experiments") + "/{}/assays"
-        self.delete_assay_url: str = join(self.api_url_base, "assays") + "/{}"
-        self.assay_results_url: str = join(self.api_url_base, "assays") + "/{}/results"
+        self.delete_assay_url: str = join(api_url_base, "assays") + "/{}"
+        self.assay_results_url: str = join(api_url_base, "assays") + "/{}/results"
 
         # Files
-        self.get_files_info_url: str = f"{self.api_url_base}/files/info"
+        self.get_files_info_url: str = f"{api_url_base}/files/info"
         self.get_files_info_by_assay_url: str = join(
-            self.api_url_base, "assays") + "/{}/files/info"
-        self.get_file_data_url: str = join(self.api_url_base, "files") + "/{}"
-        self.delete_file_url: str = join(self.api_url_base, "files") + "/{}"
-        self.upload_file_url: str = join(self.api_url_base, "files")
-        self.upload_file_into_assay_url: str = join(self.api_url_base,
+            api_url_base, "assays") + "/{}/files/info"
+        self.get_file_data_url: str = join(api_url_base, "files") + "/{}"
+        self.delete_file_url: str = join(api_url_base, "files") + "/{}"
+        self.upload_file_url: str = join(api_url_base, "files")
+        self.upload_file_into_assay_url: str = join(api_url_base,
                                                     "assays") + "/{}/files"
-        self.upload_file_into_experiment_url: str = join(self.api_url_base,
+        self.upload_file_into_experiment_url: str = join(api_url_base,
                                                     "experiments") + "/{}/files"                                                    
 
         # Metadata
-        self.get_metadata_url: str = join(self.api_url_base,
+        self.get_metadata_url: str = join(api_url_base,
                                           "metadata") + "/{}"
-        self.create_metadata_url: str = join(self.api_url_base, "metadata")
-        self.delete_metadata_url: str = join(self.api_url_base,
+        self.create_metadata_url: str = join(api_url_base, "metadata")
+        self.delete_metadata_url: str = join(api_url_base,
                                              "metadata") + "/{}/{}"
 
 
