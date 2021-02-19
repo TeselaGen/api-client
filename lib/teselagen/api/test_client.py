@@ -98,8 +98,8 @@ class TESTClient(TeselaGenClient):
 
     def get_assay_subjects(self, assay_subject_ids: Optional[Union[int, List[int]]] = None, summarized: bool = True):
         """ 
-        This functions fetches one or many assay subject records from TEST. It receives either an integer ID or a list of integer IDs
-        through the 'assay_subject_ids' argument, which corresond to the the assay subject IDs.
+        This function fetches one or many assay subject records from TEST. It receives either an integer ID or a list of integer IDs
+        through the 'assay_subject_ids' argument, which correspond to the the assay subject IDs.
 
         Args:
             assay_subject_ids(Optional[Union[int, List[int]]]): Either an integer, a list of integers or None. When integers are passed,
@@ -109,12 +109,12 @@ class TESTClient(TeselaGenClient):
                 should be returned. Default is True.
 
         Returns:
-            - An list of assay subject records (summarized or full). Depending on the summarized parameter each object in the list are listed below:
+            - A list of assay subject records (summarized or fully detailed). Depending on the summarized parameter each property in the list is listed below:
 
             Assay Subject record structure:
                 - id (str): ID of the Assay Subject (summarized and full).
                 - name (str): Name of the Assay Subject (summarized and full).
-                - assaySubjectClass (dict): A JSON with assay subject class information two keys (summarized and full).
+                - assaySubjectClass (dict): A JSON with assay subject class information (summarized and full).
                 - descriptors (List[dict]): A list of JSON records with the assay subject descriptors information (full).
                 - assaySubjectGroups (List[dict]): A list of JSON records with the assay subject groups information (full).
                 - experiments (List[dict]): A list of JSON records with the assay subject experiments information (full).
@@ -145,8 +145,8 @@ class TESTClient(TeselaGenClient):
 
     def delete_assay_subjects(self, assay_subject_ids: Union[int, List[int]]):
         """ 
-        This functions deletes one or many assay subject records from TEST. It receives an int ID or a list of int IDs
-        through the 'assay_subject_ids' argument, which corresond to the the assay subject IDs.
+        This function deletes one or many assay subject records from TEST. It receives an int ID or a list of int IDs
+        through the 'assay_subject_ids' argument, which correspond to the the assay subject IDs.
         """
         params = {}
         if isinstance(assay_subject_ids, list):

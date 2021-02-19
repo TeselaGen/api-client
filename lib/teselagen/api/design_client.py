@@ -463,10 +463,10 @@ class DESIGNClient(TeselaGenClient):
         This function imports one or many amino acid sequences by means of TeselaGen's DESIGN API.
 
         Args:
-            aa_sequences(Union[pd.DataFrame, List[Dict[str,str]], List[List[str]]): Amino acid sequences data. The data can come in three different ways:
+            aa_sequences(Union[pd.DataFrame, List[Dict[str,str]], List[Tuple[str, str]]): Amino acid sequences data. The data can come in three different ways:
                 - as a pandas dataframe with 2 columns. Where the first column contains the sequence names and the second column contains the amino acid sequence string.
                 - as a list of python dictionaries, where each dictionary is of the form `{"AA_NAME": SEQUENCE_NAME, "AA_SEQUENCE": SEQUENCE_STRING}`.
-                - as a list of 2-element lists, where the firt element is the sequence name and the second element the sequence string.
+                - as a list of 2-element tuples, where the firt element is the sequence name and the second element the sequence string.
 
             tags(Optional[List[int]]): A list of integer tag IDs with which each amino acid sequence will be tagged with.
                 (NOTE: tags cannot be created on-the-fly through this function, it only accepts tag IDs that are already created in the DESIGN Module).
@@ -496,12 +496,12 @@ class DESIGNClient(TeselaGenClient):
                     params['contents'] = list(map(lambda x: x['AA_SEQUENCE'], aa_sequences))
 
                 else:
-                    raise ValueError("All elements in list argument 'aa_sequences' must either be 2-element tuples/list or dictionaries.")
+                    raise ValueError("All elements in list argument 'aa_sequences' must either be 2-element tuples or properly formatted dictionaries accroding to the function's Args description.")
             else:
-                raise ValueError("Type of argument 'aa_sequences' is not supported.")
+                raise ValueError(f"Type {type(aa_sequences)} for argument 'aa_sequences' is not supported.")
 
         else:
-            raise Exception("The 'aa_sequences' is mandatory.")
+            raise Exception("The 'aa_sequences' argument is mandatory.")
 
         if (tags is not None and isinstance(tags, list)):
             params["tags"] = list(map(lambda x: {"id": x}, tags))
@@ -534,10 +534,10 @@ class DESIGNClient(TeselaGenClient):
     @requires_login
     def export_aa_sequence(self, aa_sequence_id: int, format: str = "JSON"):
         '''
-        This functions exports one amino acid sequence from TeselaGen DESIGN Module. It requires the amino acid sequence ID.
+        This functions exports one amino acid sequence from TeselaGen DESIGN Module. It requires the TeselaGen amino acid sequence ID.
 
         Args:
-            aa_sequence_id(int): This is an integer ID of the DESIGN amino acid sequence.
+            aa_sequence_id(int): This is an integer ID corresponding to the TeselaGen amino acid sequence ID.
 
             format(str): This is the format in which the amino acid sequence will be parsed into.
                 Available formats are:
@@ -598,17 +598,17 @@ class DESIGNClient(TeselaGenClient):
         This functions exports one or many amino acid sequences from TeselaGen DESIGN Module. It requires one or a list of DESIGN amino acid sequence IDs.
 
         Args:
-            aa_sequence_ids(Union[np.ndarray, List[int]]): This can be either a single integer ID or a list of them. 
+            aa_sequence_ids(Union[np.ndarray, List[int]]): This can be either a single integer DESIGN amino acid sequence ID or a list of them. 
 
             format(str): This is the format in which the amino acid sequence will be parsed into.
                 Available formats are:
-                    - JSON (teselagen specific)
+                    - JSON (TeselaGen specific)
                     - FASTA
                     - GENBANK
 
         Returns:
             Returns:
-            (List[Any]): A list of amino acid sequence information depending on the format chosen. The 'JSON' format will provide the following properties:
+            (List[Any]): A list of amino acid sequence information depending on the format chosen. The 'JSON' format will provide the following keys:
 
                 - id: Amino acid sequence DESIGN ID.
                 - name: Amino acid sequence name.
@@ -638,7 +638,7 @@ class DESIGNClient(TeselaGenClient):
             else:
                 raise ValueError("All elements in list argument 'aa_sequence_ids' must be of type int.")
         else:
-            raise ValueError("Argument 'aa_sequence_ids' must either be of type int, List[int] or numpy array of int element.")
+            raise ValueError("Argument 'aa_sequence_ids' must either be of type int, List[int] or numpy array of int elements.")
         
         #TODO: Optimize exporting multiple amino acid sequences by extending DESIGN API such that implements an endpoint supporting this.
         

@@ -539,7 +539,7 @@ class DISCOVERClient(TeselaGenClient):
         Calls DISCOVER API 'POST /submit-model' endpoint to train an amino acid sequence Generative Model.
 
         Args:
-            aa_sequences(Optional[List[str]]): List of amino acid sequences string. 
+            aa_sequences(Optional[List[str]]): List of strings corresponding to valid amino acid sequences. 
                 Currently, generative models only support training sequences of 10 to 50 amino acids. Only IUPAC 20 amino acids are supported.
 
             aa_sequence_ids(Optional[List[int]]): List of amino acid sequence IDs. These IDs correspond to TeselaGen's DESIGN Module IDs.
@@ -554,7 +554,7 @@ class DISCOVERClient(TeselaGenClient):
                 for the training execution. Please refer to Teselagen's Data Science Team.
 
         Returns:
-            (dict) : A Python Dictionary with information about the model submission, inlcuding the task id used to check ther status of the training.
+            (dict) : A Python Dictionary with information about the model submission, inlcuding the task id used to check the status of the training.
 
             ```
             {
