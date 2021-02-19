@@ -34,7 +34,7 @@ of all required packages to run the notebooks. Here are the instructions accordi
 
 1. Run the container with `sh run.sh`
 
-1. Open your browser and set the address: `localhost:8888`. From there you can explore all example notebooks
+1. Open your browser and set the address: `http://localhost:8888`. From there you can explore all example notebooks
 
 ## Development (Linux/MacOS)
 
@@ -124,5 +124,4 @@ Ask for a token to administrators if needed
 ```
 poetry publish
 ```
-
 
