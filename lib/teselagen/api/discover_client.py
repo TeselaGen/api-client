@@ -587,7 +587,7 @@ class DISCOVERClient(TeselaGenClient):
         elif (aa_sequence_ids is not None):
             if isinstance(aa_sequence_ids, list) or isinstance(aa_sequence_ids, np.ndarray):
                 if all(isinstance(x, int) for x in aa_sequence_ids):
-                    pass
+                    NotImplementedError("Passing sequence IDs is not yet supported.")
                     # TODO: import sequences from DESIGN using the IDs in aa_sequence_ids.
                     # exported_sequences = DESIGNClient.export_aa_sequences(...)
                     # kwargs['data_input'] = list(map(lambda x: {'sequence': x}, exported_sequences))

@@ -89,16 +89,12 @@ class TestTeselaGenClient:
                                  module_name: str) -> None:
 
         attributes: List[str] = [
-            "module_name", "host_url", "api_token_name", "module_url",
-            "api_url_base", "register_url", "login_url", "info_url",
+            "host_url", "api_token_name", "register_url", "login_url", "info_url",
             "status_url", "auth_url", "labs_url", "headers", "auth_token"
         ]
 
         # We check if the client has the required attributes.
         assert all(hasattr(client, attribute) for attribute in attributes)
-
-        # TODO: We may check the expected types.
-        assert isinstance(client.api_url_base, str)
 
         # We verify the headers
         assert isinstance(client.headers, dict)

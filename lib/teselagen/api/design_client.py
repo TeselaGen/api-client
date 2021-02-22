@@ -77,7 +77,9 @@ class DESIGNClient(TeselaGenClient):
         # /codon-optimization-jobs
         self.get_codon_op_result: str = f"{api_url_base}/codon-optimization-jobs"
 
-
+        # GET
+        # /codon-optimization-jobs
+        self.get_assembly_report_url: str = f"{api_url_base}/assembly-report/export" + "/{}"
 
         ## RBS Calculator API Tesealgen Integration endpoints
 
@@ -251,7 +253,8 @@ class DESIGNClient(TeselaGenClient):
         """
         if local_filename is None:
             local_filename = f"report_{report_id}.zip"
-        url = f"{self.api_url_base}{self.URL_GET_ASSEMBLY_REPORT}/{report_id}"
+        # url = f"{self.api_url_base}{self.URL_GET_ASSEMBLY_REPORT}/{report_id}"
+        url = self.get_assembly_report_url.format(report_id)
         return download_file(url=url, local_filename=local_filename, headers=self.headers)
 
     def post_codon_optimization_job(self, algorithm="ALGORITHMS_NAME", parameters={}):

@@ -23,7 +23,9 @@ from teselagen.api.client import (DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL,
 class TESTClient(TeselaGenClient):
     def __init__(self,
                  api_token_name: str = DEFAULT_API_TOKEN_NAME,
-                 host_url: str = DEFAULT_HOST_URL):
+                 host_url: str = DEFAULT_HOST_URL,
+                 tg_client: TeselaGenClient = None):
+                 
         module_name: str = "test"
         if (tg_client is not None):
             self.__dict__ = tg_client.__dict__ # This allows the four tg modules to share common endpoints (s.a. labs/login/register/logout)

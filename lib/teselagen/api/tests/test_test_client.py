@@ -184,7 +184,7 @@ class TestTESTClient():
     def test_instance_attributes(self, client: TESTClient) -> None:
 
         # We check if the client inherit the required parents attributes.
-        parent_class_attributes: List[str] = ["api_url_base", "labs_url"]
+        parent_class_attributes: List[str] = ["labs_url"]
 
         # We check if the client has the required attributes.
 

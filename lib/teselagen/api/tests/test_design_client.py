@@ -51,7 +51,8 @@ class TestDESIGNClient():
         """
         TEST_REPORT_ID=1023
         # Create Mock
-        url = f"{logged_client.api_url_base}{logged_client.URL_GET_ASSEMBLY_REPORT}/{TEST_REPORT_ID}"
+        api_url_base = f"{logged_client.host_url}/design/cli-api"
+        url = f"{api_url_base}{logged_client.URL_GET_ASSEMBLY_REPORT}/{TEST_REPORT_ID}"
         requests_mock.get(url, content=b"estoesunarchivobinario")
         # Create temporary folder
         local_filename = tmpdir.mkdir('assembly_report').join(f"report_{TEST_REPORT_ID}.zip")
@@ -129,7 +130,8 @@ class TestDESIGNClient():
 
     def test_rbs_calculator_jobs(self, logged_client: DESIGNClient):
         """ Hits a mock CLI API endpoint, it tests that its correctly calling it with the expected mock response. """
-        mock_url = f"{logged_client.api_url_base}/mock/rbs-calculator/jobs"
+        api_url_base = f"{logged_client.host_url}/design/cli-api"
+        mock_url = f"{api_url_base}/mock/rbs-calculator/jobs"
         res = get(url=mock_url, headers=logged_client.headers)
         res = json.loads(res["content"])
         assert sorted(list(res.keys())) == sorted(['authenticated', 'id_list', 'success'])
@@ -138,7 +140,8 @@ class TestDESIGNClient():
         assert sorted(res['id_list']) == sorted([JOB_ID_ONE, JOB_ID_TWO])
 
     def test_rbs_calculator_organisms(self, logged_client: DESIGNClient):
-        mock_url = f"{logged_client.api_url_base}/mock/rbs-calculator/organisms"
+        api_url_base = f"{logged_client.host_url}/design/cli-api"
+        mock_url = f"{api_url_base}/mock/rbs-calculator/organisms"
         res = get(url=mock_url, headers=logged_client.headers)
         res = json.loads(res["content"])
         assert type(res) is list
@@ -146,7 +149,8 @@ class TestDESIGNClient():
         assert sorted(list(res[0].keys())) == sorted(['accession', 'name'])
 
     def test_rbs_calculator_job(self, logged_client: DESIGNClient):
-        mock_url = f"{logged_client.api_url_base}/mock/rbs-calculator/jobs/{JOB_ID_ONE}"
+        api_url_base = f"{logged_client.host_url}/design/cli-api"
+        mock_url = f"{api_url_base}/mock/rbs-calculator/jobs/{JOB_ID_ONE}"
         res = get(url=mock_url, headers=logged_client.headers)
         res = json.loads(res["content"])
         assert sorted(list(res.keys())) == sorted(['authenticated', 'inputData', 'jobInfo', 'message', 'outputData', 'success'])
@@ -155,7 +159,8 @@ class TestDESIGNClient():
         assert res['jobInfo']['jobId'] == JOB_ID_ONE
 
     def test_rbs_calculator_submit(self, logged_client: DESIGNClient):
-        mock_url = f"{logged_client.api_url_base}/mock/rbs-calculator/submit"
+        api_url_base = f"{logged_client.host_url}/design/cli-api"
+        mock_url = f"{api_url_base}/mock/rbs-calculator/submit"
         params = json.dumps({"algorithm": "ReverseRBS"})
         res = post(url=mock_url, data=params, headers=logged_client.headers)
         res = json.loads(res["content"])

@@ -64,9 +64,6 @@ class TestDISCOVERClient():
 
     def test_client_attributes(self, client: DISCOVERClient):
 
-        # Here we check if the client inherit the required parents attributes.
-        assert hasattr(client, "api_url_base")
-
         # We check if the client has the required attributes.
         assert hasattr(client, "create_model_url")
         assert hasattr(client, "get_model_url")
