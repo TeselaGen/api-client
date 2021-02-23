@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import pytest
 
-from teselagen.api.test_client import TESTClient
+from teselagen.api import TeselaGenClient, TESTClient
 from teselagen.utils import load_from_json
 
 TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Example Descriptor 2,Teselagen Example Target,Teselagen Example Target Metric
@@ -40,21 +40,21 @@ class TestTESTClient():
         return _headers
 
     @pytest.fixture
-    def client(self, host_url: str, api_token_name: str) -> TESTClient:
+    def client(self, host_url: str, api_token_name: str) -> TeselaGenClient:
         """
 
-        A TEST client instance.
+        A TeselaGen client instance.
 
         Returns:
-            (TESTClient) : An instance of the TEST client.
+            (TeselaGenClient) : An instance of TeselaGen client.
 
         """
-        test_client = TESTClient(api_token_name=api_token_name,
+        test_client = TeselaGenClient(api_token_name=api_token_name,
                                  host_url=host_url)
         return test_client
 
     @pytest.fixture
-    def logged_client(self, client: TESTClient,
+    def logged_client(self, client: TeselaGenClient,
                       expiration_time: str) -> TESTClient:
         """
 
@@ -67,7 +67,7 @@ class TestTESTClient():
         client.login(#username=credentials["test_user"],
                      #passwd=credentials["test_password"],
                      expiration_time=expiration_time)
-        return client
+        return client.test
 
     @pytest.fixture
     def lab_id(self, client: TESTClient) -> int:
@@ -150,11 +150,11 @@ class TestTESTClient():
 
         # We check if the class inherit the parents methods.
 
-        parent_class_methods: List[str] = [
-            "register", "login", "logout", "get_server_status", "create_token",
-            "update_token", "get_api_info", "get_current_user",
-            "get_laboratories", "select_laboratory", "unselect_laboratory"
-        ]
+        # parent_class_methods: List[str] = [
+        #     "register", "login", "logout", "get_server_status", "create_token",
+        #     "update_token", "get_api_info", "get_current_user",
+        #     "get_laboratories", "select_laboratory", "unselect_laboratory"
+        # ]
 
         # We check if the class has the required methods.
 
@@ -175,16 +175,17 @@ class TestTESTClient():
         ]
 
         attributes: List[str] = [
-            *parent_class_methods, *experiment_methods, *assay_methods,
+            # *parent_class_methods, 
+            *experiment_methods, *assay_methods,
             *file_methods, *metadata_methods
         ]
 
         assert all(hasattr(TESTClient, attribute) for attribute in attributes)
 
-    def test_instance_attributes(self, client: TESTClient) -> None:
+    def test_instance_attributes(self, logged_client: TESTClient) -> None:
 
         # We check if the client inherit the required parents attributes.
-        parent_class_attributes: List[str] = ["labs_url"]
+        # parent_class_attributes: List[str] = ["labs_url"]
 
         # We check if the client has the required attributes.
 
@@ -209,11 +210,12 @@ class TestTESTClient():
         ]
 
         attributes: List[str] = [
-            *parent_class_attributes, *experiment_attributes,
+            # *parent_class_attributes, 
+            *experiment_attributes,
             *assay_attributes, *file_attributes, *metadata_attributes
         ]
 
-        assert all(hasattr(client, attribute) for attribute in attributes)
+        assert all(hasattr(logged_client, attribute) for attribute in attributes)
 
     def test_login(self, client: TESTClient, expiration_time: str, api_token_name) -> None:
         # Before login, the client has no tokens

@@ -7,7 +7,10 @@ import time
 from typing import Any, Dict, List, Optional, Tuple, Union
 import requests
 from pathlib import Path
-from teselagen.utils import load_from_json, get_credentials_path
+from teselagen.utils import load_from_json, get_credentials_path, DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL, get, post, put, requires_login, get_credentials
+from teselagen.api.design_client import DESIGNClient
+from teselagen.api.test_client import TESTClient
+from teselagen.api.discover_client import DISCOVERClient
 
 AVAILABLE_MODULES: List[str] = ["test", "evolve"]  # ["test", "learn"/"evolve"]
 DEFAULT_HOST_URL: str = "https://platform.teselagen.com"
@@ -22,9 +25,10 @@ DEFAULT_API_TOKEN_NAME: str = "x-tg-cli-token"
 class TeselaGenClient():
     """Python TeselaGen Client."""
     def __init__(self,
-                 module_name: str = 'design', # For cross-module endpoints use the DESIGN module as default.
                  host_url: str = DEFAULT_HOST_URL,
-                 api_token_name: str = DEFAULT_API_TOKEN_NAME) -> None:
+                 api_token_name: str = DEFAULT_API_TOKEN_NAME,
+                 module_name: str = "design" # NOTE: For cross-module endpoints use the DESIGN module as default.
+                 ) -> None:
         """
 
         A Python Client to use for communication with the TeselaGen modules.
@@ -47,9 +51,13 @@ class TeselaGenClient():
                 Default = "x-tg-cli-token"
 
         """
+
+        self._design = None
+        self._test = None
+        self._discover = None
         # NOTE: Do not add passwords to the class attributes.
         #       Delete all passwords once they've been used.
-        # self.module_name: str = module_name
+
         self.host_url: str = host_url
         self.api_token_name: str = api_token_name
 
@@ -74,6 +82,24 @@ class TeselaGenClient():
 
         # Here we define the headers.
         self.headers: Dict[str, str] = {"Content-Type": "application/json"}
+
+    @property
+    def design(self):
+        if self._design is None:
+            self._design = DESIGNClient(teselagen_client=self)
+        return self._design
+    
+    @property
+    def discover(self):
+        if self._discover is None:
+            self._discover = DISCOVERClient(teselagen_client=self)
+        return self._discover
+    
+    @property
+    def test(self):
+        if self._test is None:
+            self._test = TESTClient(teselagen_client=self)
+        return self._test
 
     def register(self, username: str, password: str):
         """
@@ -228,7 +254,7 @@ class TeselaGenClient():
         print("Connection Accepted")
 
         del username, password, body
-
+        
         response["content"] = json.loads(response["content"])
 
         # TODO : We could log the expiration Date
@@ -367,305 +393,3 @@ class TeselaGenClient():
             # Removing the lab header is interpreted as Common lab in the server
             del self.headers["tg-active-lab-id"]
         print(f"Selected Lab: Common")
-
-    def get(self, url: str, **kwargs) -> Any:
-        """
-
-        Wrapper that already includes the instance headers on the request.
-
-        """
-        return get(url=url, headers=self.headers, **kwargs)
-
-    def post(self, url: str, **kwargs) -> Any:
-        """
-
-        Wrapper that already includes the instance headers on the request.
-
-        """
-        return post(url=url, headers=self.headers, **kwargs)
-
-    def delete(self, url: str, **kwargs) -> Any:
-        """
-
-        Wrapper that already includes the instance headers on the request.
-
-        """
-        return delete(url=url, headers=self.headers, **kwargs)
-
-    def put(self, url: str, **kwargs) -> Any:
-        """
-
-        Wrapper that already includes the instance headers on the request.
-
-        """
-        return put(url=url, headers=self.headers, **kwargs)
-
-
-def get_credentials(username: Optional[str] = None,
-                    password: Optional[str] = None) -> Tuple[str, str]:
-    """
-
-    It prompts the user for credentials in case username/password aren't provided
-    and credentials file wasn't found.
-
-    Args:
-        username (Optional[str]) :  A valid username address to authenticate.
-            If not provided, it will be prompted.
-
-            Default : None
-
-        password (Optional[str]) : A password to authenticate with. If not
-            provided it will be prompted.
-
-            Default : None
-
-    Returns:
-        (Tuple[str, str]) : It returns the credentials as a tuple of strings,
-            containing the username and password.
-
-            (user, password)
-
-    """
-    # Check if crentials are defined on a file
-    file_credentials = load_credentials_from_file()
-    username = file_credentials[0] if username is None else username
-    password = file_credentials[1] if password is None else password
-    # If credentials aren't defined, get them from user input
-    try:
-        username = input(
-            f"Enter username: ") if username is None else username
-        password = getpass.getpass(
-            prompt=f"Password for {username}: ") if password is None else password
-    except IOError as e:
-        msg = ("""There was an error with user input. If you are making parallel
-               tests, make sure you are avoiding 'input' by adding CREDENTIALS
-               file.""")
-        raise IOError(msg)
-    # End
-    return username, password
-
-def load_credentials_from_file(path_to_credentials_file: str=None)->Tuple[Optional[str], Optional[str]]:
-    """Load credentials from json credentials file
-
-    The credentials file should contain a JSON object
-    with the following keys (and the values)
-
-    ```
-    {
-        "username": "user",
-        "password": "password"
-    }
-    ```
-
-    Args:
-        path_to_credentials_file (str): Path to the file. If not set it will check for `.credentials` file
-            at the folder that holds this method.
-    Returns:
-        username, password: Username and password strings if info is found in a credentials file, and (None, None)
-            if not.
-    """
-    if path_to_credentials_file is None:
-        path_to_credentials_file = str(get_credentials_path())
-    if not Path(path_to_credentials_file).is_file():
-        return None, None
-    credentials: Dict = load_from_json(filepath=Path(path_to_credentials_file))
-    return credentials['username'], credentials['password']
-
-def handler(func):
-    """
-
-    Decorator to handle the response from a request.
-
-    """
-    def wrapper(**kwargs):
-        # -> requests.Response
-        if "url" not in kwargs.keys():
-            message = "url MUST be specified as keyword argument"
-            raise Exception(message)
-
-        url: str = kwargs.pop("url")
-
-        try:
-            response: requests.Response = func(url, **kwargs)
-
-            if response.ok:
-                return response
-
-            elif response.status_code == 400:
-                resp = json.loads(response.content)
-                message: str = f"{response.reason}: {resp['error']}"
-                raise Exception(message)
-
-            elif response.status_code == 401:
-                message: str = f"URL : {url} access is unauthorized."
-                raise Exception(message)
-
-            elif response.status_code == 404:
-                message: str = f"URL : {url} cannot be found."
-                raise Exception(message)
-
-            elif response.status_code == 405:
-                message: str = f"Method not allowed. URL : {url}"
-                raise Exception(message)
-
-            # TODO : Add more exceptions.
-
-            else:
-                # reason: str = response.reason
-                message: str = f"Got code : {response.status_code}. Reason : {response.reason}"
-                raise Exception(message)
-
-        except Exception as e:
-            raise
-
-    return wrapper
-
-def parser(func):
-    """
-
-    Decorator to parse the response from a request.
-
-    """
-    def wrapper(**kwargs) -> Dict[str, Union[str, bool, None]]:
-
-        if "url" not in kwargs.keys():
-            message = "url MUST be specified as keyword argument"
-            raise Exception(message)
-
-        url: str = kwargs["url"]
-
-        response: requests.Response = func(**kwargs)
-
-        # TODO : Should we get/return JSON Serializables values ?
-        # status 204 has no content.
-        if response.status_code == 204:
-            print("Deletion successful.")
-            return
-
-        response_as_json: Dict[str, Union[str, bool, None]] = {
-            "url": url,
-            "status": response.ok,
-            "content": response.content.decode() if response.ok else None
-        }
-
-        return response_as_json
-
-    return wrapper
-
-def requires_login(func):
-    """ Decorator to perform login beforehand, if necessary
-
-    Add this decorator to any function from Client or a children
-    that requires to be logged in.
-    """
-    def wrapper(self, *args, **kwargs):
-        if self.auth_token is None:
-            self.login()
-            if self.auth_token is None:
-                raise Exception("Could not access API, access token missing. Please use the 'login' function to obtain access.")
-        return func(self, *args, **kwargs)
-    return wrapper
-
-
-@parser
-@handler
-def get(url: str, params: dict=None, **kwargs):
-    """
-
-    Same arguments and behavior as requests.get but handles exceptions and
-    returns a dictionary instead of a requests.Response.
-
-    NOTE : url key MUST be passed in arguments.
-
-    Returns:
-        (Dict[str, Union[str, bool, None]]) : It returns a dictionary with the
-            following keys and value types:
-
-            {   "url" : str,
-                "status" : bool,
-                "content" : Optional[str, None]
-            }
-
-    Raises:
-
-        (Exception) : It raises an exception if something goes wrong.
-
-    """
-    response: requests.Response = requests.get(url, params=params, **kwargs)
-    return response
-
-
-@parser
-@handler
-def post(url: str, **kwargs) -> requests.Response:
-    """
-
-    Same as requests.post but handles exceptions and returns a dictionary
-    instead of a requests.Response.
-
-    NOTE : url key MUST be passed in arguments.
-
-    Example :
-
-        url = "https://www.some_url.com/"
-        response = post(url=url)
-
-    Wrong usage:
-
-        url = "https://www.some_url.com/"
-        response = post(url)
-
-    Returns:
-
-        (Dict[str, Union[str, bool, None]]) : It returns a dictionary with the
-            following keys and value types:
-
-            {   "url" : str,
-                "status" : bool,
-                "content" : Optional[str, None]
-            }
-
-    Raises:
-
-        (Exception) : It raises an exception if something goes wrong.
-
-    """
-    response: requests.Response = requests.post(url, **kwargs)
-    return response
-
-
-@parser
-@handler
-def delete(url: str, **kwargs) -> requests.Response:
-    """
-    Same as requests.delete but handles exceptions and returns a dictionary
-    instead of a requests.Response.
-
-    """
-    response: requests.Response = requests.delete(url, **kwargs)
-    return response
-
-
-@parser
-@handler
-def put(url: str, **kwargs):
-    response: requests.Response = requests.put(url, **kwargs)
-    return response
-
-
-def download_file(url: str, local_filename: str=None, **kwargs)->str:
-    """ Downloads a file from the specified url
-    """
-    if local_filename is None:
-        local_filename = url.split('/')[-1]
-    # NOTE the stream=True parameter below
-    chunk_size = None
-    with requests.get(url, stream=True, **kwargs) as r:
-        r.raise_for_status()
-        with open(local_filename, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=chunk_size):
-                # If you have chunk encoded response uncomment if
-                # and set chunk_size parameter to None.
-                if chunk:
-                    f.write(chunk)
-    return local_filename

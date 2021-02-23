@@ -8,33 +8,19 @@ from pathlib import Path
 from os.path import join
 from io import StringIO
 from typing import Any, BinaryIO, Dict, List, Optional, TypeVar, Union
-from tqdm import tqdm
-
-import requests
-
-from teselagen.api.client import (DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL,
-                                  TeselaGenClient, get, post, put, delete)
+from teselagen.utils import (DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL, get, post, put, delete)
 
 # NOTE : Related to Postman and Python requests
 #       "body" goes into the "json" argument
 #       "Query Params" goes into "params" argument
 
 
-class TESTClient(TeselaGenClient):
-    def __init__(self,
-                 api_token_name: str = DEFAULT_API_TOKEN_NAME,
-                 host_url: str = DEFAULT_HOST_URL,
-                 tg_client: TeselaGenClient = None):
-                 
+class TESTClient():
+    def __init__(self, teselagen_client: Any):
         module_name: str = "test"
-        if (tg_client is not None):
-            self.__dict__ = tg_client.__dict__ # This allows the four tg modules to share common endpoints (s.a. labs/login/register/logout)
-        else:
-            super(TESTClient, self).__init__(module_name=module_name,
-                                            host_url=host_url,
-                                            api_token_name=api_token_name)
 
-
+        self.host_url = teselagen_client.host_url
+        self.headers = teselagen_client.headers
         # Here we define the Base CLI URL.
         api_url_base: str = f"{self.host_url}/{module_name}/cli-api"
         # Here we define the client endpoints

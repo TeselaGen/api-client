@@ -8,8 +8,7 @@ import pandas as pd
 import numpy as np
 from typing import Any, Dict, List, Optional, TypeVar, Union, Tuple
 import requests
-from teselagen.api.client import (DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL,
-                                  TeselaGenClient, get, post, put, requires_login)
+from teselagen.utils import (DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL, get, post, put, requires_login)
 
 # NOTE : Related to Postman and Python requests
 #       "body" goes into the "json" argument
@@ -25,21 +24,12 @@ GENERATIVE_MODEL = 'generative'
 GENERATIVE_MODEL_DATA_SCHEMA = [{'id': 0, 'name': 'sequence', 'type': 'target', 'value_type': 'aa-sequence'}]
 
 
-
-class DISCOVERClient(TeselaGenClient):
-    def __init__(self,
-                 api_token_name: str = DEFAULT_API_TOKEN_NAME,
-                 host_url: str = DEFAULT_HOST_URL,
-                 tg_client: TeselaGenClient = None):
+class DISCOVERClient():
+    def __init__(self, teselagen_client: Any):
         module_name: str = "evolve" #(now the 'discover' module)
-        if (tg_client is not None):
-            self.__dict__ = tg_client.__dict__ # This allows the four tg modules to share common endpoints (s.a. labs/login/register/logout)
-        else:
-            super(DISCOVERClient, self).__init__(module_name=module_name,
-                                            host_url=host_url,
-                                            api_token_name=api_token_name)
 
-                                            
+        self.host_url = teselagen_client.host_url
+        self.headers = teselagen_client.headers
         # Here we define the Base CLI URL.
         api_url_base: str = f"{self.host_url}/{module_name}/cli-api"                                            
         # Here we define the client endpoints
@@ -59,9 +49,7 @@ class DISCOVERClient(TeselaGenClient):
         self.get_completed_tasks_url: str = f"{api_url_base}/get-completed-tasks"
 
         self.crispr_guide_rnas_url: str = f"{api_url_base}/crispr-grnas"
-
-    
-    @requires_login
+   
     def _get_data_from_content(self, content_dict:dict)->dict:
         """Checks that an output dict from evolve endpoint is healthy, and returns the 'data' field
 
@@ -80,7 +68,6 @@ class DISCOVERClient(TeselaGenClient):
             raise IOError(f"Can`t found 'data' key in response: {content_dict}")
         return content_dict["data"]
     
-    @requires_login
     def get_model_info(self, model_id: int):
         """ Retrieves model general information
 
@@ -137,7 +124,6 @@ class DISCOVERClient(TeselaGenClient):
         # Check output
         return self._get_data_from_content(response["content"])
     
-    @requires_login
     def get_models_by_type(self, model_type: Optional[str] = None):
         """
 
@@ -238,7 +224,6 @@ class DISCOVERClient(TeselaGenClient):
         response["content"] = json.loads(response["content"])
         return self._get_data_from_content(response["content"])
 
-    @requires_login
     def get_model_datapoints(self, model_id: int, datapoint_type: str,
                              batch_size: int, batch_number: int):
         """
@@ -316,7 +301,6 @@ class DISCOVERClient(TeselaGenClient):
         return response["content"]
         # raise NotImplementedError
 
-    @requires_login
     def submit_model(self,
                      data_input: List[Any],
                      data_schema: List[Any],
@@ -458,7 +442,6 @@ class DISCOVERClient(TeselaGenClient):
         response["content"] = json.loads(response["content"])
         return self._get_data_from_content(response["content"])
 
-    @requires_login
     def delete_model(self, model_id: int):
         """
 
@@ -480,7 +463,6 @@ class DISCOVERClient(TeselaGenClient):
         return self._get_data_from_content(response["content"])
         # raise NotImplementedError
 
-    @requires_login
     def cancel_model(self, model_id: int):
         """
 
@@ -501,7 +483,6 @@ class DISCOVERClient(TeselaGenClient):
         response["content"] = json.loads(response["content"])
         return self._get_data_from_content(response["content"])
 
-    @requires_login
     def design_crispr_grnas(self,
                             sequence: str,
                             target_indexes: Optional[Tuple[int, int]]=None,
@@ -527,7 +508,6 @@ class DISCOVERClient(TeselaGenClient):
                         json=body)
         return json.loads(response["content"])
             
-
     def submit_generative_model(self, 
         aa_sequences: Optional[Union[np.ndarray, List[str]]] = None, 
         aa_sequence_ids: Optional[Union[np.ndarray, List[int]]] = None,
@@ -604,6 +584,4 @@ class DISCOVERClient(TeselaGenClient):
             "updatedAt": response['updatedAt'],
         }
         return formatted_response
-            
 
-            

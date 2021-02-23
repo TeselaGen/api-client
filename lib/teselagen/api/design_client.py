@@ -9,12 +9,7 @@ import numpy as np
 from os.path import join
 from urllib.parse import urlencode, urlparse, urljoin
 from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
-
-import requests
-
-from teselagen.api.client import (DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL,
-                                  TeselaGenClient, get, post, put, requires_login,
-                                  download_file)
+from teselagen.utils import (DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL, get, post, put, requires_login, download_file)
 
 
 SUPPORTED_AA_EXPORT_FORMATS = ['JSON', 'FASTA', 'GENBANK']
@@ -23,22 +18,15 @@ SUPPORTED_AA_EXPORT_FORMATS = ['JSON', 'FASTA', 'GENBANK']
 #       "Query Params" goes into "params" argument
 
 
-class DESIGNClient(TeselaGenClient):
+class DESIGNClient():
     ALLOWED_SEQ_FORMATS = {'json', 'fasta', 'genbank'}
     URL_GET_ASSEMBLY_REPORT = "/assembly-report/export"
 
-    def __init__(self,
-                 api_token_name: str = DEFAULT_API_TOKEN_NAME,
-                 host_url: str = DEFAULT_HOST_URL,
-                 tg_client: TeselaGenClient = None):
+    def __init__(self, teselagen_client: Any):
         module_name: str = "design"
-        if (tg_client is not None):
-            self.__dict__ = tg_client.__dict__ # This allows the four tg modules to share common endpoints (s.a. labs/login/register/logout)
-        else:
-            super(DESIGNClient, self).__init__(module_name=module_name,
-                                           host_url=host_url,
-                                           api_token_name=api_token_name)
-        
+
+        self.host_url = teselagen_client.host_url
+        self.headers = teselagen_client.headers
         # Here we define the Base CLI URL.
         api_url_base: str = f"{self.host_url}/{module_name}/cli-api"
         # EXPORT
@@ -116,7 +104,6 @@ class DESIGNClient(TeselaGenClient):
         self.export_aa_url: str = join(api_url_base, "export", "aminoacids") + "/{}/{}"
 
 
-    @requires_login
     def get_dna_sequence(self, seq_id: int, out_format:str='json', out_filepath:Optional[str]=None)->Union[str, dict]:
         """Gets full sequence record from its ID
 
@@ -150,7 +137,6 @@ class DESIGNClient(TeselaGenClient):
         # Finish
         return response["content"]
 
-    @requires_login
     def get_dna_sequences(self, name: str)->List[dict]:
         """ Get all sequences which names matches a string
 
@@ -167,7 +153,6 @@ class DESIGNClient(TeselaGenClient):
         out = json.loads(response["content"])
         return out
 
-    @requires_login
     def get_designs(self, name: Optional[str]=None, gql_filter: Optional[dict]=None)->List[dict]:
         """Retrieves a list of designs summary
 
@@ -197,7 +182,6 @@ class DESIGNClient(TeselaGenClient):
         for el in out: el.pop("__typename")
         return out
 
-    @requires_login
     def get_design(self, design_id: Union[int, str])->dict:
         """ Retrieves the design with specified id
 
@@ -215,7 +199,6 @@ class DESIGNClient(TeselaGenClient):
         out = json.loads(response["content"])
         return out
 
-    @requires_login
     def post_design(self, design:dict, allow_duplicates:bool=False):
         """ Sumbits a new design into DESIGN module
 
@@ -238,7 +221,6 @@ class DESIGNClient(TeselaGenClient):
                         json=body)
         return json.loads(response["content"])
 
-    @requires_login
     def get_assembly_report(self, report_id: int, local_filename=None)->str:
         """
         Retrieves an assembly report given an id
@@ -277,7 +259,6 @@ class DESIGNClient(TeselaGenClient):
 
     ## RBS Calculator Methods.
 
-    @requires_login
     def rbs_calculator_set_token(self, rbs_token: str = None)->None:
         """
         Sets TeselaGen-RBS calculator integration token.
@@ -291,7 +272,6 @@ class DESIGNClient(TeselaGenClient):
         rbs_token = getpass.getpass(prompt="Enter x-tg-rbs-token: ") if rbs_token is None else rbs_token
         self.headers = {**self.headers, "x-tg-rbs-token": rbs_token}
 
-    @requires_login
     def rbs_calculator_status(self)->dict:
         """
         Checks the status of the RBS Calculator Integration API.
@@ -306,7 +286,6 @@ class DESIGNClient(TeselaGenClient):
 
         return result["content"]
 
-    @requires_login
     def rbs_calculator_get_jobs(self, job_id: str = None)->dict:
         """
         Fetches an RBS Calculator Job with the provided job_id.
@@ -326,7 +305,6 @@ class DESIGNClient(TeselaGenClient):
 
         return result["content"]
 
-    @requires_login
     def rbs_calculator_organisms(self, as_dataframe: bool = True)->dict:
         """
         Fetches all available organisms or host supported by the RBS Calculator tools.
@@ -346,7 +324,6 @@ class DESIGNClient(TeselaGenClient):
         result = pd.DataFrame(result) if as_dataframe else result
         return result
 
-    @requires_login
     def rbs_calculator_submit_job(self, algorithm: str, params: dict)->dict:
         """
         Submits a job to the RBS Calculator API Version v2.1. For deeper information on the RBS Calculator tools please refer to the following documentation:
@@ -460,7 +437,6 @@ class DESIGNClient(TeselaGenClient):
 
 
     ## Amino acid sequence Methods.
-    @requires_login
     def import_aa_sequences(self, aa_sequences: Union[pd.DataFrame, List[List[str]], List[Tuple[str, str]], List[Dict[str,str]]], tags: Optional[List[Dict[str, int]]] = None):
         '''
         This function imports one or many amino acid sequences by means of TeselaGen's DESIGN API.
@@ -534,7 +510,6 @@ class DESIGNClient(TeselaGenClient):
         return formatted_response
 
 
-    @requires_login
     def export_aa_sequence(self, aa_sequence_id: int, format: str = "JSON"):
         '''
         This functions exports one amino acid sequence from TeselaGen DESIGN Module. It requires the TeselaGen amino acid sequence ID.
@@ -595,7 +570,6 @@ class DESIGNClient(TeselaGenClient):
         return formatted_response
 
 
-    @requires_login
     def export_aa_sequences(self, aa_sequence_ids: Union[int, np.ndarray, List[int]], format: str = "JSON"):
         '''
         This functions exports one or many amino acid sequences from TeselaGen DESIGN Module. It requires one or a list of DESIGN amino acid sequence IDs.

@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 import pytest
 import requests_mock
 
+from teselagen.api.client import TeselaGenClient
 from teselagen.api.design_client import DESIGNClient
 from teselagen.utils import load_from_json
 from teselagen.api.client import (get, post)
@@ -18,21 +19,20 @@ JOB_ID_TWO = 'ouqzbuviolphyjasg0syhkseq6anltxz'
 #@pytest.mark.incremental
 class TestDESIGNClient():
     @pytest.fixture
-    def client(self, host_url, api_token_name) -> DESIGNClient:
+    def client(self, host_url, api_token_name) -> TeselaGenClient:
         """
 
-        A TEST client instance.
+        A TeselaGen client instance.
 
         Returns:
-            (TESTClient) : An instance of the TEST client.
+            (TeselaGenClient) : An instance of TeselaGen client.
 
         """
-        test_client = DESIGNClient(api_token_name=api_token_name,
-                                   host_url=host_url)
-        return test_client
+        tg_client = TeselaGenClient(api_token_name=api_token_name, host_url=host_url)
+        return tg_client
 
     @pytest.fixture
-    def logged_client(self, client: DESIGNClient) -> DESIGNClient:
+    def logged_client(self, client: TeselaGenClient) -> DESIGNClient:
         """
 
         A logged TEST client instance.
@@ -43,7 +43,7 @@ class TestDESIGNClient():
         """
         expiration_time: str = "30m"
         client.login(expiration_time=expiration_time)
-        return client
+        return client.design
 
     def test_get_assembly_report_mock(self, tmpdir, logged_client: DESIGNClient, requests_mock):
         """Checks report can be downloaded
