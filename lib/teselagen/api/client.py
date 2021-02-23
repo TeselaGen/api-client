@@ -74,7 +74,7 @@ class TeselaGenClient():
         self.auth_url: str = f"{api_url_base}/public/auth"
 
         # Laboratories
-        self.labs_url: str = f"{api_url_base}/laboratories"
+        self.labs_url: str = f"{self.host_url}/test/cli-api/laboratories"
 
         # NOTE : The authorization token will be updated with the
         #        "login" method.
