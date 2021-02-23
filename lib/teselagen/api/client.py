@@ -8,9 +8,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import requests
 from pathlib import Path
 from teselagen.utils import load_from_json, get_credentials_path, DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL, get, post, put, requires_login, get_credentials
-from teselagen.api.design_client import DESIGNClient
-from teselagen.api.test_client import TESTClient
-from teselagen.api.discover_client import DISCOVERClient
+from teselagen.api import DESIGNClient, TESTClient, DISCOVERClient
 
 AVAILABLE_MODULES: List[str] = ["test", "evolve"]  # ["test", "learn"/"evolve"]
 DEFAULT_HOST_URL: str = "https://platform.teselagen.com"
@@ -83,23 +81,46 @@ class TeselaGenClient():
         # Here we define the headers.
         self.headers: Dict[str, str] = {"Content-Type": "application/json"}
 
+
+    # The next four properties are TG Module Classes providing a series of functions that interact with their corresponding TG API endpoints.
+    # These objects are instantiated with the TeselaGen Client object so they share all common functions (s.a. login, logout, register, select/unselect lab).
+
     @property
     def design(self):
+        """
+        This instantiates the client's 'design' property object which provides TeselaGen DESIGN API methods.
+        """
         if self._design is None:
             self._design = DESIGNClient(teselagen_client=self)
         return self._design
     
     @property
+    def build(self):
+        """
+        This instantiates the client's 'build' property object which provides TeselaGen BUILD API methods.
+        """
+        raise NotImplementedError("Build module client is not yet implemented.")
+
+    @property
     def discover(self):
+        """
+        This instantiates the client's 'discover' property object which provides TeselaGen DISCOVER API methods.
+        """
         if self._discover is None:
             self._discover = DISCOVERClient(teselagen_client=self)
         return self._discover
     
     @property
     def test(self):
+        """
+        This instantiates the client's 'test' property object which provides TeselaGen TEST API methods.
+        """
         if self._test is None:
             self._test = TESTClient(teselagen_client=self)
         return self._test
+
+
+    # Common methods for all four TG Modules.
 
     def register(self, username: str, password: str):
         """
@@ -254,7 +275,7 @@ class TeselaGenClient():
         print("Connection Accepted")
 
         del username, password, body
-        
+
         response["content"] = json.loads(response["content"])
 
         # TODO : We could log the expiration Date
