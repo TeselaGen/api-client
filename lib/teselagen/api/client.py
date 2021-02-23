@@ -8,7 +8,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import requests
 from pathlib import Path
 from teselagen.utils import load_from_json, get_credentials_path, DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL, get, post, put, requires_login, get_credentials
-from teselagen.api import DESIGNClient, TESTClient, DISCOVERClient
+from teselagen.api.design_client import DESIGNClient
+from teselagen.api.test_client import TESTClient
+from teselagen.api.discover_client import DISCOVERClient
 
 AVAILABLE_MODULES: List[str] = ["test", "evolve"]  # ["test", "learn"/"evolve"]
 DEFAULT_HOST_URL: str = "https://platform.teselagen.com"
