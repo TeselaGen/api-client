@@ -186,7 +186,7 @@ def parser(func):
         # status 204 has no content.
         if response.status_code == 204:
             print("Deletion successful.")
-            return
+            return {}
 
         response_as_json: Dict[str, Union[str, bool, None]] = {
             "url": url,

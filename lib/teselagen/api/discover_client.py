@@ -133,7 +133,9 @@ class DISCOVERClient():
 
         """
         body = {"id": str(model_id)}
-        response = post(url=self.get_model_url, headers=self.headers, json=body)
+        response: Dict[str, Any] = post(url=self.get_model_url,
+                                        headers=self.headers,
+                                        json=body)
         response["content"] = json.loads(response["content"])
         # Check output
         return self._get_data_from_content(response["content"])
@@ -232,9 +234,9 @@ class DISCOVERClient():
             raise ValueError(f"Type: {model_type} not in {ALLOWED_MODEL_TYPES}")
         # body = {"modelType": "null" if model_type is None else model_type}
         body = {"modelType": model_type}
-        response = post(url=self.get_models_by_type_url,
-                        headers=self.headers,
-                        json=body)
+        response: Dict[str, Any] = post(url=self.get_models_by_type_url,
+                                        headers=self.headers,
+                                        json=body)
         response["content"] = json.loads(response["content"])
         return self._get_data_from_content(response["content"])
 
@@ -306,22 +308,24 @@ class DISCOVERClient():
             "batchNumber": batch_number
         }
 
-        response = post(url=self.get_model_datapoints_url,
-                        headers=self.headers,
-                        json=body)
+        response: Dict[str, Any] = post(url=self.get_model_datapoints_url,
+                                        headers=self.headers,
+                                        json=body)
 
         response["content"] = json.loads(response["content"])
 
         return response["content"]
         # raise NotImplementedError
 
-    def submit_model(self,
-                     data_input: List[Any],
-                     data_schema: List[Any],
-                     model_type: str,
-                     configs: Optional[Any] = None,
-                     name: str = "",
-                     description: Optional[str] = None):
+    def submit_model(
+        self,
+        data_input: List[Any],
+        data_schema: List[Any],
+        model_type: str,
+        configs: Optional[Any] = None,
+        name: str = "",
+        description: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
 
         Submits a model for training.
@@ -608,7 +612,7 @@ class DISCOVERClient():
 
     def get_multi_objective_optimization(self, taskId: str) -> Any:
 
-        response = get(
+        response: Dict[str, Any] = get(
             url=self.get_multi_objective_optimization_url.format(taskId),
             headers=self.headers)
 
@@ -629,9 +633,9 @@ class DISCOVERClient():
 
         """
         body = {"id": str(model_id)}
-        response = post(url=self.delete_model_url,
-                        headers=self.headers,
-                        json=body)
+        response: Dict[str, Any] = post(url=self.delete_model_url,
+                                        headers=self.headers,
+                                        json=body)
         response["content"] = json.loads(response["content"])
         return self._get_data_from_content(response["content"])
         # raise NotImplementedError
@@ -650,9 +654,9 @@ class DISCOVERClient():
 
         """
         body = {"id": str(model_id)}
-        response = post(url=self.cancel_model_url,
-                        headers=self.headers,
-                        json=body)
+        response: Dict[str, Any] = post(url=self.cancel_model_url,
+                                        headers=self.headers,
+                                        json=body)
         response["content"] = json.loads(response["content"])
         return self._get_data_from_content(response["content"])
 
@@ -669,8 +673,9 @@ class DISCOVERClient():
             () :
 
         """
-        response = post(url=self.cancel_task_url.format(task_id),
-                        headers=self.headers)
+        response: Dict[str,
+                       Any] = post(url=self.cancel_task_url.format(task_id),
+                                   headers=self.headers)
         response["content"] = json.loads(response["content"])
         return self._get_data_from_content(response["content"])
 
@@ -681,7 +686,7 @@ class DISCOVERClient():
                             pam_site: str = 'NGG',
                             min_score: float = 40.0,
                             max_number: Optional[int] = 50):
-        body = {
+        body: Dict[str, Any] = {
             'data': {
                 'sequence': sequence
             },
@@ -697,9 +702,9 @@ class DISCOVERClient():
             body['data']['targetSequence'] = target_sequence
         if max_number is not None:
             body['options']['maxNumber'] = max_number
-        response = post(url=self.crispr_guide_rnas_url,
-                        headers=self.headers,
-                        json=body)
+        response: Dict[str, Any] = post(url=self.crispr_guide_rnas_url,
+                                        headers=self.headers,
+                                        json=body)
         return json.loads(response["content"])
 
     def submit_generative_model(
@@ -709,7 +714,7 @@ class DISCOVERClient():
             model_name: Optional[
                 str] = 'Unnamed Generative Model (Python Package)',
             model_description: Optional[str] = None,
-            model_configs: Optional[dict] = {}):
+            model_configs: Optional[dict] = {}) -> Dict[str, Any]:
         """
         Calls DISCOVER API 'POST /submit-model' endpoint to train an amino acid sequence Generative Model.
 
@@ -745,7 +750,7 @@ class DISCOVERClient():
 
         """
 
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             'data_schema': GENERATIVE_MODEL_DATA_SCHEMA,
             'model_type': GENERATIVE_MODEL,
             'name': model_name,
@@ -772,7 +777,14 @@ class DISCOVERClient():
                     # exported_sequences = DESIGNClient.export_aa_sequences(...)
                     # kwargs['data_input'] = list(map(lambda x: {'sequence': x}, exported_sequences))
 
-        response = self.submit_model(**kwargs)
+        # response = self.submit_model(**kwargs)
+        response: Dict[str, Any] = self.submit_model(
+            data_input=kwargs['data_input'],
+            data_schema=kwargs['data_schema'],
+            model_type=kwargs['model_type'],
+            configs=kwargs['configs'],
+            name=kwargs['name'],
+            description=kwargs['description'])
 
         formatted_response = {
             # When submitting a model a new microservice job is created with ID=response['id']

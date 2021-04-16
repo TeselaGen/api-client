@@ -3,18 +3,27 @@
 # License: MIT
 import getpass
 import json
+from pathlib import Path
 import time
 from typing import Any, Dict, List, Optional, Tuple, Union
+
 import requests
-from pathlib import Path
-from teselagen.utils import load_from_json, get_credentials_path, DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL, get, post, put, requires_login, get_credentials
 from teselagen.api.design_client import DESIGNClient
-from teselagen.api.test_client import TESTClient
 from teselagen.api.discover_client import DISCOVERClient
+from teselagen.api.test_client import TESTClient
+from teselagen.utils import DEFAULT_API_TOKEN_NAME
+from teselagen.utils import DEFAULT_HOST_URL
+from teselagen.utils import get
+from teselagen.utils import get_credentials
+from teselagen.utils import get_credentials_path
+from teselagen.utils import load_from_json
+from teselagen.utils import post
+from teselagen.utils import put
+from teselagen.utils import requires_login
 
 AVAILABLE_MODULES: List[str] = ["test", "evolve"]  # ["test", "learn"/"evolve"]
-DEFAULT_HOST_URL: str = "https://platform.teselagen.com"
-DEFAULT_API_TOKEN_NAME: str = "x-tg-cli-token"
+# DEFAULT_HOST_URL: str = "https://platform.teselagen.com"
+# DEFAULT_API_TOKEN_NAME: str = "x-tg-cli-token"
 
 # NOTE : Related to Postman and Python requests
 #       "body" goes into the "json" argument
@@ -24,11 +33,14 @@ DEFAULT_API_TOKEN_NAME: str = "x-tg-cli-token"
 # TODO: Maybe is better to set a default value for expires_in = "30m" instead of "1d" (?) or 8 hours
 class TeselaGenClient():
     """Python TeselaGen Client."""
-    def __init__(self,
-                 host_url: str = DEFAULT_HOST_URL,
-                 api_token_name: str = DEFAULT_API_TOKEN_NAME,
-                 module_name: str = "design" # NOTE: For cross-module endpoints use the DESIGN module as default.
-                 ) -> None:
+
+    def __init__(
+        self,
+        host_url: str = DEFAULT_HOST_URL,
+        api_token_name: str = DEFAULT_API_TOKEN_NAME,
+        module_name:
+        str = "design"  # NOTE: For cross-module endpoints use the DESIGN module as default.
+    ) -> None:
         """
 
         A Python Client to use for communication with the TeselaGen modules.
@@ -83,7 +95,6 @@ class TeselaGenClient():
         # Here we define the headers.
         self.headers: Dict[str, str] = {"Content-Type": "application/json"}
 
-
     # The next four properties are TG Module Classes providing a series of functions that interact with their corresponding TG API endpoints.
     # These objects are instantiated with the TeselaGen Client object so they share all common functions (s.a. login, logout, register, select/unselect lab).
 
@@ -95,7 +106,7 @@ class TeselaGenClient():
         if self._design is None:
             self._design = DESIGNClient(teselagen_client=self)
         return self._design
-    
+
     @property
     def build(self):
         """
@@ -111,7 +122,7 @@ class TeselaGenClient():
         if self._discover is None:
             self._discover = DISCOVERClient(teselagen_client=self)
         return self._discover
-    
+
     @property
     def test(self):
         """
@@ -121,7 +132,6 @@ class TeselaGenClient():
             self._test = TESTClient(teselagen_client=self)
         return self._test
 
-
     # Common methods for all four TG Modules.
 
     def register(self, username: str, password: str):
@@ -130,14 +140,14 @@ class TeselaGenClient():
 
         NB: Registering a new user might require ADMIN priviledges.
         """
-        body={
-          "email": username,
-          "firstName": "test",
-          "lastName": "user",
-          "password": password,
-          "passwordConfirm": password
+        body = {
+            "email": username,
+            "firstName": "test",
+            "lastName": "user",
+            "password": password,
+            "passwordConfirm": password
         }
-        response = post(url=self.register_url, json=body)
+        response: Dict[str, Any] = post(url=self.register_url, json=body)
         response["content"] = json.loads(response["content"])
         return response
 
@@ -175,10 +185,11 @@ class TeselaGenClient():
         """
         # NOTE: the apiKey is obtained as an alternative password with 1 day expiration.
         _password = apiKey if apiKey is not None else password
-        username, password = get_credentials(username=username, password=_password)
+        username, password = get_credentials(username=username,
+                                             password=_password)
         auth_token = self.create_token(username=username,
-                                    password=password,
-                                    expiration_time=expiration_time)
+                                       password=password,
+                                       expiration_time=expiration_time)
         del username, password
         # else:
         #     auth_token = apiKey
@@ -206,7 +217,8 @@ class TeselaGenClient():
         # We locally delete the last token.
         self.update_token(token=None)
 
-        username, password = get_credentials(username=username, password=password)
+        username, password = get_credentials(username=username,
+                                             password=password)
 
         # We create a temporary token, and wait until it expires.
         _ = self.create_token(username=username,
@@ -230,7 +242,7 @@ class TeselaGenClient():
         Returns:
 
         """
-        response = get(url=self.status_url, headers=self.headers)
+        response: Dict[str, Any] = get(url=self.status_url, headers=self.headers)
 
         return response["content"]
 
@@ -269,7 +281,7 @@ class TeselaGenClient():
 
         # This happens in the CLI
         try:
-            response = put(url=self.auth_url, headers=self.headers, json=body)
+            response: Dict[str, Any] = put(url=self.auth_url, headers=self.headers, json=body)
         except Exception as e:
             # TODO : Use a logger
             print("Connection Refused")
@@ -332,7 +344,7 @@ class TeselaGenClient():
 
         """
         try:
-            response = get(url=self.info_url, headers=self.headers)
+            response: Dict[str, Any] = get(url=self.info_url, headers=self.headers)
 
         except Exception as e:
             # TODO: Verify if we need to raise an exception.
@@ -358,7 +370,7 @@ class TeselaGenClient():
         """
         # TODO : implement a method to get the expiration date of the current
         #        token
-        response = get(url=self.auth_url, headers=self.headers)
+        response: Dict[str, Any] = get(url=self.auth_url, headers=self.headers)
         response["content"] = json.loads(response["content"])
 
         return response
@@ -374,14 +386,18 @@ class TeselaGenClient():
             () : A list of laboratories objects.
 
         """
-        response = get(url=self.labs_url, headers=self.headers)
+        response: Dict[str, Any] = get(url=self.labs_url, headers=self.headers)
 
         # response["content"] = [{"id" : str, "name": str}, ...]
         response["content"] = json.loads(response["content"])
 
         return response["content"]
 
-    def select_laboratory(self, lab_name: Optional[str]=None, lab_id: Optional[int]=None, ) -> None:
+    def select_laboratory(
+        self,
+        lab_name: Optional[str] = None,
+        lab_id: Optional[int] = None,
+    ) -> None:
         """ Sets the selected laboratory and adds it to the instance headers.
 
         Changes the header from internal class state with the id of the selected lab.
@@ -403,9 +419,11 @@ class TeselaGenClient():
             self.unselect_laboratory()
             return
         labs = self.get_laboratories()
-        lab = list(filter(lambda x: x[search_field]==identifier,labs))
-        if len(lab)==0: raise IOError(
-            f"Can't find {search_field} {identifier}. Available labs are {labs}")
+        lab = list(filter(lambda x: x[search_field] == identifier, labs))
+        if len(lab) == 0:
+            raise IOError(
+                f"Can't find {search_field} {identifier}. Available labs are {labs}"
+            )
         # Finally store labid in headers
         self.headers.update({"tg-active-lab-id": str(lab[0]['id'])})
         print(f"Selected Lab: {lab[0]['name']}")

@@ -2,13 +2,19 @@
 # Copyright (C) 2018 TeselaGen Biotechnology, Inc.
 # License: MIT
 
-import json
-import pandas as pd
-from pathlib import Path
-from os.path import join
 from io import StringIO
+import json
+from os.path import join
+from pathlib import Path
 from typing import Any, BinaryIO, Dict, List, Optional, TypeVar, Union
-from teselagen.utils import (DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL, get, post, put, delete)
+
+import pandas as pd
+from teselagen.utils import DEFAULT_API_TOKEN_NAME
+from teselagen.utils import DEFAULT_HOST_URL
+from teselagen.utils import delete
+from teselagen.utils import get
+from teselagen.utils import post
+from teselagen.utils import put
 
 # NOTE : Related to Postman and Python requests
 #       "body" goes into the "json" argument
@@ -59,7 +65,7 @@ class TESTClient():
         self.upload_file_into_assay_url: str = join(api_url_base,
                                                     "assays") + "/{}/files"
         self.upload_file_into_experiment_url: str = join(api_url_base,
-                                                    "experiments") + "/{}/files"                                                    
+                                                    "experiments") + "/{}/files"
 
         # Metadata
         self.get_metadata_url: str = join(api_url_base,
@@ -72,27 +78,27 @@ class TESTClient():
     # Assay Subject Endpoints
     def create_assay_subject(self, name: str, assaySubjectClassId: int):
         body = [{
-            "name": assay_name,
+            "name": name,
             "assaySubjectClassId": str(assaySubjectClassId)
         }]
 
-        response = post(url=self.create_assay_subjects_url,
+        response: Dict[str, Any] = post(url=self.create_assay_subjects_url,
                         headers=self.headers,
                         json=body)
-        
+
         response["content"] = json.loads(response["content"])
 
         return response["content"]
 
     def get_assay_subjects(self, assay_subject_ids: Optional[Union[int, List[int]]] = None, summarized: bool = True):
-        """ 
+        """
         This function fetches one or many assay subject records from TEST. It receives either an integer ID or a list of integer IDs
         through the 'assay_subject_ids' argument, which correspond to the the assay subject IDs.
 
         Args:
             assay_subject_ids(Optional[Union[int, List[int]]]): Either an integer, a list of integers or None. When integers are passed,
                 these are treated as the assay subject IDs used to query the database, if None, all assay subjects are returned.
-            
+
             summarized (bool): Flag indicating whether the returned assay subject records should be summarized or if full assay subject objects
                 should be returned. Default is True.
 
@@ -108,9 +114,9 @@ class TESTClient():
                 - experiments (List[dict]): A list of JSON records with the assay subject experiments information (full).
                 - assays (List[dict]): A list of JSON records with the assay subject assays information (full).
         """
-        
+
         url = ""
-        params = {"summarized": str(summarized).lower()}
+        params: Dict[str, Any] = {"summarized": str(summarized).lower()}
         if isinstance(assay_subject_ids, list):
             url = self.get_assay_subjects_url
             params["ids[]"] = assay_subject_ids
@@ -120,7 +126,7 @@ class TESTClient():
             url = self.get_assay_subjects_url
         else:
             raise TypeError(f"Argument 'assay_subject_ids' must of type int or List[int]. Not type: {type(assay_subject_ids)}")
-        response = get(
+        response: Dict[str, Any] = get(
             url=url,
             params=params,
             headers=self.headers
@@ -132,7 +138,7 @@ class TESTClient():
         return response["content"]
 
     def delete_assay_subjects(self, assay_subject_ids: Union[int, List[int]]):
-        """ 
+        """
         This function deletes one or many assay subject records from TEST. It receives an int ID or a list of int IDs
         through the 'assay_subject_ids' argument, which correspond to the the assay subject IDs.
         """
@@ -143,9 +149,9 @@ class TESTClient():
             params["ids[]"] = [assay_subject_ids]
         else:
             raise TypeError(f"Argument 'assay_subject_ids' must of type int or List[int]. Not type: {type(assay_subject_ids)}")
-        
+
         response = delete(url=self.delete_assay_subject_url.format(""), params=params, headers=self.headers)
-        
+
         return response["content"]
 
     def put_assay_subject_descriptors(self, mapper: List[dict], file_id: Optional[int] = None, filepath: Optional[str] = None, createSubjectsFromFile: Optional[bool] = False):
@@ -166,7 +172,7 @@ class TESTClient():
         """
         # Implements the ability to do the file upload behind the scenes.
         if (file_id is None):
-            if (Path(filepath).exists()):
+            if filepath is not None and (Path(filepath).exists()):
                 file=self.upload_file(filepath=filepath)
                 file_id = file['id']
             else:
@@ -178,7 +184,7 @@ class TESTClient():
             "createSubjectsFromFile": createSubjectsFromFile
         }
 
-        response = put(url=self.put_assay_subject_descriptors_url,
+        response: Dict[str, Any] = put(url=self.put_assay_subject_descriptors_url,
                         headers=self.headers,
                         json=body)
 
@@ -207,7 +213,7 @@ class TESTClient():
 
         """
 
-        response = get(url=self.get_experiments_url, headers=self.headers)
+        response: Dict[str, Any] = get(url=self.get_experiments_url, headers=self.headers)
 
         # response["content"] = [{"id" : str, "name": str}, ...]
         response["content"] = json.loads(response["content"])
@@ -216,18 +222,19 @@ class TESTClient():
 
     def create_experiment(self, experiment_name: str) -> List[Dict[str, Any]]:
 
-        experiment = None
+        experiment: List[Any] = []
+        exp_response: Dict[str, Any] = {}
         experiments = self.get_experiments()
         experiment = list(filter(lambda x: x['name'] == experiment_name, experiments))
         if len(experiment) != 1:
             body = {"name": experiment_name}
-            response = post(url=self.create_experiment_url,
+            response: Dict[str, Any] = post(url=self.create_experiment_url,
                             headers=self.headers,
                             json=body)
-            exp_response: dict = json.loads(response["content"])[0]
+            exp_response = json.loads(response["content"])[0]
             # Now we GET experiments from db in order to return
             # the complete experiment to the user
-            experiment: list = list(filter(lambda x: x['id']==exp_response['id'],
+            experiment = list(filter(lambda x: x['id']==exp_response['id'],
                                         self.get_experiments()))
         if len(experiment)==0:
             raise IOError(f"Error while looking for new id {exp_response['id']}")
@@ -284,7 +291,7 @@ class TESTClient():
 
         """
 
-        response = get(
+        response: Dict[str, Any] = get(
             url=self.get_assays_by_experiment_url.format(experiment_id)
             if experiment_id else self.get_assays_url,
             headers=self.headers)
@@ -303,7 +310,7 @@ class TESTClient():
             "parserId": str(parser_id) if parser_id else None
         }
 
-        response = post(url=self.create_assay_url.format(experiment_id),
+        response: Dict[str, Any] = post(url=self.create_assay_url.format(experiment_id),
                         headers=self.headers,
                         json=body)
         # { id: "3" }
@@ -320,16 +327,16 @@ class TESTClient():
         response = delete(url=self.delete_assay_url.format(assay_id),
                           headers=self.headers)
 
-        return None
+        return response
 
     def put_assay_results(
                         self,
-                        mapper: List[dict], 
-                        assay_id: Optional[int] = None, 
-                        file_id: Optional[int] = None, 
+                        mapper: List[dict],
+                        assay_id: Optional[int] = None,
+                        file_id: Optional[int] = None,
                         filepath: Optional[str] = None,
-                        assay_name: Optional[str] = None, 
-                        experiment_id: Optional[int] = None, 
+                        assay_name: Optional[str] = None,
+                        experiment_id: Optional[int] = None,
                         createSubjectsFromFile: Optional[bool] = True,
                         createMeasurementTargetsFromFile: Optional[bool] = True
                         ):
@@ -341,7 +348,7 @@ class TESTClient():
                 mapper (List[dict]): This is the JSON mapper used by the endpoint to understand each of the file columns. This mapper
                     should be a list of Python Dictionary representing each structured header with a 'name', 'class' and 'subClassId' key.
                     For more information on the mappers structure refer to https://api-docs.teselagen.com/#operation/AssaysPutAssayResults
-                assay_id (int) : Assay identifier. 
+                assay_id (int) : Assay identifier.
                 file_id (int) : File identifier.
                 filepath (int) : Local location of the file.
                 assay_name (str) : Name of the assay into which insert the assay results.
@@ -363,18 +370,18 @@ class TESTClient():
                     raise Exception(f"Please provide a valid 'experiment_id'.")
         # Implements the ability to do the file upload behind the scenes.
         if (file_id is None):
-            if (Path(filepath).exists()):
+            if filepath is not None and (Path(filepath).exists()):
                 # See the current files already uploaded to the assay.
                 files = self.get_files_info()
-                assay_files = list(filter(lambda x: x['assay'] is not None and x['assay']['id'] == assay_id and Path(x['name']).name == Path(filepath).name, files))
+                assay_files = list(filter(lambda x: x['assay'] is not None and x['assay']['id'] == assay_id and filepath is not None and Path(x['name']).name == Path(filepath).name, files))
                 if (len(assay_files) > 0):
                     file_id = assay_files[0]['id']
                 # NOTE: When a file with the same name has already been uploaded into the Assay, do not upload the file again.
                 else:
                     file=self.upload_file(filepath=filepath, assay_id=assay_id)
                     file_id = file['id']
-     
-        
+
+
         body = {
             "assayId": assay_id,
             "fileId": file_id,
@@ -383,7 +390,7 @@ class TESTClient():
             "createMeasurementTargetsFromFile": createMeasurementTargetsFromFile
         }
         try:
-            response = put(url=self.assay_results_url.format(assay_id),
+            response: Dict[str, Any] = put(url=self.assay_results_url.format(assay_id),
                             headers=self.headers,
                             json=body)
         except Exception as e:
@@ -393,7 +400,7 @@ class TESTClient():
         response["content"] = json.loads(response["content"])
 
         return response["content"]
-    
+
     def get_assay_results(self, assay_id: int, as_dataframe: bool = True, with_subject_data: bool = True, group: bool = True):
         """
             Calls Teselagen TEST API endpoint: `GET /assays/:assayId/results`.
@@ -415,7 +422,7 @@ class TESTClient():
 
         assay_results = api_result['results']
         tabular_assay_results, assay_result_indexes = self._tabular_format_assay_result_data(assay_results)
-            
+
         if (as_dataframe):
             final_results = pd.DataFrame(tabular_assay_results).set_index(assay_result_indexes[0])
             final_results.insert(0, "Assay", api_result['name'])
@@ -429,10 +436,10 @@ class TESTClient():
                 assay_subjects = self.get_assay_subjects(assay_subject_ids=assaySubjectIds, summarized=False)
                 tabular_assay_subjects, assay_subject_indexes = self._tabular_format_assay_subject_data(assay_subjects)
                 assay_subjects_df = pd.DataFrame(tabular_assay_subjects).set_index(assay_subject_indexes)
-                
+
                 # Here we merge both dataframes.
                 final_results = assay_subjects_df.merge(final_results, left_on=assay_subject_indexes, right_on=assay_subject_indexes)
-                
+
         else:
             if(with_subject_data):
                 assaySubjectIds = [assay_result['assaySubjectId'] for assay_result in assay_results]
@@ -443,19 +450,19 @@ class TESTClient():
             else:
                 final_results = [{**{"Assay": api_result['name']}, **assay_result} for assay_result in tabular_assay_results]
         return final_results
-    
+
     def _get_assay_results_from_api(self, assay_id: int):
         url = self.assay_results_url.format(assay_id)
-        
-        response = get(
-            url=url, 
+
+        response: Dict[str, Any] = get(
+            url=url,
             headers=self.headers
         )
 
         api_result = json.loads(response["content"])
 
         return api_result
-    
+
     # File Endpoints
 
     def get_files_info(self) -> List[Dict[str, Any]]:
@@ -487,7 +494,7 @@ class TESTClient():
 
         """
 
-        response = get(url=self.get_files_info_url, headers=self.headers)
+        response: Dict[str, Any] = get(url=self.get_files_info_url, headers=self.headers)
 
         response["content"] = json.loads(response["content"])
 
@@ -529,9 +536,9 @@ class TESTClient():
         headers = self.headers.copy()
         del headers['Content-Type']
 
-        
+
         upload_file_url = self.upload_file_into_assay_url.format(assay_id) if assay_id else self.upload_file_into_experiment_url.format(experiment_id) if experiment_id else self.upload_file_url
-        response = post(url=upload_file_url,
+        response: Dict[str, Any] = post(url=upload_file_url,
                         headers=headers,
                         files=multipart_form_data)
         res_files_info = json.loads(response["content"])
@@ -561,7 +568,7 @@ class TESTClient():
             a StringIO object with the data.
         """
 
-        response = get(url=self.get_file_data_url.format(file_id),
+        response: Dict[str, Any] = get(url=self.get_file_data_url.format(file_id),
                        headers=self.headers)
 
         return StringIO(response["content"])
@@ -603,7 +610,7 @@ class TESTClient():
 
         """
 
-        response = get(url=self.get_metadata_url.format(metadataType),
+        response: Dict[str, Any] = get(url=self.get_metadata_url.format(metadataType),
                         headers=self.headers)
 
         response["content"] = json.loads(response["content"])
@@ -618,14 +625,14 @@ class TESTClient():
             Args:
                 metadataType (str): Name of the metadata type/class.
                 metadataRecord (Union[List[dict], dict]): Either an array of metadata records or a single one.
-                    These should follow the required structure of a metadata record. For more information on this 
+                    These should follow the required structure of a metadata record. For more information on this
                     refer to the above API documentation link.
         """
         body = {
             "metaData": {metadataType: metadataRecord}
         }
 
-        response = post(url=self.create_metadata_url,
+        response: Dict[str, Any] = post(url=self.create_metadata_url,
                         headers=self.headers,
                         json=body)
 
@@ -650,13 +657,13 @@ class TESTClient():
         tabular_assay_subjects = []
         for assay_subject_data in assay_subjects_data:
             assay_subject_row_dict = {
-                "Subject ID": assay_subject_data['id'], 
+                "Subject ID": assay_subject_data['id'],
                 "Subject Name": assay_subject_data['name'],
                 "Subject Class": assay_subject_data['assaySubjectClass']['name']
             }
             for descriptor in assay_subject_data['descriptors']:
                 assay_subject_row_dict[descriptor['descriptorType']['name']] = descriptor['value']
-            
+
             tabular_assay_subjects.append(assay_subject_row_dict)
 
         indexes = ["Subject ID"]
@@ -674,7 +681,7 @@ class TESTClient():
             assaySubjectIds.add(assaySubjectId)
             tabular_row_assay_result_dict = {assaySubjectColumnName: assaySubjectId}
 
-            # reference dimensions are important when formatting assay results, because a tabular form 
+            # reference dimensions are important when formatting assay results, because a tabular form
             # would be indexed by these.
             referenceDimension = f"{result['reference']['name']} ({result['reference']['unit']})"
             referenceDimensions.add(referenceDimension)
@@ -687,7 +694,7 @@ class TESTClient():
             tabular_row_assay_result_dict[measurementType] = result['result']['value']
             tabular_row_assay_result_dict[referenceDimension] = result['reference']['value']
             tabular_assay_results.append(tabular_row_assay_result_dict)
-        
+
         if len(referenceDimensions) > 1:
             # TODO: add support for multiple reference dimensions.
             raise Exception("Multiple Reference Dimensions not supported.")
