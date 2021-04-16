@@ -4,11 +4,17 @@
 
 import json
 from os.path import join
-import pandas as pd
+from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
+
 import numpy as np
-from typing import Any, Dict, List, Optional, TypeVar, Union, Tuple
+import pandas as pd
 import requests
-from teselagen.utils import (DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL, get, post, put, requires_login)
+from teselagen.utils import DEFAULT_API_TOKEN_NAME
+from teselagen.utils import DEFAULT_HOST_URL
+from teselagen.utils import get
+from teselagen.utils import post
+from teselagen.utils import put
+from teselagen.utils import requires_login
 
 # NOTE : Related to Postman and Python requests
 #       "body" goes into the "json" argument
@@ -21,17 +27,23 @@ ALLOWED_MODEL_TYPES: List[Union[str, None]] = [
 PREDICTIVE_MODEL = 'predictive'
 EVOLUTIVE_MODEL = 'evolutive'
 GENERATIVE_MODEL = 'generative'
-GENERATIVE_MODEL_DATA_SCHEMA = [{'id': 0, 'name': 'sequence', 'type': 'target', 'value_type': 'aa-sequence'}]
+GENERATIVE_MODEL_DATA_SCHEMA = [{
+    'id': 0,
+    'name': 'sequence',
+    'type': 'target',
+    'value_type': 'aa-sequence'
+}]
 
 
 class DISCOVERClient():
+
     def __init__(self, teselagen_client: Any):
-        module_name: str = "evolve" #(now the 'discover' module)
+        module_name: str = "evolve"  #(now the 'discover' module)
 
         self.host_url = teselagen_client.host_url
         self.headers = teselagen_client.headers
         # Here we define the Base CLI URL.
-        api_url_base: str = f"{self.host_url}/{module_name}/cli-api"                                            
+        api_url_base: str = f"{self.host_url}/{module_name}/cli-api"
         # Here we define the client endpoints
         # Example :
         #    self.some_endpoint_url: str = f"{self.api_url_base}/some_endpoint"
@@ -42,15 +54,18 @@ class DISCOVERClient():
         self.get_model_datapoints_url: str = f"{api_url_base}/get-model-datapoints"
 
         self.submit_model_url: str = f"{api_url_base}/submit-model"
+        self.submit_multi_objective_optimization_url: str = f"{api_url_base}/multi-objective-optimization-task"
+        self.get_multi_objective_optimization_url: str = f"{api_url_base}/multi-objective-optimization-task/" + "/{}"
         self.delete_model_url: str = f"{api_url_base}/delete-model"
         self.cancel_model_url: str = f"{api_url_base}/cancel-model"
+        self.cancel_task_url: str = f"{api_url_base}/cancel-task" + "/{}"
 
         self.get_models_url: str = f"{api_url_base}/get-models"
         self.get_completed_tasks_url: str = f"{api_url_base}/get-completed-tasks"
 
         self.crispr_guide_rnas_url: str = f"{api_url_base}/crispr-grnas"
-   
-    def _get_data_from_content(self, content_dict:dict)->dict:
+
+    def _get_data_from_content(self, content_dict: dict) -> dict:
         """Checks that an output dict from evolve endpoint is healthy, and returns the 'data' field
 
         Args:
@@ -63,11 +78,12 @@ class DISCOVERClient():
             dict: data field from endpoint response
         """
         if content_dict["message"] != "Submission success.":
-            raise IOError(f"A problem occured with query: {content_dict['message']}")
+            message = content_dict["message"]
+            raise IOError(f"A problem occured with query: {message}")
         if 'data' not in content_dict:
             raise IOError(f"Can`t found 'data' key in response: {content_dict}")
         return content_dict["data"]
-    
+
     def get_model_info(self, model_id: int):
         """ Retrieves model general information
 
@@ -117,13 +133,11 @@ class DISCOVERClient():
 
         """
         body = {"id": str(model_id)}
-        response = post(url=self.get_model_url,
-                        headers=self.headers,
-                        json=body)
+        response = post(url=self.get_model_url, headers=self.headers, json=body)
         response["content"] = json.loads(response["content"])
         # Check output
         return self._get_data_from_content(response["content"])
-    
+
     def get_models_by_type(self, model_type: Optional[str] = None):
         """
 
@@ -436,11 +450,170 @@ class DISCOVERClient():
             "name": name,
             "description": "" if description is None else description
         }
-        response = post(url=self.submit_model_url,
-                        headers=self.headers,
-                        json=body)
+        response: Dict[str, Any] = post(url=self.submit_model_url,
+                                        headers=self.headers,
+                                        json=body)
+
         response["content"] = json.loads(response["content"])
         return self._get_data_from_content(response["content"])
+
+    def predict(
+        self,
+        data_input: List[Any],
+        data_schema: List[Any],
+        model_id: Union[int, str],
+    ):
+        body = {
+            "dataInput": data_input,
+            "dataSchema": data_schema,
+            "modelType": "predictive",
+            "predictiveModelId": model_id,
+            # "configs": {} if configs is None else configs,
+            "name": "pretrained",
+            # "description": "" if description is None else description
+        }
+        response: Dict[str, Any] = post(url=self.submit_model_url,
+                                        headers=self.headers,
+                                        json=body)
+
+        response["content"] = json.loads(response["content"])
+        return self._get_data_from_content(response["content"])
+
+    def submit_multi_objective_optimization(
+        self,
+        data_input: List[Any],
+        data_schema: List[Any],
+        pretrainedModelIds: List[Union[int, str]] = None,
+        configs: Optional[Any] = None,
+    ):
+        """
+
+        Submits a multi objective optimization task.
+
+        Args :
+            data_input (List[Any]) :
+                This is required and must contain a JSON array of JSON objects
+                with the input training data.
+
+                These objects must be consistent with the `data_schema`
+                property.
+
+        ```
+                [{
+                    "Descriptor1": "A0",
+                    "Descriptor2": "B1",
+                    "Target_1": "1",
+                    "Target_2": "-1"
+                }, {
+                    "Descriptor1": "A0",
+                    "Descriptor2": "B2",
+                    "Target_1": "2",
+                    "Target_2": "-2"
+                }, {
+                    "Descriptor1": "A0",
+                    "Descriptor2": "B3",
+                    "Target_1": "3",
+                    "Target_2": "-3"
+                }]
+        ```
+
+            data_schema (List[Any]) :
+                This is an array of the schema of the input data columns.
+
+                The `name` property corresponds to the column's name.
+
+                The `type` property determines whether the column is a "target"
+                or a "descriptor" (feature). Only "target" and "descriptor"
+                are supported.
+
+                The `value_type` type determines the type of the column's
+                values. Only "numeric" and "categoric" are supported.
+
+        ```
+                [{
+                    "name": "Descriptor1",
+                    "value_type": "categoric",
+                    "type": "descriptor"
+                }, {
+                    "name": "Descriptor2",
+                    "value_type": "categoric",
+                    "type": "descriptor"
+                }, {
+                    "name": "Target_1",
+                    "value_type": "numeric",
+                    "type": "target"
+                }, {
+                    "name": "Target_2",
+                    "value_type": "numeric",
+                    "type": "target"
+                }]
+        ```
+                - `name` : corresponds to the name of the column (descriptor
+                    or target)
+                - `type` : describes whether the field is a descriptor
+                    (feature) or a target.
+                - `value_type` : defines the type of value of this column.
+                    Available types are "numeric" or "categoric"
+
+
+            configs (Optional[Any]) :
+                This is an advanced property containing advanced configuration
+                for the training execution. Please refer to Teselagen's Data
+                Science Team.
+
+        Returns :
+            (dict) : A dictionary containing info of the submitted job. En example is shown below:
+
+            ```
+            {
+                "authToken": "1d140371-a59f-4ad2-b57c-6fc8e0a20ff8",
+                "checkInInterval": null,
+                "controlToken": null,
+                "id": "36",
+                "input": {
+                    "job": "modeling-tool",
+                    "kwargs": {}
+                },
+                "lastCheckIn": null,
+                "missedCheckInCount": null,
+                "result": null,
+                "resultStatus": null,
+                "service": "ds-tools",
+                "serviceUrl": null,
+                "startedOn": null,
+                "status": "created",
+                "taskId": null,
+                "trackingId": null,
+                "completedOn": null,
+                "createdAt": "2020-10-29T13:18:06.167Z",
+                "updatedAt": "2020-10-29T13:18:06.271Z",
+                "cid": null,
+                "__typename": "microserviceQueue"
+            }
+            ```
+
+        """
+        body = {
+            "dataInput": data_input,
+            "dataSchema": data_schema,
+            "predictiveModelIds": pretrainedModelIds,
+            "configs": {} if configs is None else configs,
+        }
+        response: Dict[str, Any] = post(
+            url=self.submit_multi_objective_optimization_url,
+            headers=self.headers,
+            json=body)
+        response["content"] = json.loads(response["content"])
+        return response["content"]
+
+    def get_multi_objective_optimization(self, taskId: str) -> Any:
+
+        response = get(
+            url=self.get_multi_objective_optimization_url.format(taskId),
+            headers=self.headers)
+
+        response["content"] = json.loads(response["content"])
+        return response["content"]
 
     def delete_model(self, model_id: int):
         """
@@ -483,19 +656,40 @@ class DISCOVERClient():
         response["content"] = json.loads(response["content"])
         return self._get_data_from_content(response["content"])
 
+    def cancel_task(self, task_id: int) -> Any:
+        """
+
+        Cancels the submission of a task matching the specified `task_id`.
+
+        Args :
+            tasl_id (int) :
+                The task id that wants to be cancelled.
+
+        Returns :
+            () :
+
+        """
+        response = post(url=self.cancel_task_url.format(task_id),
+                        headers=self.headers)
+        response["content"] = json.loads(response["content"])
+        return self._get_data_from_content(response["content"])
+
     def design_crispr_grnas(self,
                             sequence: str,
-                            target_indexes: Optional[Tuple[int, int]]=None,
-                            target_sequence: Optional[str]=None,
-                            pam_site: str='NGG',
-                            min_score: float=40.0,
-                            max_number: Optional[int]=50):
+                            target_indexes: Optional[Tuple[int, int]] = None,
+                            target_sequence: Optional[str] = None,
+                            pam_site: str = 'NGG',
+                            min_score: float = 40.0,
+                            max_number: Optional[int] = 50):
         body = {
-            'data':{
-                'sequence': sequence},
+            'data': {
+                'sequence': sequence
+            },
             'options': {
                 'pamSite': pam_site,
-                'minScore': min_score}}
+                'minScore': min_score
+            }
+        }
         if target_indexes is not None:
             body['data']['targetStart'] = target_indexes[0]
             body['data']['targetEnd'] = target_indexes[1]
@@ -507,23 +701,24 @@ class DISCOVERClient():
                         headers=self.headers,
                         json=body)
         return json.loads(response["content"])
-            
-    def submit_generative_model(self, 
-        aa_sequences: Optional[Union[np.ndarray, List[str]]] = None, 
-        aa_sequence_ids: Optional[Union[np.ndarray, List[int]]] = None,
-        model_name: Optional[str] = 'Unnamed Generative Model (Python Package)',
-        model_description: Optional[str] = None,
-        model_configs: Optional[dict] = {}
-        ):
+
+    def submit_generative_model(
+            self,
+            aa_sequences: Optional[Union[np.ndarray, List[str]]] = None,
+            aa_sequence_ids: Optional[Union[np.ndarray, List[int]]] = None,
+            model_name: Optional[
+                str] = 'Unnamed Generative Model (Python Package)',
+            model_description: Optional[str] = None,
+            model_configs: Optional[dict] = {}):
         """
         Calls DISCOVER API 'POST /submit-model' endpoint to train an amino acid sequence Generative Model.
 
         Args:
-            aa_sequences(Optional[List[str]]): List of strings corresponding to valid amino acid sequences. 
+            aa_sequences(Optional[List[str]]): List of strings corresponding to valid amino acid sequences.
                 Currently, generative models only support training sequences of 10 to 50 amino acids. Only IUPAC 20 amino acids are supported.
 
             aa_sequence_ids(Optional[List[int]]): List of amino acid sequence IDs. These IDs correspond to TeselaGen's DESIGN Module IDs.
-                These IDs are returned by the 'DESIGNClient.import_aa_sequences(...)' function when importing new or existant aa sequences. 
+                These IDs are returned by the 'DESIGNClient.import_aa_sequences(...)' function when importing new or existant aa sequences.
                 But you can also obtain your amino acid sequence IDs via the DESIGN Module Web Browser App from the 'Molecules > Amino Acid Sequences' Library viewer.
 
             model_name(Optional[str]): String as an optional name for your model. Default name is going to be: 'Unnamed Generative Model (Python Package)'.
@@ -559,15 +754,20 @@ class DISCOVERClient():
         }
 
         if (aa_sequences is not None):
-            if isinstance(aa_sequences, list) or isinstance(aa_sequences, np.ndarray):
+            if isinstance(aa_sequences, list) or isinstance(
+                    aa_sequences, np.ndarray):
                 if all(isinstance(x, str) for x in aa_sequences):
-                    kwargs['data_input'] = list(map(lambda x: {'sequence': x}, aa_sequences))
+                    kwargs['data_input'] = list(
+                        map(lambda x: {'sequence': x}, aa_sequences))
                 else:
-                    raise ValueError("All amino acid sequences must be of type string.")
+                    raise ValueError(
+                        "All amino acid sequences must be of type string.")
         elif (aa_sequence_ids is not None):
-            if isinstance(aa_sequence_ids, list) or isinstance(aa_sequence_ids, np.ndarray):
+            if isinstance(aa_sequence_ids, list) or isinstance(
+                    aa_sequence_ids, np.ndarray):
                 if all(isinstance(x, int) for x in aa_sequence_ids):
-                    NotImplementedError("Passing sequence IDs is not yet supported.")
+                    NotImplementedError(
+                        "Passing sequence IDs is not yet supported.")
                     # TODO: import sequences from DESIGN using the IDs in aa_sequence_ids.
                     # exported_sequences = DESIGNClient.export_aa_sequences(...)
                     # kwargs['data_input'] = list(map(lambda x: {'sequence': x}, exported_sequences))
@@ -584,4 +784,3 @@ class DISCOVERClient():
             "updatedAt": response['updatedAt'],
         }
         return formatted_response
-

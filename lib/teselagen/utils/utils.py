@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import getpass
 import json
+from pathlib import Path
 import time
 from typing import Any, Dict, List, Optional, Tuple, Union
+
 import requests
-from pathlib import Path
 import teselagen
 
 DEFAULT_HOST_URL: str = "https://platform.teselagen.com"

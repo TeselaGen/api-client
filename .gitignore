@@ -12,3 +12,4 @@ _*
 .test*
 teselagen.egg-info
 .DS_Store
+*.vscode
