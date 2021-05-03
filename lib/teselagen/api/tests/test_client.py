@@ -1,22 +1,24 @@
 #!/usr/bin/env python3
 import json
-from unittest.mock import patch
 import os
-import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+from unittest.mock import patch
+import uuid
 
 import pytest
-
-from teselagen.api.client import (DEFAULT_API_TOKEN_NAME, DEFAULT_HOST_URL,
-                                  TeselaGenClient, get, get_credentials, post,
-                                  put)
-from teselagen.utils import load_from_json, get_credentials_path
+from teselagen.api.client import DEFAULT_API_TOKEN_NAME
+from teselagen.api.client import DEFAULT_HOST_URL
+from teselagen.api.client import get
+from teselagen.api.client import TeselaGenClient
+from teselagen.utils import get_credentials_path
 
 # module_names = ["design", "build", "test", "evolve"]
 MODULES_TO_BE_TESTED: List[str] = ["test", "evolve"]
 
+
 class TestTeselaGenClient:
+
     @pytest.fixture
     def expiration_time(self) -> str:
         _expiration_time: str = "30m"
@@ -28,8 +30,12 @@ class TestTeselaGenClient:
         return _headers
 
     @pytest.fixture
-    def client(self, module_name: str, host_url: str,
-               api_token_name: str) -> TeselaGenClient:
+    def client(
+        self,
+        module_name: str,
+        host_url: str,
+        api_token_name: str,
+    ) -> TeselaGenClient:
         """
 
         A TesleaGenClient client instance.
@@ -39,15 +45,20 @@ class TestTeselaGenClient:
 
         """
 
-        _client = TeselaGenClient(module_name=module_name,
-                                  host_url=host_url,
-                                  api_token_name=api_token_name)
+        _client = TeselaGenClient(
+            module_name=module_name,
+            host_url=host_url,
+            api_token_name=api_token_name,
+        )
 
         return _client
 
     @pytest.fixture
-    def logged_client(self, client: TeselaGenClient,
-                      expiration_time: str) -> TeselaGenClient:
+    def logged_client(
+        self,
+        client: TeselaGenClient,
+        expiration_time: str,
+    ) -> TeselaGenClient:
         """
 
         A logged TEST client instance.
@@ -58,10 +69,11 @@ class TestTeselaGenClient:
         """
         # Test will not run without a credential file
         credentials_filepath = get_credentials_path()
-        assert credentials_filepath.is_file(), f"Can't found {credentials_filepath}"
-        client.login(#username=credentials["test_user"],
-                     #passwd=credentials["test_password"],
-                     expiration_time=expiration_time)
+        assert credentials_filepath.is_file(
+        ), f"Can't found {credentials_filepath}"
+        client.login(  #username=credentials["test_user"],
+            #passwd=credentials["test_password"],
+            expiration_time=expiration_time)
         return client
 
     def test_class_attributes(self) -> None:
@@ -89,16 +101,20 @@ class TestTeselaGenClient:
                                  module_name: str) -> None:
 
         attributes: List[str] = [
-            "module_name", "host_url", "api_token_name", "module_url",
-            "api_url_base", "register_url", "login_url", "info_url",
-            "status_url", "auth_url", "labs_url", "headers", "auth_token"
+            "host_url",
+            "api_token_name",
+            "register_url",
+            "login_url",
+            "info_url",
+            "status_url",
+            "auth_url",
+            "labs_url",
+            "headers",
+            "auth_token",
         ]
 
         # We check if the client has the required attributes.
         assert all(hasattr(client, attribute) for attribute in attributes)
-
-        # TODO: We may check the expected types.
-        assert isinstance(client.api_url_base, str)
 
         # We verify the headers
         assert isinstance(client.headers, dict)
@@ -136,8 +152,12 @@ class TestTeselaGenClient:
     #                       str) or response["content"] is None
 
     @pytest.mark.parametrize("module_name", MODULES_TO_BE_TESTED)
-    def test_get(self, module_name: str, host_url: str,
-                 headers: Dict[str, str]) -> None:
+    def test_get(
+        self,
+        module_name: str,
+        host_url: str,
+        headers: Dict[str, str],
+    ) -> None:
 
         api_url_base: str = f"{host_url}/{module_name}/cli-api"
         api_path: str = "public/status"
@@ -150,9 +170,8 @@ class TestTeselaGenClient:
 
         expected_keys: List[str] = ["content", "status", "url"]
 
-        assert all([
-            expected_key in response.keys() for expected_key in expected_keys
-        ])
+        assert all(
+            [expected_key in response.keys() for expected_key in expected_keys])
 
         assert isinstance(response["status"], bool)
 
@@ -166,7 +185,12 @@ class TestTeselaGenClient:
         pass
 
     @pytest.mark.parametrize("module_name", MODULES_TO_BE_TESTED)
-    def test_client_instantiation(self, client, module_name: str, test_configuration) -> None:
+    def test_client_instantiation(
+        self,
+        client,
+        module_name: str,
+        test_configuration,
+    ) -> None:
         assert client.auth_token is None
         assert test_configuration['api_token_name'] not in client.headers.keys()
 
@@ -185,14 +209,19 @@ class TestTeselaGenClient:
         assert "unauthorized" in api_info.lower()
 
     @pytest.mark.parametrize("module_name", MODULES_TO_BE_TESTED)
-    def test_login(self, client, module_name: str,
-                   expiration_time: str, test_configuration) -> None:
+    def test_login(
+        self,
+        client,
+        module_name: str,
+        expiration_time: str,
+        test_configuration,
+    ) -> None:
 
         # LOGIN
         # We login the user with the CLI.
-        client.login(#username=credentials["test_user"],
-                     #passwd=credentials["test_password"],
-                     expiration_time=expiration_time)
+        client.login(  #username=credentials["test_user"],
+            #passwd=credentials["test_password"],
+            expiration_time=expiration_time)
 
         # We verify the client is authorized.
         api_info = client.get_api_info()
@@ -204,7 +233,10 @@ class TestTeselaGenClient:
         # We verify that the API_TOKEN_NAME key has been added to the client
         # headers
         assert test_configuration["api_token_name"] in client.headers.keys()
-        assert isinstance(client.headers[test_configuration["api_token_name"]], str)
+        assert isinstance(
+            client.headers[test_configuration["api_token_name"]],
+            str,
+        )
 
         # We get the current user (auth) information
         current_user = client.get_current_user()
@@ -212,9 +244,9 @@ class TestTeselaGenClient:
 
         # LOGOUT
         # We logout the user from the CLI.
-        client.logout(#username=credentials["test_user"],
-                      #password=credentials["test_password"]
-                     )
+        client.logout(  #username=credentials["test_user"],
+            #password=credentials["test_password"]
+        )
 
         # We check the client is not authorized.
         api_info = client.get_api_info()
@@ -233,15 +265,15 @@ class TestTeselaGenClient:
         assert isinstance(response, list)
         assert len(response) > 0
         assert all(isinstance(element, dict) for element in response)
-        assert all(key in element.keys() for element in response
+        assert all(key in element.keys()
+                   for element in response
                    for key in ["id", "name"])
 
     @pytest.mark.parametrize("module_name", [MODULES_TO_BE_TESTED[0]])
     def test_select_lab_by_name(self, logged_client: TeselaGenClient) -> None:
         with patch.object(TeselaGenClient, 'get_laboratories') as get_lab_mock:
-            labs = [{'id':0,'name':'a'}, {'id':1,'name':'b'}]
+            labs = [{'id': 0, 'name': 'a'}, {'id': 1, 'name': 'b'}]
             get_lab_mock.return_value = labs
             client = logged_client
             client.select_laboratory(lab_name='b')
         assert int(client.headers['tg-active-lab-id']) == labs[1]['id']
-

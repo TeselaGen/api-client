@@ -1,6 +1,7 @@
 #!/usr/local/bin/python3
 import os
 import sys
+from teselagen import __version__
 from typing import Dict, List
 
 from setuptools import find_packages
@@ -20,7 +21,7 @@ setup_requires: List[str] = ["pytest-runner"]
 tests_require: List[str] = ["pytest"]
 
 setup(name=name,
-      version=version,
+      version=__version__,
       packages=find_packages(),
       #description=description,
       #author=author,

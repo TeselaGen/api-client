@@ -6,7 +6,10 @@
 *.ipynb_checkpoints*
 venv/
 dist/
+build/
 *.test_configuration
 _*
 .test*
 teselagen.egg-info
+.DS_Store
+*.vscode

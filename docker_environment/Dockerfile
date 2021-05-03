@@ -1,7 +1,8 @@
 # Ubuntu 18.04 (bionic)
 # https://hub.docker.com/_/ubuntu/?tab=tags&name=bionic
 # We use an updated ubuntu image.
-ARG BASE_CONTAINER=ubuntu:bionic-20200112@sha256:bc025862c3e8ec4a8754ea4756e33da6c41cba38330d7e324abd25c8e0b93300
+ARG BASE_CONTAINER=ubuntu:bionic-20200112
+# ARG BASE_CONTAINER=ubuntu:18.04
 
 # We set the some default ARG values. Those values can be overwritten
 # from the command line by using the "--build-arg" argument.
@@ -50,6 +51,7 @@ RUN apt-get update && \
     locales \
     fonts-liberation \
     run-one \
+    htop \
     rsync && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -79,7 +81,7 @@ WORKDIR /tmp
 
 # We add/copy files from the local folder to the working directory
 # NOTE : Using ADD allows to copy from remote sources (e.g, from a URL)
-ADD . .
+COPY . .
 
 # We define some PATHs arguments
 ARG PATH_TO_EXAMPLES=lib/teselagen/examples/
@@ -94,8 +96,9 @@ ENV PATH="~/.local/bin/jupyter-notebook:$PATH"
 RUN jupyter notebook --generate-config
 
 # Install Jupyter Extensions
-#RUN jupyter contrib nbextension install --system && \
-#    jupyter nbextensions_configurator enable --user
+# RUN pip install jupyter_contrib_nbextensions && \
+#     jupyter contrib nbextension install --system && \
+#     jupyter nbextensions_configurator enable --user
 
 # After the installation, we copy the examples folder to the home directory
 # And then we delete the content of the working directory that was used for

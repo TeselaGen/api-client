@@ -9,7 +9,7 @@ import pytest
 import requests_mock
 import fastaparser
 
-from teselagen.api import DISCOVERClient
+from teselagen.api import TeselaGenClient, DISCOVERClient
 from teselagen.utils import load_from_json, get_project_root
 
 MODEL_TYPES_TO_BE_TESTED: List[Optional[str]] = [
@@ -19,21 +19,20 @@ MODEL_TYPES_TO_BE_TESTED: List[Optional[str]] = [
 @pytest.mark.incremental
 class TestDISCOVERClient():
     @pytest.fixture
-    def client(self, host_url, api_token_name) -> DISCOVERClient:
+    def client(self, host_url, api_token_name) -> TeselaGenClient:
         """
 
-        A EVOLVE client instance.
+        A TeselaGen client instance.
 
         Returns:
-            (DISCOVERClient) : An instance of the EVOLVE client.
+            (TeselaGenClient) : An instance of TeselaGen client.
 
         """
-        evolve_client = DISCOVERClient(api_token_name=api_token_name,
-                                     host_url=host_url)
-        return evolve_client
+        tg_client = TeselaGenClient(api_token_name=api_token_name, host_url=host_url)
+        return tg_client
 
     @pytest.fixture
-    def logged_client(self, client: DISCOVERClient) -> DISCOVERClient:
+    def logged_client(self, client: TeselaGenClient) -> DISCOVERClient:
         """
 
         A logged EVOLVE client instance.
@@ -45,7 +44,7 @@ class TestDISCOVERClient():
         expiration_time: str = "30m"
         client.login(
                      expiration_time=expiration_time)
-        return client
+        return client.discover
 
     @pytest.fixture
     def submitted_model_name(self, logged_client):
@@ -62,21 +61,18 @@ class TestDISCOVERClient():
         result = logged_client.submit_model(**params)
         return params['name']
 
-    def test_client_attributes(self, client: DISCOVERClient):
-
-        # Here we check if the client inherit the required parents attributes.
-        assert hasattr(client, "api_url_base")
+    def test_client_attributes(self, logged_client: DISCOVERClient):
 
         # We check if the client has the required attributes.
-        assert hasattr(client, "create_model_url")
-        assert hasattr(client, "get_model_url")
-        assert hasattr(client, "get_models_by_type_url")
-        assert hasattr(client, "get_model_datapoints_url")
-        assert hasattr(client, "submit_model_url")
-        assert hasattr(client, "delete_model_url")
-        assert hasattr(client, "cancel_model_url")
-        assert hasattr(client, "get_models_url")
-        assert hasattr(client, "get_completed_tasks_url")
+        assert hasattr(logged_client, "create_model_url")
+        assert hasattr(logged_client, "get_model_url")
+        assert hasattr(logged_client, "get_models_by_type_url")
+        assert hasattr(logged_client, "get_model_datapoints_url")
+        assert hasattr(logged_client, "submit_model_url")
+        assert hasattr(logged_client, "delete_model_url")
+        assert hasattr(logged_client, "cancel_model_url")
+        assert hasattr(logged_client, "get_models_url")
+        assert hasattr(logged_client, "get_completed_tasks_url")
 
     def test_login(self, client: DISCOVERClient, api_token_name):
         # Before login, the client has no tokens

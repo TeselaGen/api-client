@@ -6,10 +6,11 @@ from urllib.parse import urlencode
 
 import pytest
 import requests_mock
-
+from teselagen.api.client import get
+from teselagen.api.client import post
+from teselagen.api.client import TeselaGenClient
 from teselagen.api.design_client import DESIGNClient
 from teselagen.utils import load_from_json
-from teselagen.api.client import (get, post)
 
 # RBS MOCK DATA. These IDs are safe to be public.
 JOB_ID_ONE = 'lowxt1rzramybxeelijsctypix9vk6fl'
@@ -18,21 +19,20 @@ JOB_ID_TWO = 'ouqzbuviolphyjasg0syhkseq6anltxz'
 #@pytest.mark.incremental
 class TestDESIGNClient():
     @pytest.fixture
-    def client(self, host_url, api_token_name) -> DESIGNClient:
+    def client(self, host_url, api_token_name) -> TeselaGenClient:
         """
 
-        A TEST client instance.
+        A TeselaGen client instance.
 
         Returns:
-            (TESTClient) : An instance of the TEST client.
+            (TeselaGenClient) : An instance of TeselaGen client.
 
         """
-        test_client = DESIGNClient(api_token_name=api_token_name,
-                                   host_url=host_url)
-        return test_client
+        tg_client = TeselaGenClient(api_token_name=api_token_name, host_url=host_url)
+        return tg_client
 
     @pytest.fixture
-    def logged_client(self, client: DESIGNClient) -> DESIGNClient:
+    def logged_client(self, client: TeselaGenClient) -> DESIGNClient:
         """
 
         A logged TEST client instance.
@@ -43,7 +43,7 @@ class TestDESIGNClient():
         """
         expiration_time: str = "30m"
         client.login(expiration_time=expiration_time)
-        return client
+        return client.design
 
     def test_get_assembly_report_mock(self, tmpdir, logged_client: DESIGNClient, requests_mock):
         """Checks report can be downloaded
@@ -51,7 +51,8 @@ class TestDESIGNClient():
         """
         TEST_REPORT_ID=1023
         # Create Mock
-        url = f"{logged_client.api_url_base}{logged_client.URL_GET_ASSEMBLY_REPORT}/{TEST_REPORT_ID}"
+        api_url_base = f"{logged_client.host_url}/design/cli-api"
+        url = f"{api_url_base}{logged_client.URL_GET_ASSEMBLY_REPORT}/{TEST_REPORT_ID}"
         requests_mock.get(url, content=b"estoesunarchivobinario")
         # Create temporary folder
         local_filename = tmpdir.mkdir('assembly_report').join(f"report_{TEST_REPORT_ID}.zip")
@@ -124,12 +125,13 @@ class TestDESIGNClient():
     ## RBS Calculator Tests
     def test_rbs_calculator_requires_token(self, logged_client: DESIGNClient):
         res = logged_client.rbs_calculator_status()
-        assert type(res) is Exception
-        assert 'access is unauthorized' in str(res) #TODO: Maybe there's a better way of checking for the specific unauthorized error.
+        assert type(res['error']) is Exception
+        assert 'access is unauthorized' in str(res['error']) #TODO: Maybe there's a better way of checking for the specific unauthorized error.
 
     def test_rbs_calculator_jobs(self, logged_client: DESIGNClient):
         """ Hits a mock CLI API endpoint, it tests that its correctly calling it with the expected mock response. """
-        mock_url = f"{logged_client.api_url_base}/mock/rbs-calculator/jobs"
+        api_url_base = f"{logged_client.host_url}/design/cli-api"
+        mock_url = f"{api_url_base}/mock/rbs-calculator/jobs"
         res = get(url=mock_url, headers=logged_client.headers)
         res = json.loads(res["content"])
         assert sorted(list(res.keys())) == sorted(['authenticated', 'id_list', 'success'])
@@ -138,7 +140,8 @@ class TestDESIGNClient():
         assert sorted(res['id_list']) == sorted([JOB_ID_ONE, JOB_ID_TWO])
 
     def test_rbs_calculator_organisms(self, logged_client: DESIGNClient):
-        mock_url = f"{logged_client.api_url_base}/mock/rbs-calculator/organisms"
+        api_url_base = f"{logged_client.host_url}/design/cli-api"
+        mock_url = f"{api_url_base}/mock/rbs-calculator/organisms"
         res = get(url=mock_url, headers=logged_client.headers)
         res = json.loads(res["content"])
         assert type(res) is list
@@ -146,7 +149,8 @@ class TestDESIGNClient():
         assert sorted(list(res[0].keys())) == sorted(['accession', 'name'])
 
     def test_rbs_calculator_job(self, logged_client: DESIGNClient):
-        mock_url = f"{logged_client.api_url_base}/mock/rbs-calculator/jobs/{JOB_ID_ONE}"
+        api_url_base = f"{logged_client.host_url}/design/cli-api"
+        mock_url = f"{api_url_base}/mock/rbs-calculator/jobs/{JOB_ID_ONE}"
         res = get(url=mock_url, headers=logged_client.headers)
         res = json.loads(res["content"])
         assert sorted(list(res.keys())) == sorted(['authenticated', 'inputData', 'jobInfo', 'message', 'outputData', 'success'])
@@ -155,7 +159,8 @@ class TestDESIGNClient():
         assert res['jobInfo']['jobId'] == JOB_ID_ONE
 
     def test_rbs_calculator_submit(self, logged_client: DESIGNClient):
-        mock_url = f"{logged_client.api_url_base}/mock/rbs-calculator/submit"
+        api_url_base = f"{logged_client.host_url}/design/cli-api"
+        mock_url = f"{api_url_base}/mock/rbs-calculator/submit"
         params = json.dumps({"algorithm": "ReverseRBS"})
         res = post(url=mock_url, data=params, headers=logged_client.headers)
         res = json.loads(res["content"])
