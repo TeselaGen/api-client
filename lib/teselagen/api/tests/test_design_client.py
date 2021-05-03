@@ -6,11 +6,11 @@ from urllib.parse import urlencode
 
 import pytest
 import requests_mock
-
+from teselagen.api.client import get
+from teselagen.api.client import post
 from teselagen.api.client import TeselaGenClient
 from teselagen.api.design_client import DESIGNClient
 from teselagen.utils import load_from_json
-from teselagen.api.client import (get, post)
 
 # RBS MOCK DATA. These IDs are safe to be public.
 JOB_ID_ONE = 'lowxt1rzramybxeelijsctypix9vk6fl'
@@ -125,8 +125,8 @@ class TestDESIGNClient():
     ## RBS Calculator Tests
     def test_rbs_calculator_requires_token(self, logged_client: DESIGNClient):
         res = logged_client.rbs_calculator_status()
-        assert type(res) is Exception
-        assert 'access is unauthorized' in str(res) #TODO: Maybe there's a better way of checking for the specific unauthorized error.
+        assert type(res['error']) is Exception
+        assert 'access is unauthorized' in str(res['error']) #TODO: Maybe there's a better way of checking for the specific unauthorized error.
 
     def test_rbs_calculator_jobs(self, logged_client: DESIGNClient):
         """ Hits a mock CLI API endpoint, it tests that its correctly calling it with the expected mock response. """

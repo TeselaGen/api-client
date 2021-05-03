@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
+from io import StringIO
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import pytest
-
-from teselagen.api import TeselaGenClient, TESTClient
+from teselagen.api import TeselaGenClient
+from teselagen.api import TESTClient
 from teselagen.utils import load_from_json
 
 TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Example Descriptor 2,Teselagen Example Target,Teselagen Example Target Metric
@@ -29,6 +30,7 @@ TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Exam
 
 @pytest.mark.incremental
 class TestTESTClient():
+
     @pytest.fixture
     def expiration_time(self) -> str:
         _expiration_time: str = "30m"
@@ -50,7 +52,7 @@ class TestTESTClient():
 
         """
         test_client = TeselaGenClient(api_token_name=api_token_name,
-                                 host_url=host_url)
+                                      host_url=host_url)
         return test_client
 
     @pytest.fixture
@@ -64,9 +66,9 @@ class TestTESTClient():
             (TESTClient) : An instance of the TEST client.
 
         """
-        client.login(#username=credentials["test_user"],
-                     #passwd=credentials["test_password"],
-                     expiration_time=expiration_time)
+        client.login(  #username=credentials["test_user"],
+            #passwd=credentials["test_password"],
+            expiration_time=expiration_time)
         return client.test
 
     @pytest.fixture
@@ -123,8 +125,11 @@ class TestTESTClient():
         return _assay_id
 
     @pytest.fixture
-    def experiment(self, logged_client: TESTClient,
-                   select_laboratory) -> Dict[str, Any]:
+    def experiment(
+        self,
+        logged_client: TESTClient,
+        select_laboratory,
+    ) -> Dict[str, Any]:
         client = logged_client
         experiment_name: str = "Python Test Client Experiment"
         experiment: Dict[str, Any] = client.create_experiment(
@@ -132,8 +137,12 @@ class TestTESTClient():
         return experiment
 
     @pytest.fixture
-    def assay(self, logged_client: TESTClient,
-              experiment: Dict[str, Any]) -> Dict[str, Any]:
+    def assay(
+        self,
+        logged_client: TESTClient,
+        experiment: Dict[str, Any],
+        select_laboratory,
+    ) -> Dict[str, Any]:
         client = logged_client
         experiment_id: int = int(experiment["id"])
         assay_name: str = "Python Test Client Assay"
@@ -143,7 +152,8 @@ class TestTESTClient():
         response: Dict[str, Any] = client.create_assay(
             experiment_id=experiment_id,
             assay_name=assay_name,
-            parser_id=parser_id)
+            parser_id=parser_id,
+        )
         return response
 
     def test_class_attributes(self) -> None:
@@ -175,9 +185,11 @@ class TestTESTClient():
         ]
 
         attributes: List[str] = [
-            # *parent_class_methods, 
-            *experiment_methods, *assay_methods,
-            *file_methods, *metadata_methods
+            # *parent_class_methods,
+            *experiment_methods,
+            *assay_methods,
+            *file_methods,
+            *metadata_methods,
         ]
 
         assert all(hasattr(TESTClient, attribute) for attribute in attributes)
@@ -210,22 +222,30 @@ class TestTESTClient():
         ]
 
         attributes: List[str] = [
-            # *parent_class_attributes, 
+            # *parent_class_attributes,
             *experiment_attributes,
-            *assay_attributes, *file_attributes, *metadata_attributes
+            *assay_attributes,
+            *file_attributes,
+            *metadata_attributes,
         ]
 
-        assert all(hasattr(logged_client, attribute) for attribute in attributes)
+        assert all(
+            hasattr(logged_client, attribute) for attribute in attributes)
 
-    def test_login(self, client: TESTClient, expiration_time: str, api_token_name) -> None:
+    def test_login(
+        self,
+        client: TESTClient,
+        expiration_time: str,
+        api_token_name,
+    ) -> None:
         # Before login, the client has no tokens
         assert client.auth_token is None
         assert api_token_name not in client.headers.keys()
 
         # LOGIN
-        client.login(#username=credentials["test_user"],
-                     #passwd=credentials["test_password"],
-                     expiration_time=expiration_time)
+        client.login(  #username=credentials["test_user"],
+            #passwd=credentials["test_password"],
+            expiration_time=expiration_time)
 
         # After login, the client has tokens
         assert isinstance(client.auth_token, str)
@@ -252,13 +272,17 @@ class TestTESTClient():
         assert "name" in response.keys()
         assert response["id"] is not None
 
-    def test_delete_assay(self, logged_client: TESTClient, lab_id: int,
-                          assay: List[Dict[str, Any]]) -> None:
+    def test_delete_assay(
+        self,
+        logged_client: TESTClient,
+        lab_id: int,
+        assay: Dict[str, Any],
+    ) -> None:
         client = logged_client
         assay_id: int = int(assay["id"])
         response = client.delete_assay(assay_id=assay_id)
 
-        assert response is None
+        assert int(response["id"]) == assay_id, "Error deleting assay."
 
     def test_get_experiments(self, logged_client: TESTClient,
                              select_laboratory) -> None:
@@ -269,15 +293,18 @@ class TestTESTClient():
         assert len(response) > 0
         assert all(isinstance(element, dict) for element in response)
         assert all(key in element.keys() and element[key] is not None
-                   for element in response for key in ["id", "name"])
+                   for element in response
+                   for key in ["id", "name"])
         # assert all(element[key] is not None for element in response for key in ["id", "name"])
 
-    @pytest.mark.skip(
-        reason=
-        "It returns an empty list. We probably need to create an assay first.")
-    def test_get_assays(self, logged_client: TESTClient, experiment_id: int,
-                        select_laboratory, assay) -> None:
-        created_assay = assay
+    def test_get_assays(
+        self,
+        logged_client: TESTClient,
+        experiment_id: int,
+        select_laboratory,
+        assay,
+    ) -> None:
+
         client = logged_client
 
         response: List[Dict[str, Any]] = client.get_assays(
@@ -292,60 +319,80 @@ class TestTESTClient():
         #       "id" and "name" is included
 
         assert all(key in element.keys() and element[key] is not None
-                   for element in response for key in ["id", "name"])
+                   for element in response
+                   for key in ["id", "name"])
         # assert all( element[key] is not None for element in response for key in ["id", "name"])
 
-    @pytest.mark.skip(
-        reason="We should expect an 'assay' key that may be None.")
-    def test_get_files(self, logged_client: TESTClient,
-                       assay_id: Optional[int], select_laboratory) -> None:
+    # @pytest.mark.skip(reason="We should expect an 'assay' key that may be None.")
+    def test_get_files(
+        self,
+        logged_client: TESTClient,
+        select_laboratory,
+    ) -> None:
         client = logged_client
-        response: List[Dict[str, Any]] = client.get_files(assay_id=assay_id)
+        response: List[Dict[str, Any]] = client.get_files_info()
 
         assert isinstance(response, list)
         assert len(response) > 0
         assert all(isinstance(element, dict) for element in response)
 
         # TODO : We should expect an "assay" key that may be None
-        assert all(key in element.keys() for element in response
-                   for key in ["id", "name", "assay"])
+        assert all(key in element.keys()
+                   for element in response
+                   for key in ["id", "name", "assay", "experiment"])
 
-        # TODO : We should expect an "assay" key that may be None
-        assert all(element[key] is not None for element in response
-                   for key in ["id", "name"])
-
-    @pytest.mark.skip(reason="Test not finished")
-    def test_upload_file(self, logged_client: TESTClient):
+    def test_upload_file(
+        self,
+        logged_client: TESTClient,
+        select_laboratory,
+    ):
         client = logged_client
 
-        filepath: str = ""
+        filepath: Path = Path("./teselagen/api/tests/example_file.csv")
         assay_id: Optional[int] = None
-        response = client.upload_file(filepath=filepath, assay_id=assay_id)
+        response: Dict[str, Any] = client.upload_file(
+            filepath=filepath,
+            assay_id=assay_id,
+        )
 
-        assert response is not None
+        assert all(key in ["id", "name", "assay", "experiment"]
+                   for key in response.keys())
 
-    @pytest.mark.skip(reason="Test not finished")
-    def test_download_file(self, logged_client: TESTClient):
+    def test_download_file(
+        self,
+        logged_client: TESTClient,
+        select_laboratory,
+    ):
         client = logged_client
-
-        file_id: int = 0
+        response = client.get_files_info()
+        file_id: str = response[0]['id']
         response = client.download_file(file_id=file_id)
 
-        assert response is not None
+        assert isinstance(response, StringIO)
 
-    @pytest.mark.skip(reason="Test not finished")
-    def test_delete_file(self, logged_client: TESTClient):
+    def test_delete_file(
+        self,
+        logged_client: TESTClient,
+        select_laboratory,
+    ):
         client = logged_client
 
-        file_id: int = 0
+        filepath: Path = Path("./teselagen/api/tests/example_file.csv")
+        upload_response: Dict[str, Any] = client.upload_file(filepath=filepath,)
+
+        file_id: str = upload_response['id']
         response = client.delete_file(file_id=file_id)
 
-        assert response is None
+        assert response['id'] == file_id, "Error deleting file."
 
     @pytest.mark.skip(reason="We need to create a test experiment first")
-    def test_download_assay(self, logged_client, assay_id,
-                            expected_downloaded_assay_length,
-                            expected_downloaded_assay_row) -> None:
+    def test_download_assay(
+        self,
+        logged_client,
+        assay_id,
+        expected_downloaded_assay_length,
+        expected_downloaded_assay_row,
+    ) -> None:
 
         client = logged_client
 
@@ -355,11 +402,13 @@ class TestTESTClient():
         page_number: int = None
         page_size: int = None
 
-        downloaded_assay = client.download_assay(assay_id=assay_id,
-                                                 full_list=full_list,
-                                                 columns=columns,
-                                                 page_number=page_number,
-                                                 page_size=page_size)
+        downloaded_assay = client.download_assay(
+            assay_id=assay_id,
+            full_list=full_list,
+            columns=columns,
+            page_number=page_number,
+            page_size=page_size,
+        )
 
         # Since we are testing this, it may not be an empty list
         assert downloaded_assay != []
