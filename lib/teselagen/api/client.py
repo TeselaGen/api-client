@@ -22,6 +22,7 @@ from teselagen.utils import put
 from teselagen.utils import requires_login
 
 AVAILABLE_MODULES: List[str] = ["test", "evolve"]  # ["test", "learn"/"evolve"]
+
 # DEFAULT_HOST_URL: str = "https://platform.teselagen.com"
 # DEFAULT_API_TOKEN_NAME: str = "x-tg-cli-token"
 
@@ -151,37 +152,37 @@ class TeselaGenClient():
         response["content"] = json.loads(response["content"])
         return response
 
-    def login(self,
-              username: Optional[str] = None,
-              password: Optional[str] = None,
-              apiKey: Optional[str] = None,
-              expiration_time: str = "1d") -> None:
+    def login(
+        self,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        apiKey: Optional[str] = None,
+        expiration_time: str = "1d",
+    ) -> None:
         """
+            Login to the CLI with the username used to login through the UI.
+            A password or an apiKey is required. If none is provided password will be prompted.
 
-        Login to the CLI with the username used to login through the UI.
-        A password or an apiKey is required. If none is provided password will be prompted.
+            Args:
+                username (Optional[str]) : A valid username (usually their email)
+                    to authenticate. If not provided, it will be prompted.
 
-        Args:
-            username (Optional[str]) : A valid username (usually their email)
-                to authenticate. If not provided, it will be prompted.
+                    Default : None
 
-                Default : None
+                password (Optional[str]) : A password for the user. If not provided
+                    it will be prompted.
 
-            password (Optional[str]) : A password for the user. If not provided
-                it will be prompted.
+                    Default: None
 
-                Default: None
+                apiKey (Optional[str]) : An exclusive API password obtained from the TeselaGen Browser Application Settings.
+                    It has 1 day expiration.
 
-            apiKey (Optional[str]) : An exclusive API password obtained from the TeselaGen Browser Application Settings.
-                It has 1 day expiration.
+                    Default: None
 
-                Default: None
+                expiration_time (Optional[str]) : Expiration time for the
+                    authentication (token), in zeit/ms format.
 
-            expiration_time (Optional[str]) : Expiration time for the
-                authentication (token), in zeit/ms format.
-
-                Default = "1d"
-
+                    Default = "1d"
         """
         # NOTE: the apiKey is obtained as an alternative password with 1 day expiration.
         _password = apiKey if apiKey is not None else password
@@ -242,7 +243,10 @@ class TeselaGenClient():
         Returns:
 
         """
-        response: Dict[str, Any] = get(url=self.status_url, headers=self.headers)
+        response: Dict[str, Any] = get(
+            url=self.status_url,
+            headers=self.headers,
+        )
 
         return response["content"]
 
@@ -281,7 +285,11 @@ class TeselaGenClient():
 
         # This happens in the CLI
         try:
-            response: Dict[str, Any] = put(url=self.auth_url, headers=self.headers, json=body)
+            response: Dict[str, Any] = put(
+                url=self.auth_url,
+                headers=self.headers,
+                json=body,
+            )
         except Exception as e:
             # TODO : Use a logger
             print("Connection Refused")
@@ -344,7 +352,10 @@ class TeselaGenClient():
 
         """
         try:
-            response: Dict[str, Any] = get(url=self.info_url, headers=self.headers)
+            response: Dict[str, Any] = get(
+                url=self.info_url,
+                headers=self.headers,
+            )
 
         except Exception as e:
             # TODO: Verify if we need to raise an exception.

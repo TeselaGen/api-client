@@ -6,7 +6,7 @@ from io import StringIO
 import json
 from os.path import join
 from pathlib import Path
-from typing import Any, BinaryIO, Dict, List, Optional, TypeVar, Union
+from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 from teselagen.utils import DEFAULT_API_TOKEN_NAME
