@@ -816,14 +816,14 @@ class TESTClient():
             # reference dimensions are important when formatting assay results, because a tabular form
             # would be indexed by these.
             if "reference" in result:
-                referenceDimension = f"{result['reference']['name']} ({result['reference']['unit']})"
+                referenceDimension = f"{result['reference']['name']}_({result['reference']['unit']})"
                 referenceDimensions.add(referenceDimension)
                 tabular_row_assay_result_dict[referenceDimension] = result[
                     'reference']['value']
 
             # These do not need specal index treatment for a tabular form.
             # However these are still collected and returned in case of need.
-            measurementType = f"{result['result']['name']} ({result['result']['unit']})"
+            measurementType = f"{result['result']['name']}_({result['result']['unit']})"
             measurementTypes.add(measurementType)
             tabular_row_assay_result_dict[measurementType] = result['result'][
                 'value']
