@@ -60,6 +60,7 @@ class DISCOVERClient():
         self.cancel_model_url: str = f"{api_url_base}/cancel-model"
         self.cancel_task_url: str = f"{api_url_base}/cancel-task" + "/{}"
 
+        self.get_task_url: str = f"{api_url_base}/get-tasks" + "/{}"
         self.get_models_url: str = f"{api_url_base}/get-models"
         self.get_completed_tasks_url: str = f"{api_url_base}/get-completed-tasks"
 
@@ -240,65 +241,53 @@ class DISCOVERClient():
         response["content"] = json.loads(response["content"])
         return self._get_data_from_content(response["content"])
 
-    def get_model_datapoints(self, model_id: int, datapoint_type: str,
-                             batch_size: int, batch_number: int):
+    def get_model_datapoints(
+        self,
+        model_id: Union[int, str],
+        datapoint_type: str,
+        batch_size: int,
+        batch_number: int,
+    ) -> Dict[str, Any]:
         """
+            This will return a JSON object with an array of datapoints filtered by
+            the provided model ID and datapoint type. This array will come in the
+            data field in the response body. Each element of the array has a
+            datapoint field, this corresponds to a JSON object with the datapoint
+            data.
 
-        This will return a JSON object with an array of datapoints filtered by
-        the provided model ID and datapoint type. This array will come in the
-        data field in the response body. Each element of the array has a
-        datapoint field, this corresponds to a JSON object with the datapoint
-        data.
+            Args :
 
-        Args :
+                model_id (int) :
+                    ID of the model
 
-            model_id (int) :
-                ID of the model
+                datapoint_type (str) :
+                    The `datapoint_type` has two options :
 
-            datapoint_type (str) :
-                The `datapoint_type` has two options :
+                        "input"
+                        "output"
 
-                    "input"
-                    "output"
+                    One can fetch only input datapoints (a.k.a training datapoints)
+                    or just fetch the output datapoint (a.k.a predicted datapoints
+                    not seen in the training dataset).
 
-                One can fetch only input datapoints (a.k.a training datapoints)
-                or just fetch the output datapoint (a.k.a predicted datapoints
-                not seen in the training dataset).
+                batch_size (int) :
+                    `batch_size` refers to the number of datapoints to fetch from
+                    the database table.
 
-            batch_size (int) :
-                `batch_size` refers to the number of datapoints to fetch from
-                the database table.
+                batch_number (int) :
+                    `batch_number` depends on `batch_size`, and determines the
+                    index position offset of length `batch_size` from where to
+                    start fetching datapoints.
 
-            batch_number (int) :
-                `batch_number` depends on `batch_size`, and determines the
-                index position offset of length `batch_size` from where to
-                start fetching datapoints.
+            Returns :
+                - An object with a 'data' key with the list of datapoints along with their predictions.
 
-        Returns :
-
-        ```
-            {
-                "message":
-                "Submission success.",
-                "data": [{
-                    "modelId": "1",
-                    "labId": "2",
-                    "datapoint": {},
-                    "datapointType": "input"
-                }, {
-                    "modelId": "1",
-                    "labId": "2",
-                    "datapoint": {},
-                    "datapointType": "input"
-                }, {
-                    "modelId": "1",
-                    "labId": "2",
-                    "datapoint": {},
-                    "datapointType": "input"
-                }]
-            }
-        ```
-
+            ```
+                {
+                    "message": "Submission success.",
+                    "data": [{ ... }, { ... }, { ... }]
+                }
+            ```
         """
 
         body = {
@@ -308,14 +297,26 @@ class DISCOVERClient():
             "batchNumber": batch_number
         }
 
-        response: Dict[str, Any] = post(url=self.get_model_datapoints_url,
-                                        headers=self.headers,
-                                        json=body)
+        response: Dict[str, Any] = post(
+            url=self.get_model_datapoints_url,
+            headers=self.headers,
+            json=body,
+        )
 
-        response["content"] = json.loads(response["content"])
+        responseContent: Dict[str, Any] = json.loads(response["content"])
 
-        return response["content"]
-        # raise NotImplementedError
+        datapoints: List[Dict[str, Any]] = []
+        if 'data' in responseContent:
+            datapoints = [{
+                key: value
+                for key, value in element['datapoint'].items()
+                if key != 'set_tag' and "PCA" not in key
+            }
+                          for element in responseContent['data']]
+
+        responseContent.update({'data': datapoints})
+
+        return responseContent
 
     def submit_model(
         self,
@@ -354,7 +355,7 @@ class DISCOVERClient():
                 }]
         ```
 
-            data_schema (List[Any]) :
+            data_schema (List[Dict[str, Any]]) :
                 This is an array of the schema of the input data columns.
 
                 The `name` property corresponds to the column's name.
@@ -461,12 +462,23 @@ class DISCOVERClient():
         response["content"] = json.loads(response["content"])
         return self._get_data_from_content(response["content"])
 
-    def predict(
+    def submit_prediction_task(
         self,
-        data_input: List[Any],
-        data_schema: List[Any],
+        data_input: List[Dict[str, Any]],
+        data_schema: List[Dict[str, Any]],
         model_id: Union[int, str],
-    ):
+    ) -> Dict[str, Any]:
+        """
+            Submits a task used to run predictions on a ist of datapoints using a pre-trained Predictive Model.
+
+            Args:
+                - data_input (List[Dict[str, Any]]): Datapoints in the same format described in the submit_model function.
+                - data_schema (List[Dict[str, Any]]): Data schema in the same format described in the submit_model function.
+                - model_id (Union[int, str]): ID of the pre-trained predictive model going to be used to run predictions for the datapoints in the data_input list.
+
+            Returns:
+                - A Task object with metadata information on the submitted task including its ID for later retrieval.
+        """
         body = {
             "dataInput": data_input,
             "dataSchema": data_schema,
@@ -476,12 +488,55 @@ class DISCOVERClient():
             "name": "pretrained",
             # "description": "" if description is None else description
         }
-        response: Dict[str, Any] = post(url=self.submit_model_url,
-                                        headers=self.headers,
-                                        json=body)
+        response: Dict[str, Any] = post(
+            url=self.submit_model_url,
+            headers=self.headers,
+            json=body,
+        )
 
-        response["content"] = json.loads(response["content"])
-        return self._get_data_from_content(response["content"])
+        responseContent: Dict[str, Any] = json.loads(response["content"])
+
+        responseContent['data'].update({'pretrainedModelId': model_id})
+
+        return responseContent
+
+    def get_prediction_task(
+        self,
+        task: Any,
+        batch_size: int,
+        batch_number: int = 0,
+    ) -> Dict[str, Any]:
+        """
+            Returns the result of a prediction task. If the task is running it will return a task status object.
+            If the task finished it will return the list of datapoints with their prediction.
+
+            Args:
+                - task (Any): The task object obtaine from submitting a prediction task.
+                - batch_size (int): Number of datapoints to be fetched.
+                - batch_number (int): When providing a batch_size, the full set of datapoints is divided by batches of size batch_size.
+                    batch_number is used to tell which batch of batch_size datapoints to fetch. Defaults to the first batch (batch_number=0).
+
+            Returns:
+                - Depending on the status of the submitted task, a task object with task metadata information including its task status wil be returned.
+                    If the task is complete, it will return the set of datapoints along with their predictions.
+        """
+        model_id = task['data']['modelId']
+        task_id = task['data']['id']
+        task_response: Dict[str, Any] = self.get_task(task_id=task_id)
+        task_status: Dict[str, Any] = task_response['data'][0]['status']
+
+        results: Dict[str, Any] = {}
+        if task_status == 'completed-successfully':
+            results = self.get_model_datapoints(
+                model_id=model_id,
+                datapoint_type='output',
+                batch_size=batch_size,
+                batch_number=batch_number,
+            )
+        else:
+            results = task_response['data'][0]
+
+        return results
 
     def submit_multi_objective_optimization(
         self,
@@ -491,111 +546,109 @@ class DISCOVERClient():
         configs: Optional[Any] = None,
     ):
         """
+            Submits a multi objective optimization task.
 
-        Submits a multi objective optimization task.
+            Args :
+                data_input (List[Any]) :
+                    This is required and must contain a JSON array of JSON objects
+                    with the input training data.
 
-        Args :
-            data_input (List[Any]) :
-                This is required and must contain a JSON array of JSON objects
-                with the input training data.
-
-                These objects must be consistent with the `data_schema`
-                property.
-
-        ```
-                [{
-                    "Descriptor1": "A0",
-                    "Descriptor2": "B1",
-                    "Target_1": "1",
-                    "Target_2": "-1"
-                }, {
-                    "Descriptor1": "A0",
-                    "Descriptor2": "B2",
-                    "Target_1": "2",
-                    "Target_2": "-2"
-                }, {
-                    "Descriptor1": "A0",
-                    "Descriptor2": "B3",
-                    "Target_1": "3",
-                    "Target_2": "-3"
-                }]
-        ```
-
-            data_schema (List[Any]) :
-                This is an array of the schema of the input data columns.
-
-                The `name` property corresponds to the column's name.
-
-                The `type` property determines whether the column is a "target"
-                or a "descriptor" (feature). Only "target" and "descriptor"
-                are supported.
-
-                The `value_type` type determines the type of the column's
-                values. Only "numeric" and "categoric" are supported.
-
-        ```
-                [{
-                    "name": "Descriptor1",
-                    "value_type": "categoric",
-                    "type": "descriptor"
-                }, {
-                    "name": "Descriptor2",
-                    "value_type": "categoric",
-                    "type": "descriptor"
-                }, {
-                    "name": "Target_1",
-                    "value_type": "numeric",
-                    "type": "target"
-                }, {
-                    "name": "Target_2",
-                    "value_type": "numeric",
-                    "type": "target"
-                }]
-        ```
-                - `name` : corresponds to the name of the column (descriptor
-                    or target)
-                - `type` : describes whether the field is a descriptor
-                    (feature) or a target.
-                - `value_type` : defines the type of value of this column.
-                    Available types are "numeric" or "categoric"
-
-
-            configs (Optional[Any]) :
-                This is an advanced property containing advanced configuration
-                for the training execution. Please refer to Teselagen's Data
-                Science Team.
-
-        Returns :
-            (dict) : A dictionary containing info of the submitted job. En example is shown below:
+                    These objects must be consistent with the `data_schema`
+                    property.
 
             ```
-            {
-                "authToken": "1d140371-a59f-4ad2-b57c-6fc8e0a20ff8",
-                "checkInInterval": null,
-                "controlToken": null,
-                "id": "36",
-                "input": {
-                    "job": "modeling-tool",
-                    "kwargs": {}
-                },
-                "lastCheckIn": null,
-                "missedCheckInCount": null,
-                "result": null,
-                "resultStatus": null,
-                "service": "ds-tools",
-                "serviceUrl": null,
-                "startedOn": null,
-                "status": "created",
-                "taskId": null,
-                "trackingId": null,
-                "completedOn": null,
-                "createdAt": "2020-10-29T13:18:06.167Z",
-                "updatedAt": "2020-10-29T13:18:06.271Z",
-                "cid": null,
-                "__typename": "microserviceQueue"
-            }
+                    [{
+                        "Descriptor1": "A0",
+                        "Descriptor2": "B1",
+                        "Target_1": "1",
+                        "Target_2": "-1"
+                    }, {
+                        "Descriptor1": "A0",
+                        "Descriptor2": "B2",
+                        "Target_1": "2",
+                        "Target_2": "-2"
+                    }, {
+                        "Descriptor1": "A0",
+                        "Descriptor2": "B3",
+                        "Target_1": "3",
+                        "Target_2": "-3"
+                    }]
             ```
 
+                data_schema (List[Any]) :
+                    This is an array of the schema of the input data columns.
+
+                    The `name` property corresponds to the column's name.
+
+                    The `type` property determines whether the column is a "target"
+                    or a "descriptor" (feature). Only "target" and "descriptor"
+                    are supported.
+
+                    The `value_type` type determines the type of the column's
+                    values. Only "numeric" and "categoric" are supported.
+
+            ```
+                    [{
+                        "name": "Descriptor1",
+                        "value_type": "categoric",
+                        "type": "descriptor"
+                    }, {
+                        "name": "Descriptor2",
+                        "value_type": "categoric",
+                        "type": "descriptor"
+                    }, {
+                        "name": "Target_1",
+                        "value_type": "numeric",
+                        "type": "target"
+                    }, {
+                        "name": "Target_2",
+                        "value_type": "numeric",
+                        "type": "target"
+                    }]
+            ```
+                    - `name` : corresponds to the name of the column (descriptor
+                        or target)
+                    - `type` : describes whether the field is a descriptor
+                        (feature) or a target.
+                    - `value_type` : defines the type of value of this column.
+                        Available types are "numeric" or "categoric"
+
+
+                configs (Optional[Any]) :
+                    This is an advanced property containing advanced configuration
+                    for the training execution. Please refer to Teselagen's Data
+                    Science Team.
+
+            Returns :
+                (dict) : A dictionary containing info of the submitted job. En example is shown below:
+
+                ```
+                {
+                    "authToken": "1d140371-a59f-4ad2-b57c-6fc8e0a20ff8",
+                    "checkInInterval": null,
+                    "controlToken": null,
+                    "id": "36",
+                    "input": {
+                        "job": "modeling-tool",
+                        "kwargs": {}
+                    },
+                    "lastCheckIn": null,
+                    "missedCheckInCount": null,
+                    "result": null,
+                    "resultStatus": null,
+                    "service": "ds-tools",
+                    "serviceUrl": null,
+                    "startedOn": null,
+                    "status": "created",
+                    "taskId": null,
+                    "trackingId": null,
+                    "completedOn": null,
+                    "createdAt": "2020-10-29T13:18:06.167Z",
+                    "updatedAt": "2020-10-29T13:18:06.271Z",
+                    "cid": null,
+                    "__typename": "microserviceQueue"
+                }
+                ```
         """
         body = {
             "dataInput": data_input,
@@ -606,7 +659,8 @@ class DISCOVERClient():
         response: Dict[str, Any] = post(
             url=self.submit_multi_objective_optimization_url,
             headers=self.headers,
-            json=body)
+            json=body,
+        )
         response["content"] = json.loads(response["content"])
         return response["content"]
 
@@ -660,24 +714,42 @@ class DISCOVERClient():
         response["content"] = json.loads(response["content"])
         return self._get_data_from_content(response["content"])
 
+    def get_task(self, task_id: Union[int, str]) -> Any:
+        """
+            returns the status of a task based on the Task ID.
+
+            Args :
+                task_id (int) :
+                    The task id that wants to be cancelled.
+
+            Returns :
+                - A task object with task metadata including its ID and status.
+        """
+        response: Dict[str, Any] = get(
+            url=self.get_task_url.format(task_id),
+            headers=self.headers,
+        )
+
+        return json.loads(response["content"])
+
     def cancel_task(self, task_id: int) -> Any:
         """
 
-        Cancels the submission of a task matching the specified `task_id`.
+            Cancels the submission of a task matching the specified `task_id`.
 
-        Args :
-            tasl_id (int) :
-                The task id that wants to be cancelled.
+            Args :
+                task_id (int) :
+                    The task id that wants to be cancelled.
 
-        Returns :
-            () :
+            Returns :
+                () :
 
         """
-        response: Dict[str,
-                       Any] = post(url=self.cancel_task_url.format(task_id),
-                                   headers=self.headers)
-        response["content"] = json.loads(response["content"])
-        return self._get_data_from_content(response["content"])
+        response: Dict[str, Any] = post(
+            url=self.cancel_task_url.format(task_id),
+            headers=self.headers,
+        )
+        return json.loads(response["content"])
 
     def design_crispr_grnas(self,
                             sequence: str,
