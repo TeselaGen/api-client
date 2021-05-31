@@ -52,30 +52,31 @@ def get_test_configuration_path() -> Path:
 ## CLIENT UTILS
 
 
-def get_credentials(username: Optional[str] = None,
-                    password: Optional[str] = None) -> Tuple[str, str]:
+def get_credentials(
+    username: Optional[str] = None,
+    password: Optional[str] = None,
+) -> Tuple[str, str]:
     """
 
-    It prompts the user for credentials in case username/password aren't provided
-    and credentials file wasn't found.
+        It prompts the user for credentials in case username/password aren't provided
+        and credentials file wasn't found.
 
-    Args:
-        username (Optional[str]) :  A valid username address to authenticate.
-            If not provided, it will be prompted.
+        Args:
+            username (Optional[str]) :  A valid username address to authenticate.
+                If not provided, it will be prompted.
 
-            Default : None
+                Default : None
 
-        password (Optional[str]) : A password to authenticate with. If not
-            provided it will be prompted.
+            password (Optional[str]) : A password to authenticate with. If not
+                provided it will be prompted.
 
-            Default : None
+                Default : None
 
-    Returns:
-        (Tuple[str, str]) : It returns the credentials as a tuple of strings,
-            containing the username and password.
+        Returns:
+            (Tuple[str, str]) : It returns the credentials as a tuple of strings,
+                containing the username and password.
 
-            (user, password)
-
+                (user, password)
     """
     # Check if crentials are defined on a file
     file_credentials = load_credentials_from_file()

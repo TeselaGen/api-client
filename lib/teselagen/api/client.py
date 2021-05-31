@@ -186,11 +186,15 @@ class TeselaGenClient():
         """
         # NOTE: the apiKey is obtained as an alternative password with 1 day expiration.
         _password = apiKey if apiKey is not None else password
-        username, password = get_credentials(username=username,
-                                             password=_password)
-        auth_token = self.create_token(username=username,
-                                       password=password,
-                                       expiration_time=expiration_time)
+        username, password = get_credentials(
+            username=username,
+            password=_password,
+        )
+        auth_token = self.create_token(
+            username=username,
+            password=password,
+            expiration_time=expiration_time,
+        )
         del username, password
         # else:
         #     auth_token = apiKey
@@ -250,32 +254,35 @@ class TeselaGenClient():
 
         return response["content"]
 
-    def create_token(self, username: str, password: str,
-                     expiration_time: str) -> Union[str, None]:
+    def create_token(
+        self,
+        username: str,
+        password: str,
+        expiration_time: str,
+    ) -> Union[str, None]:
         """
 
-        Create a new access token for the user with the given username,
-        password and expiration time, and return the new access token.
+            Create a new access token for the user with the given username,
+            password and expiration time, and return the new access token.
 
-        Args:
+            Args:
 
-            username (str) : The username identifier to authenticate with the
-                API.
+                username (str) : The username identifier to authenticate with the
+                    API.
 
-            password (str) : The password identifier to authenticate with the
-                API.
+                password (str) : The password identifier to authenticate with the
+                    API.
 
 
-            expiration_time (str) : Expiration time for the authentication
-                (token), in zeit/ms format.
+                expiration_time (str) : Expiration time for the authentication
+                    (token), in zeit/ms format.
 
-                Example : "1d"
+                    Example : "1d"
 
-        Returns:
-            (Union[str, None]) : It returns the authentication token (as a
-                string) for the given email address, or None if the email
-                address is not authenticated.
-
+            Returns:
+                (Union[str, None]) : It returns the authentication token (as a
+                    string) for the given email address, or None if the email
+                    address is not authenticated.
         """
         body = {
             "username": username,
