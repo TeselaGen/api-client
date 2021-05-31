@@ -11,6 +11,7 @@ import teselagen
 DEFAULT_HOST_URL: str = "https://platform.teselagen.com"
 DEFAULT_API_TOKEN_NAME: str = "x-tg-cli-token"
 
+
 def load_from_json(filepath: Path) -> Any:
     """
 
@@ -29,15 +30,18 @@ def load_from_json(filepath: Path) -> Any:
 
     return json_obj
 
+
 def get_project_root() -> Path:
     """ Returns project's root folder <absolute/path/to>/lib
     """
-    return Path( teselagen.__path__[0] ).parent.resolve()
+    return Path(teselagen.__path__[0]).parent.resolve()
+
 
 def get_credentials_path() -> Path:
     """ Returns path to where credentials file should be
     """
     return get_project_root() / '.credentials'
+
 
 def get_test_configuration_path() -> Path:
     """ Returns path to where .test_configuration file should be
@@ -46,6 +50,7 @@ def get_test_configuration_path() -> Path:
 
 
 ## CLIENT UTILS
+
 
 def get_credentials(username: Optional[str] = None,
                     password: Optional[str] = None) -> Tuple[str, str]:
@@ -78,10 +83,9 @@ def get_credentials(username: Optional[str] = None,
     password = file_credentials[1] if password is None else password
     # If credentials aren't defined, get them from user input
     try:
-        username = input(
-            f"Enter username: ") if username is None else username
-        password = getpass.getpass(
-            prompt=f"Password for {username}: ") if password is None else password
+        username = input(f"Enter username: ") if username is None else username
+        password = getpass.getpass(prompt=f"Password for {username}: "
+                                  ) if password is None else password
     except IOError as e:
         msg = ("""There was an error with user input. If you are making parallel
                tests, make sure you are avoiding 'input' by adding CREDENTIALS
@@ -90,7 +94,10 @@ def get_credentials(username: Optional[str] = None,
     # End
     return username, password
 
-def load_credentials_from_file(path_to_credentials_file: str=None)->Tuple[Optional[str], Optional[str]]:
+
+def load_credentials_from_file(
+    path_to_credentials_file: str = None
+) -> Tuple[Optional[str], Optional[str]]:
     """Load credentials from json credentials file
 
     The credentials file should contain a JSON object
@@ -117,12 +124,14 @@ def load_credentials_from_file(path_to_credentials_file: str=None)->Tuple[Option
     credentials: Dict = load_from_json(filepath=Path(path_to_credentials_file))
     return credentials['username'], credentials['password']
 
+
 def handler(func):
     """
 
     Decorator to handle the response from a request.
 
     """
+
     def wrapper(**kwargs):
         # -> requests.Response
         if "url" not in kwargs.keys():
@@ -166,12 +175,14 @@ def handler(func):
 
     return wrapper
 
+
 def parser(func):
     """
 
     Decorator to parse the response from a request.
 
     """
+
     def wrapper(**kwargs) -> Dict[str, Union[str, bool, None]]:
 
         if "url" not in kwargs.keys():
@@ -198,24 +209,29 @@ def parser(func):
 
     return wrapper
 
+
 def requires_login(func):
     """ Decorator to perform login beforehand, if necessary
 
     Add this decorator to any function from Client or a children
     that requires to be logged in.
     """
+
     def wrapper(self, *args, **kwargs):
         if self.auth_token is None:
             self.login()
             if self.auth_token is None:
-                raise Exception("Could not access API, access token missing. Please use the 'login' function to obtain access.")
+                raise Exception(
+                    "Could not access API, access token missing. Please use the 'login' function to obtain access."
+                )
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
 @parser
 @handler
-def get(url: str, params: dict=None, **kwargs):
+def get(url: str, params: dict = None, **kwargs):
     """
 
     Same arguments and behavior as requests.get but handles exceptions and
@@ -295,11 +311,11 @@ def delete(url: str, **kwargs) -> requests.Response:
 @parser
 @handler
 def put(url: str, **kwargs):
-    response: requests.Response = requests.put(url, **kwargs)
+    response: requests.Response = requests.put(url, **kwargs, timeout=None)
     return response
 
 
-def download_file(url: str, local_filename: str=None, **kwargs)->str:
+def download_file(url: str, local_filename: str = None, **kwargs) -> str:
     """ Downloads a file from the specified url
     """
     if local_filename is None:
