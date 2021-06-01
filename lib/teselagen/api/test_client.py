@@ -344,12 +344,16 @@ class TESTClient():
             "parserId": str(parser_id) if parser_id else None
         }
 
-        response: Dict[str, Any] = post(
-            url=self.create_assay_url.format(experiment_id),
-            headers=self.headers,
-            json=body,
-        )
-        # { id: "3" }
+        try:
+            response: Dict[str, Any] = post(
+                url=self.create_assay_url.format(experiment_id),
+                headers=self.headers,
+                json=body,
+            )
+        except Exception as e:
+            # TODO : Use a logger
+            raise Exception(e)
+
         assay_res = json.loads(response["content"])[0]
         # Retrieve the created object
         assay = list(

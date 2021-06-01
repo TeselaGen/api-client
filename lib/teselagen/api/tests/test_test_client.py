@@ -31,6 +31,19 @@ TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Exam
 @pytest.mark.incremental
 class TestTESTClient():
 
+    # TODO: figure out how to run a clean up fixture.
+    # @pytest.fixture(autouse=True, scope='module')
+    # def clean_up(
+    #     self,
+    #     logged_client: TeselaGenClient,
+    #     experiment: Dict[str, Any],
+    #     select_laboratory,
+    # ) -> None:
+
+    #     client = logged_client.test
+    #     experiment_id: str = experiment['id']
+    #     client.delete_experiment(experiment_id=experiment_id)
+
     @pytest.fixture
     def expiration_time(self) -> str:
         _expiration_time: str = "30m"
@@ -57,20 +70,25 @@ class TestTESTClient():
         return test_client
 
     @pytest.fixture
-    def logged_client(self, client: TeselaGenClient,
-                      expiration_time: str) -> TESTClient:
+    def logged_client(
+        self,
+        client: TeselaGenClient,
+        expiration_time: str,
+    ) -> TeselaGenClient:
         """
 
         A logged TEST client instance.
 
         Returns:
-            (TESTClient) : An instance of the TEST client.
+            (TeselaGenClient) : An instance of the TEST client.
 
         """
-        client.login(  #username=credentials["test_user"],
+        client.login(
+            expiration_time=expiration_time
+            #username=credentials["test_user"],
             #passwd=credentials["test_password"],
-            expiration_time=expiration_time)
-        return client.test
+        )
+        return client
 
     @pytest.fixture
     def lab_id(self, client: TeselaGenClient) -> int:
@@ -127,10 +145,10 @@ class TestTESTClient():
     @pytest.fixture
     def experiment(
         self,
-        logged_client: TESTClient,
+        logged_client: TeselaGenClient,
         select_laboratory,
     ) -> Dict[str, Any]:
-        client = logged_client
+        client = logged_client.test
         experiment_name: str = "Python Test Client Experiment"
         experiment: Dict[str, Any] = client.create_experiment(
             experiment_name=experiment_name)
@@ -139,11 +157,11 @@ class TestTESTClient():
     @pytest.fixture
     def assay(
         self,
-        logged_client: TESTClient,
+        logged_client: TeselaGenClient,
         experiment: Dict[str, Any],
         select_laboratory,
     ) -> Dict[str, Any]:
-        client = logged_client
+        client = logged_client.test
         experiment_id: str = experiment["id"]
         assay_name: str = "Python Test Client Assay"
         # TODO : We may need to update this, probably with a parser or
@@ -194,7 +212,7 @@ class TestTESTClient():
 
         assert all(hasattr(TESTClient, attribute) for attribute in attributes)
 
-    def test_instance_attributes(self, logged_client: TESTClient) -> None:
+    def test_instance_attributes(self, logged_client: TeselaGenClient) -> None:
 
         # We check if the client inherit the required parents attributes.
         # parent_class_attributes: List[str] = ["labs_url"]
@@ -229,7 +247,7 @@ class TestTESTClient():
         ]
 
         assert all(
-            hasattr(logged_client, attribute) for attribute in attributes)
+            hasattr(logged_client.test, attribute) for attribute in attributes)
 
     def test_login(
         self,
@@ -259,10 +277,10 @@ class TestTESTClient():
 
     def test_delete_experiment(
         self,
-        logged_client: TESTClient,
+        logged_client: TeselaGenClient,
         experiment: List[Dict[str, Any]],
     ) -> None:
-        client = logged_client
+        client = logged_client.test
         experiment_id: str = experiment["id"]
         response = client.delete_experiment(experiment_id=experiment_id)
         assert response is None
@@ -276,19 +294,22 @@ class TestTESTClient():
 
     def test_delete_assay(
         self,
-        logged_client: TESTClient,
+        logged_client: TeselaGenClient,
         lab_id: int,
         assay: Dict[str, Any],
     ) -> None:
-        client = logged_client
+        client = logged_client.test
         assay_id: int = int(assay["id"])
         response = client.delete_assay(assay_id=assay_id)
 
         assert int(response["id"]) == assay_id, "Error deleting assay."
 
-    def test_get_experiments(self, logged_client: TESTClient,
-                             select_laboratory) -> None:
-        client = logged_client
+    def test_get_experiments(
+        self,
+        logged_client: TeselaGenClient,
+        select_laboratory,
+    ) -> None:
+        client = logged_client.test
         response: List[Dict[str, Any]] = client.get_experiments()
 
         assert isinstance(response, list)
@@ -299,10 +320,15 @@ class TestTESTClient():
                    for key in ["id", "name"])
         # assert all(element[key] is not None for element in response for key in ["id", "name"])
 
-    def test_get_assays(self, logged_client: TESTClient, experiment_id: str,
-                        select_laboratory, assay: List[Dict[str, Any]]) -> None:
+    def test_get_assays(
+        self,
+        logged_client: TeselaGenClient,
+        experiment_id: str,
+        select_laboratory,
+        assay: List[Dict[str, Any]],
+    ) -> None:
 
-        client = logged_client
+        client = logged_client.test
 
         response: List[Dict[str, Any]] = client.get_assays(
             experiment_id=experiment_id,)
@@ -323,13 +349,13 @@ class TestTESTClient():
     # @pytest.mark.skip(reason="The files endpoints are under maintenance.")
     def test_get_files(
         self,
-        logged_client: TESTClient,
+        logged_client: TeselaGenClient,
         host_url: str,
         select_laboratory,
     ) -> None:
         if 'platform' in host_url:
             return
-        client = logged_client
+        client = logged_client.test
         response: List[Dict[str, Any]] = client.get_files_info()
 
         assert isinstance(response, list)
@@ -344,13 +370,13 @@ class TestTESTClient():
     # @pytest.mark.skip(reason="The files endpoints are under maintenance.")
     def test_upload_file(
         self,
-        logged_client: TESTClient,
+        logged_client: TeselaGenClient,
         host_url: str,
         select_laboratory,
     ):
         if 'platform' in host_url:
             return
-        client = logged_client
+        client = logged_client.test
 
         filepath: Path = Path("./teselagen/api/tests/example_file.csv")
         assay_id: Optional[int] = None
@@ -365,13 +391,13 @@ class TestTESTClient():
     # @pytest.mark.skip(reason="The files endpoints are under maintenance.")
     def test_download_file(
         self,
-        logged_client: TESTClient,
+        logged_client: TeselaGenClient,
         host_url: str,
         select_laboratory,
     ):
         if 'platform' in host_url:
             return
-        client = logged_client
+        client = logged_client.test
         response = client.get_files_info()
         file_id: str = response[0]['id']
         response = client.download_file(file_id=file_id)
@@ -381,13 +407,13 @@ class TestTESTClient():
     # @pytest.mark.skip(reason="The files endpoints are under maintenance.")
     def test_delete_file(
         self,
-        logged_client: TESTClient,
+        logged_client: TeselaGenClient,
         host_url: str,
         select_laboratory,
     ):
         if 'platform' in host_url:
             return
-        client = logged_client
+        client = logged_client.test
 
         filepath: Path = Path("./teselagen/api/tests/example_file.csv")
         upload_response: Dict[str, Any] = client.upload_file(filepath=filepath,)
