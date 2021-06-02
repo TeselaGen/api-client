@@ -575,10 +575,11 @@ class TESTClient():
                    ]).first().reset_index() if group else final_results
 
             if with_subject_data:
-                assaySubjectIds = [
-                    assay_result['assaySubjectId']
-                    for assay_result in assay_results
-                ]
+                assaySubjectIds = list(
+                    set([
+                        assay_result['assaySubjectId']
+                        for assay_result in assay_results
+                    ]))
                 # assay_subjects = [assaySubject for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
                 assay_subjects = self.get_assay_subjects(
                     assay_subject_ids=assaySubjectIds, summarized=False)
@@ -598,10 +599,11 @@ class TESTClient():
 
         else:
             if with_subject_data:
-                assaySubjectIds = [
-                    assay_result['assaySubjectId']
-                    for assay_result in assay_results
-                ]
+                assaySubjectIds = list(
+                    set([
+                        assay_result['assaySubjectId']
+                        for assay_result in assay_results
+                    ]))
                 # assay_subjects = [assaySubject for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
                 assay_subjects = self.get_assay_subjects(
                     assay_subject_ids=assaySubjectIds,
