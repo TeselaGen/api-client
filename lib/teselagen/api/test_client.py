@@ -365,7 +365,7 @@ class TESTClient():
             raise IOError(f"Can't find new id {assay_res['id']}")
         return assay[0]
 
-    def delete_assay(self, assay_id: int) -> None:
+    def delete_assay(self, assay_id: str) -> Any:
         """ Deletes an Assay with ID=`assay_id`. """
         response: Dict[str, Any] = delete(
             url=self.delete_assay_url.format(assay_id),
@@ -375,6 +375,15 @@ class TESTClient():
         content = json.loads(response['content'])
 
         return content
+
+    def delete_assays(self, assay_ids: List[str]) -> List[Any]:
+        """ Deletes assays referenced by the IDs in the assay_ids list. """
+        response: List[Any] = []
+        for assay_id in assay_ids:
+            res = self.delete_assay(assay_id=assay_id)
+            response.append(res)
+
+        return response
 
     def put_assay_results(
         self,
