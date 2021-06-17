@@ -210,6 +210,33 @@ class TESTClient():
 
         return response["content"]
 
+    def import_assay_subject_descriptors(
+        self,
+        mapper: List[dict],
+        file_id: Optional[int] = None,
+        filepath: Optional[str] = None,
+        createSubjectsFromFile: Optional[bool] = False,
+    ):
+        # Implements the ability to do the file upload behind the scenes.
+        if (file_id is None):
+            if filepath is not None and (Path(filepath).exists()):
+                file = self.upload_file(filepath=filepath)
+                file_id = file['id']
+            else:
+                raise FileNotFoundError(f"File: {filepath} not found")
+        body = {
+            "fileId": file_id,
+            "mapper": mapper,
+            "createSubjectsFromFile": createSubjectsFromFile
+        }
+        response: Dict[str, Any] = put(
+            url=self.post_assay_results_import_url,
+            headers=self.headers,
+            json=body,
+        )
+        response["content"] = json.loads(response["content"])
+        return response["content"]
+
     # Experiments Endpoints
 
     def get_experiments(self) -> List[Dict[str, Any]]:
