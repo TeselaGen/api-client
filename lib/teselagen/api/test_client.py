@@ -221,6 +221,9 @@ class TESTClient():
         filepath: Optional[str] = None,
         createSubjectsFromFile: Optional[bool] = False,
     ):
+        #TODO: This is a temporary implementation while a better solution
+        # for long task is implemented.
+
         # Implements the ability to do the file upload behind the scenes.
         if (file_id is None):
             if filepath is not None and (Path(filepath).exists()):
@@ -233,13 +236,40 @@ class TESTClient():
             "mapper": mapper,
             "createSubjectsFromFile": createSubjectsFromFile
         }
-        response: Dict[str, Any] = put(
+        response: Dict[str, Any] = post(
             url=self.post_assay_results_import_url,
             headers=self.headers,
             json=body,
         )
-        response["content"] = json.loads(response["content"])
+        parsed_content = json.loads(response["content"])
+        if 'message' in parsed_content.keys():
+            parsed_content['message'] = parsed_content['message'].replace(
+                "Assay results", "Assay Subject descriptor")
+        response["content"] = parsed_content
         return response["content"]
+
+    def get_assay_subjects_descriptor_import_status(
+        self,
+        importId: str,
+    ) -> Any:
+        '''
+        Calls Teselagen TEST API endpoint: `GET /assays/results/import/:importId`.
+        Args:
+            - importId (string): ID of an assay result import process.
+        Returns: a JSON object with information on the status of an assay result import job.
+        '''
+        try:
+            response: Dict[str, Any] = get(
+                url=self.get_assay_results_import_url.format(importId),
+                headers=self.headers,
+            )
+        except Exception as e:
+            # TODO : Use a logger
+            print("Error:", e)
+            return None
+        response["content"] = json.loads(response["content"])
+        response.pop('url')
+        return response
 
     # Experiments Endpoints
 
