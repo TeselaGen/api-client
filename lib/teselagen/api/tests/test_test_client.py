@@ -345,8 +345,6 @@ class TestTESTClient():
         host_url: str,
         select_laboratory,
     ) -> None:
-        if 'platform' in host_url:
-            return
         client = logged_client.test
         response: List[Dict[str, Any]] = client.get_files_info()
 
@@ -366,8 +364,6 @@ class TestTESTClient():
         host_url: str,
         select_laboratory,
     ):
-        if 'platform' in host_url:
-            return
         client = logged_client.test
 
         filepath: Path = Path("./teselagen/api/tests/example_file.csv")
@@ -387,8 +383,6 @@ class TestTESTClient():
         host_url: str,
         select_laboratory,
     ):
-        if 'platform' in host_url:
-            return
         client = logged_client.test
         response = client.get_files_info()
         file_id: str = response[0]['id']
@@ -403,8 +397,6 @@ class TestTESTClient():
         host_url: str,
         select_laboratory,
     ):
-        if 'platform' in host_url:
-            return
         client = logged_client.test
 
         filepath: Path = Path("./teselagen/api/tests/example_file.csv")
