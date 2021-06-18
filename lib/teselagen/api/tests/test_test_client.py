@@ -31,19 +31,6 @@ TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Exam
 @pytest.mark.incremental
 class TestTESTClient():
 
-    # TODO: figure out how to run a clean up fixture.
-    # @pytest.fixture(autouse=True, scope='module')
-    # def clean_up(
-    #     self,
-    #     logged_client: TeselaGenClient,
-    #     experiment: Dict[str, Any],
-    #     select_laboratory,
-    # ) -> None:
-
-    #     client = logged_client.test
-    #     experiment_id: str = experiment['id']
-    #     client.delete_experiment(experiment_id=experiment_id)
-
     @pytest.fixture
     def expiration_time(self) -> str:
         _expiration_time: str = "30m"
@@ -152,7 +139,12 @@ class TestTESTClient():
         experiment_name: str = "Python Test Client Experiment"
         experiment: Dict[str, Any] = client.create_experiment(
             experiment_name=experiment_name)
-        return experiment
+        
+        yield experiment
+
+        # Tear down
+        experiment_id: str = experiment['id']
+        client.delete_experiment(experiment_id=experiment_id)
 
     @pytest.fixture
     def assay(
