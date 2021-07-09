@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 from typing import List, Dict, Any, Optional, Tuple
+import uuid
+from IPython.display import display_javascript, display_html, display
+import json
 
 from dna_features_viewer import GraphicFeature, CircularGraphicRecord #, GraphicRecord
 from SecretColors import Palette
@@ -35,3 +38,23 @@ def plot_plasmid_features(
     record = CircularGraphicRecord(sequence_length=plasmid_length, features=plot_feats)
     ax, _ = record.plot(figure_width=figure_width)
     return record.plot(ax)
+
+
+
+class RenderJSON(object):
+    def __init__(self, json_data):
+        if isinstance(json_data, dict):
+            self.json_str = json.dumps(json_data)
+        else:
+            self.json_str = json_data
+        self.uuid = str(uuid.uuid4())
+
+    def _ipython_display_(self):
+        display_html(f"""
+            <div id="{self.uuid}" style="height: max-content; width:100%;background-color: #f2f3ff";></div>
+            """, raw=True)
+        display_javascript("""
+            require(["https://rawgit.com/caldwell/renderjson/master/renderjson.js"], function() {
+            document.getElementById('%s').appendChild(renderjson(%s))
+            });
+            """ % (self.uuid, self.json_str), raw=True)
