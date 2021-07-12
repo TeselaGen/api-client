@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional, Tuple, Union
 import uuid
 from IPython.display import display_javascript, display_html, display
 import json
@@ -20,7 +20,7 @@ def plot_plasmid_features(
         plasmid_length (int): Number of nucleotid bases of the plasmid sequence
         features (List[Dict[str, Any]]): Features as obtained from TeselaGen DNA Sequence object
         figure_width (int, optional): Width size of figure. Defaults to 5.
-        palette (Optional[Palette], optional): A SecretColors color palette. Defaults to None, menaing 
+        palette (Optional[Palette], optional): A SecretColors color palette. Defaults to None, meaning 
             `Palette("material")` will be used.
 
     Returns:
@@ -42,16 +42,36 @@ def plot_plasmid_features(
 
 
 class RenderJSON(object):
-    def __init__(self, json_data):
-        if isinstance(json_data, dict):
+    """ Provides a an interactive visualization for json (or serializable list/dict) objects"""
+    def __init__(
+        self, 
+        json_data: Union[dict, list, str],
+        height: str="max-content",
+        width: str="100%",
+        background_color: str= "#f2f3ff"
+        ):
+        """Initiates json interactive visualization object for IPython
+
+        Args:
+            json_data (Union[dict, list, str]): The object to be shown.
+
+        Raises:
+            TypeError: If input type is not supported
+        """
+        if isinstance(json_data, (dict, list)) :
             self.json_str = json.dumps(json_data)
-        else:
+        elif isinstance(json_data, str):
             self.json_str = json_data
+        else:
+            raise TypeError(f"Can't process json_data of type {type(json_data)}")
+        self.style={"height": height, "width": width, "background_color": background_color}
         self.uuid = str(uuid.uuid4())
 
     def _ipython_display_(self):
+        """Renders JSON into collapsible HTML object by using [renderjson.js](https://github.com/caldwell/renderjson)
+        """
         display_html(f"""
-            <div id="{self.uuid}" style="height: max-content; width:100%;background-color: #f2f3ff";></div>
+            <div id="{self.uuid}" style="height: {self.style["height"]}; width:{self.style['width']};background-color: {self.style["background_color"]}";></div>
             """, raw=True)
         display_javascript("""
             require(["https://rawgit.com/caldwell/renderjson/master/renderjson.js"], function() {
