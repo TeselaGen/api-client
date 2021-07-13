@@ -60,7 +60,7 @@ class TESTClient():
                                            "assays") + "/{}/results"
 
         # Files
-        self.get_files_info_url: str = f"{api_url_base}/files/info"
+        self.get_files_info_url: str = f"{api_url_base}/files"
         self.get_files_info_by_assay_url: str = join(
             api_url_base, "assays") + "/{}/files/info"
         self.get_file_data_url: str = join(api_url_base, "files") + "/{}"
