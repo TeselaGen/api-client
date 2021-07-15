@@ -53,16 +53,20 @@ class TESTClient():
         self.get_assays_url: str = f"{api_url_base}/assays"
         self.get_assays_by_experiment_url: str = join(
             api_url_base, "experiments") + "/{}/assays"
+
         self.create_assay_url: str = join(api_url_base,
                                           "experiments") + "/{}/assays"
         self.delete_assay_url: str = join(api_url_base, "assays") + "/{}"
+
+        self.post_assay_results_import_url: str = f"{api_url_base}/assays/results/import"
+        self.get_assay_results_import_url: str = join(
+            api_url_base, "assays") + "/results/import/{}"
+
         self.assay_results_url: str = join(api_url_base,
                                            "assays") + "/{}/results"
 
         # Files
         self.get_files_info_url: str = f"{api_url_base}/files"
-        self.get_files_info_by_assay_url: str = join(
-            api_url_base, "assays") + "/{}/files/info"
         self.get_file_data_url: str = join(api_url_base, "files") + "/{}"
         self.delete_file_url: str = join(api_url_base, "files") + "/{}"
         self.upload_file_url: str = join(api_url_base, "files")
@@ -210,6 +214,63 @@ class TESTClient():
 
         return response["content"]
 
+    def import_assay_subject_descriptors(
+        self,
+        mapper: List[dict],
+        file_id: Optional[int] = None,
+        filepath: Optional[str] = None,
+        createSubjectsFromFile: Optional[bool] = False,
+    ):
+        #TODO: This is a temporary implementation while a better solution
+        # for long task is implemented.
+
+        # Implements the ability to do the file upload behind the scenes.
+        if (file_id is None):
+            if filepath is not None and (Path(filepath).exists()):
+                file = self.upload_file(filepath=filepath)
+                file_id = file['id']
+            else:
+                raise FileNotFoundError(f"File: {filepath} not found")
+        body = {
+            "fileId": file_id,
+            "mapper": mapper,
+            "createSubjectsFromFile": createSubjectsFromFile
+        }
+        response: Dict[str, Any] = post(
+            url=self.post_assay_results_import_url,
+            headers=self.headers,
+            json=body,
+        )
+        parsed_content = json.loads(response["content"])
+        if 'message' in parsed_content.keys():
+            parsed_content['message'] = parsed_content['message'].replace(
+                "Assay results", "Assay Subject descriptor")
+        response["content"] = parsed_content
+        return response["content"]
+
+    def get_assay_subjects_descriptor_import_status(
+        self,
+        importId: str,
+    ) -> Any:
+        '''
+        Calls Teselagen TEST API endpoint: `GET /assays/results/import/:importId`.
+        Args:
+            - importId (string): ID of an assay result import process.
+        Returns: a JSON object with information on the status of an assay result import job.
+        '''
+        try:
+            response: Dict[str, Any] = get(
+                url=self.get_assay_results_import_url.format(importId),
+                headers=self.headers,
+            )
+        except Exception as e:
+            # TODO : Use a logger
+            print("Error:", e)
+            return None
+        response["content"] = json.loads(response["content"])
+        response.pop('url')
+        return response
+
     # Experiments Endpoints
 
     def get_experiments(self) -> List[Dict[str, Any]]:
@@ -280,7 +341,7 @@ class TESTClient():
 
     def get_assays(
         self,
-        experiment_id: Optional[int] = None,
+        experiment_id: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
             Fetches all assays from the experiment specified in `experiment_id`.
@@ -330,7 +391,7 @@ class TESTClient():
 
     def create_assay(
         self,
-        experiment_id: int,
+        experiment_id: str,
         assay_name: str,
         parser_id: Optional[int] = None,
     ) -> Dict[str, Any]:
@@ -340,12 +401,16 @@ class TESTClient():
             "parserId": str(parser_id) if parser_id else None
         }
 
-        response: Dict[str, Any] = post(
-            url=self.create_assay_url.format(experiment_id),
-            headers=self.headers,
-            json=body,
-        )
-        # { id: "3" }
+        try:
+            response: Dict[str, Any] = post(
+                url=self.create_assay_url.format(experiment_id),
+                headers=self.headers,
+                json=body,
+            )
+        except Exception as e:
+            # TODO : Use a logger
+            raise Exception(e)
+
         assay_res = json.loads(response["content"])[0]
         # Retrieve the created object
         assay = list(
@@ -357,7 +422,7 @@ class TESTClient():
             raise IOError(f"Can't find new id {assay_res['id']}")
         return assay[0]
 
-    def delete_assay(self, assay_id: int) -> None:
+    def delete_assay(self, assay_id: str) -> Any:
         """ Deletes an Assay with ID=`assay_id`. """
         response: Dict[str, Any] = delete(
             url=self.delete_assay_url.format(assay_id),
@@ -368,14 +433,23 @@ class TESTClient():
 
         return content
 
+    def delete_assays(self, assay_ids: List[str]) -> List[Any]:
+        """ Deletes assays referenced by the IDs in the assay_ids list. """
+        response: List[Any] = []
+        for assay_id in assay_ids:
+            res = self.delete_assay(assay_id=assay_id)
+            response.append(res)
+
+        return response
+
     def put_assay_results(
         self,
         mapper: List[dict],
-        assay_id: Optional[int] = None,
-        file_id: Optional[int] = None,
-        filepath: Optional[str] = None,
+        assay_id: Optional[Union[int, str]] = None,
+        file_id: Optional[Union[int, str]] = None,
+        filepath: Optional[Union[str, Path]] = None,
         assay_name: Optional[str] = None,
-        experiment_id: Optional[int] = None,
+        experiment_id: Optional[Union[str, int]] = None,
         createSubjectsFromFile: Optional[bool] = True,
         createMeasurementTargetsFromFile: Optional[bool] = True,
     ):
@@ -398,45 +472,24 @@ class TESTClient():
             Returns: a JSON object with a success status, the number of results inserted, and whether new assay subjects and/or mesurement targets
                 were created during the insert.
         """
-        if (assay_id is None):
+        if (assay_id is None and assay_name is not None):
             # Supports creating a new assay by providing an assay name and an experiment ID.
-            if (assay_name is not None):
-                if (experiment_id is not None):
-                    assays = self.get_assays()
-                    assay = list(
-                        filter(
-                            lambda x: x['name'] == assay_name and x[
-                                'experiment']['id'] == experiment_id,
-                            assays,
-                        ))
-                    assay_id = assay[0]['id'] if len(
-                        assay) == 1 else self.create_assay(
-                            experiment_id=experiment_id,
-                            assay_name=assay_name,
-                        )['id']
-                else:
-                    raise Exception(f"Please provide a valid 'experiment_id'.")
+            assay_id = self.get_or_create_assay(
+                assay_name=assay_name,
+                experiment_id=str(experiment_id),
+            )
+        else:
+            raise Exception(
+                f"Please provide a valid 'assay_id' or 'assay_name'.")
         # Implements the ability to do the file upload behind the scenes.
-        if (file_id is None):
-            if filepath is not None and (Path(filepath).exists()):
-                # See the current files already uploaded to the assay.
-                files = self.get_files_info()
-                assay_files = list(
-                    filter(
-                        lambda x: x['assay'] is not None and x['assay']['id'] ==
-                        assay_id and filepath is not None and Path(x[
-                            'name']).name == Path(filepath).name,
-                        files,
-                    ))
-                if (len(assay_files) > 0):
-                    file_id = assay_files[0]['id']
-                # NOTE: When a file with the same name has already been uploaded into the Assay, do not upload the file again.
-                else:
-                    file = self.upload_file(
-                        filepath=filepath,
-                        assay_id=assay_id,
-                    )
-                    file_id = file['id']
+        if (file_id is None and filepath is not None):
+            file_id = self.get_or_upload_file(
+                filepath=filepath,
+                assay_id=str(assay_id),
+            )
+        else:
+            raise Exception(
+                f"Please provide a valid 'file_id' or an existant 'filepath'.")
 
         body = {
             "assayId": assay_id,
@@ -451,6 +504,7 @@ class TESTClient():
                 headers=self.headers,
                 json=body,
             )
+            print(f"response: {response}")
         except Exception as e:
             # TODO : Use a logger
             print("Error:", e)
@@ -458,6 +512,94 @@ class TESTClient():
         response["content"] = json.loads(response["content"])
 
         return response["content"]
+
+    def import_assay_results(
+        self,
+        mapper: List[dict],
+        assay_id: Optional[Union[int, str]] = None,
+        file_id: Optional[Union[int, str]] = None,
+        filepath: Optional[Union[str, Path]] = None,
+        assay_name: Optional[str] = None,
+        experiment_id: Optional[Union[str, int]] = None,
+    ):
+        """
+            Calls Teselagen TEST API endpoint: `POST /assays/results/importer`.
+            The data can be passed via a local filepath or either the file ID after already uploading it.
+
+            Args:
+                mapper (List[dict]): This is the JSON mapper used by the endpoint to understand each of the file columns. This mapper
+                    should be a list of Python Dictionary representing each structured header with a 'name', 'class' and 'subClassId' key.
+                    For more information on the mappers structure refer to https://api-docs.teselagen.com/#operation/AssaysPutAssayResults
+                assay_id (int) : Assay identifier.
+                file_id (int) : File identifier.
+                filepath (int) : Local location of the file.
+                assay_name (str) : Name of the assay into which insert the assay results.
+                experiment_id (number) : Experiment identifier. Only used when passed and 'assay_name' an no 'assay_id'.
+
+            Returns: a JSON object with a status and an import process ID. Which can be used to check the status of the import progress
+                by means of the 'get_assay_results_import_status' function.
+        """
+        if (assay_id is None and assay_name is not None):
+            # Supports creating a new assay by providing an assay name and an experiment ID.
+            assay_id = self.get_or_create_assay(
+                assay_name=assay_name,
+                experiment_id=str(experiment_id),
+            )
+        else:
+            raise Exception(
+                f"Please provide a valid 'assay_id' or 'assay_name'.")
+        # Implements the ability to do the file upload behind the scenes.
+        if (file_id is None and filepath is not None):
+            file_id = self.get_or_upload_file(
+                filepath=filepath,
+                assay_id=str(assay_id),
+            )
+        else:
+            raise Exception(
+                f"Please provide a valid 'file_id' or an existant 'filepath'.")
+        body = {
+            "assayId": assay_id,
+            "fileId": file_id,
+            "mapper": mapper,
+        }
+        try:
+            response: Dict[str, Any] = post(
+                url=self.post_assay_results_import_url,
+                headers=self.headers,
+                json=body,
+            )
+        except Exception as e:
+            # TODO : Use a logger
+            print("Error:", e)
+            return None
+        response["content"] = json.loads(response["content"])
+
+        return response["content"]
+
+    def get_assay_results_import_status(
+        self,
+        importId: str,
+    ) -> Any:
+        '''
+        Calls Teselagen TEST API endpoint: `GET /assays/results/import/:importId`.
+
+        Args:
+            - importId (string): ID of an assay result import process.
+
+        Returns: a JSON object with information on the status of an assay result import job.
+        '''
+        try:
+            response: Dict[str, Any] = get(
+                url=self.get_assay_results_import_url.format(importId),
+                headers=self.headers,
+            )
+        except Exception as e:
+            # TODO : Use a logger
+            print("Error:", e)
+            return None
+        response["content"] = json.loads(response["content"])
+
+        return response
 
     def get_assay_results(
         self,
@@ -499,10 +641,11 @@ class TESTClient():
                    ]).first().reset_index() if group else final_results
 
             if with_subject_data:
-                assaySubjectIds = [
-                    assay_result['assaySubjectId']
-                    for assay_result in assay_results
-                ]
+                assaySubjectIds = list(
+                    set([
+                        assay_result['assaySubjectId']
+                        for assay_result in assay_results
+                    ]))
                 # assay_subjects = [assaySubject for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
                 assay_subjects = self.get_assay_subjects(
                     assay_subject_ids=assaySubjectIds, summarized=False)
@@ -522,10 +665,11 @@ class TESTClient():
 
         else:
             if with_subject_data:
-                assaySubjectIds = [
-                    assay_result['assaySubjectId']
-                    for assay_result in assay_results
-                ]
+                assaySubjectIds = list(
+                    set([
+                        assay_result['assaySubjectId']
+                        for assay_result in assay_results
+                    ]))
                 # assay_subjects = [assaySubject for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
                 assay_subjects = self.get_assay_subjects(
                     assay_subject_ids=assaySubjectIds,
@@ -603,7 +747,7 @@ class TESTClient():
         self,
         filepath: Union[str, Path],
         experiment_id: Optional[int] = None,
-        assay_id: Optional[int] = None,
+        assay_id: Optional[str] = None,
     ):
         """
             Uploads a file. The request body is of type "multipart/form-data".
@@ -781,6 +925,56 @@ class TESTClient():
     # Others
 
     # TEST Client Utils
+
+    def get_or_create_assay(
+        self,
+        assay_name: str,
+        experiment_id: str,
+    ) -> Optional[str]:
+        ''' Supports creating a new assay by providing an assay name and an experiment ID.'''
+        assay_id = None
+        if (experiment_id is not None):
+            assays = self.get_assays()
+            assay = list(
+                filter(
+                    lambda x: x['name'] == assay_name and x['experiment']['id']
+                    == experiment_id, assays))
+            assay_id = assay[0]['id'] if len(assay) > 0 else self.create_assay(
+                experiment_id=experiment_id, assay_name=assay_name)['id']
+        else:
+            raise Exception(f"Please provide a valid 'experiment_id'.")
+
+        return assay_id
+
+    def get_or_upload_file(
+        self,
+        filepath: Union[str, Path],
+        assay_id: str,
+    ) -> Optional[str]:
+        file_id = None
+        if Path(filepath).exists():
+            # See the current files already uploaded to the assay.
+            files = self.get_files_info()
+            assay_files = list(
+                filter(
+                    lambda x: x['assay'] is not None and x['assay']['id'] ==
+                    assay_id and filepath is not None and Path(x[
+                        'name']).name == Path(filepath).name,
+                    files,
+                ))
+
+            if (len(assay_files) > 0):
+                file_id = assay_files[0]['id']
+            # NOTE: When a file with the same name has already been uploaded into the Assay, do not upload the file again.
+            else:
+                file = self.upload_file(
+                    filepath=filepath,
+                    assay_id=assay_id,
+                )
+                file_id = file['id']
+        else:
+            raise FileNotFoundError(f"Prvided 'filepath' does not exist.")
+        return file_id
 
     def _tabular_format_assay_subject_data(self, assay_subjects_data: Any):
         tabular_assay_subjects = []
