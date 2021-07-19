@@ -35,13 +35,36 @@ USER $USERNAME
 EXPOSE $notebookPort
 ARG DEBIAN_FRONTEND=noninteractive
 
+# Configure Python3.9 repo on the system
+RUN apt-get update && apt install -y software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.9 \
+    python3-pip \
+    && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create symbolic links:
+#         python -> python3
+#         pip -> pip3
+RUN ln -sfn /usr/bin/python3.9 /usr/bin/python & \
+    ln -sfn /usr/bin/python3.9 /usr/bin/python3 & \
+    ln -s /usr/bin/pip3 /usr/bin/pip
+
 # We install needed dependencies
 RUN apt-get update && \
-    apt-get install -yq --no-install-recommends \
+    apt-get install -yq \
+    #--no-install-recommends \
     apt-utils \
-    python3-setuptools\
-    python3 \
-    python3-pip \
+    python3.9-distutils \
+    #python3-setuptools\
+    #python3 \
+    #python3-pip \
     python3-venv \
     wget \
     nano \
@@ -56,24 +79,22 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Create symbolic links:
-#         python -> python3
-#         pip -> pip3
-RUN ln -sfn /usr/bin/python3.6 /usr/bin/python & \
-    ln -s /usr/bin/pip3 /usr/bin/pip
+# Update pip
+RUN python -m pip install --upgrade pip==21.1.3
 
-# Upgrade pip
-RUN set -x \
-	&& pip3 install pip==21.0.1 setuptools==53.0.0 wheel==0.36.2 --no-cache-dir
+# Install setuptools and wheel
+RUN pip install setuptools==57.2.0 --no-cache-dir
 
 # Install poetry
 RUN set -x \
     && apt-get update \
     && apt-get install -y curl \
     && curl -sSL  https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py \
-    && python3 get-poetry.py --version 1.1.4 \
-    && rm -rf get-poetry.py
+    && python3 get-poetry.py --version 1.1.7
+    #&& rm -rf get-poetry.py
 ENV PATH="/root/.poetry/bin:$PATH"
+
+# Tell poetry to install everything on system's python
 RUN poetry config virtualenvs.create false
 
 # We set the current working directory
@@ -89,7 +110,7 @@ ARG PATH_TO_MODULE_REQUIREMENTS=lib/requirements.txt
 ARG PATH_TO_EXAMPLES_REQUIREMENTS=lib/teselagen/examples/requirements.txt
 
 # Poetry installations are not editable
-RUN cd lib/ && poetry install && cd ..
+RUN cd lib/ && POETRY_VIRTUALENVS_CREATE=false poetry install && cd ..
 
 # Generate Jupyter Config
 ENV PATH="~/.local/bin/jupyter-notebook:$PATH"
@@ -123,4 +144,6 @@ RUN chmod +x on_start.sh
 
 # And we set the "home" as the default working directory
 WORKDIR /home/
+
 ENTRYPOINT ["/tmp/on_start.sh"]
+#ENTRYPOINT ["tail", "-f", "/dev/null"]
