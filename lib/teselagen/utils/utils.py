@@ -4,12 +4,31 @@ import json
 from pathlib import Path
 import time
 from typing import Any, Dict, List, Optional, Tuple, Union
-
+import pandas as pd
 import requests
 import teselagen
 
 DEFAULT_HOST_URL: str = "https://platform.teselagen.com"
 DEFAULT_API_TOKEN_NAME: str = "x-tg-cli-token"
+
+
+def xlsx_parser(filepath: Path, as_dataframe: bool = True) -> Dict[str, Union[pd.DataFrame, dict]]:
+    '''
+        This method takes in a *.xlsx file and converts it to a dictionary with its sheet names as keys
+        and the sheet's data as its values. The sheet's data comes as a dataframe by default but can also come as a dictionary (JSON).
+    '''
+    sheets_data = {}
+    reader = pd.ExcelFile(filepath, engine="openpyxl")
+    for sheet_name in reader.sheet_names:
+        print(f"Reading data from sheet: {sheet_name}")
+        sheet_df = pd.read_excel(
+            filepath,
+            sheet_name=sheet_name,
+            engine="openpyxl",
+        )
+        sheets_data[sheet_name] = sheet_df if as_dataframe is True else sheet_df.to_dict()
+
+    return sheets_data
 
 
 def load_from_json(filepath: Path) -> Any:
@@ -232,7 +251,7 @@ def requires_login(func):
 
 @parser
 @handler
-def get(url: str, params: dict = None, **kwargs):
+def get(url: str, params: Dict[str, Any] = None, **kwargs):
     """
 
     Same arguments and behavior as requests.get but handles exceptions and
