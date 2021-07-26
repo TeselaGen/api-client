@@ -25,7 +25,7 @@ def downsample_data(
     verbose: Optional[bool] = False,
 ) -> pd.DataFrame:
     """
-        This function can down sample any tabular data that contains a time column. Data must be input as a dataframe togther with the necessary arguments.
+        This function can down sample any tabular data that contains a time column. Data must be input as a dataframe together with the necessary arguments.
         One can downsample based on a maximum number of sample points expected or by passing a sampling period.
 
         NOTE: Down sampling removes samples from the dataframe. The criteria used to remove sample points within the sampling period is to keep the first sample
@@ -43,7 +43,7 @@ def downsample_data(
         Returns: A down sampled version of the input dataframe.
     """
 
-    _df = dataframe.copy()
+    _df: pd.DataFrame = dataframe.copy()
 
     # Create a date time column for decimation with pandas resample. A dummy date with a dummy seconds time unit will be used.
     _df["DateTime"] = _df[f"{time_column}"].apply(
@@ -51,7 +51,8 @@ def downsample_data(
             seconds=timevalues))
 
     # Compute the time span in seconds.
-    timespan = (_df["DateTime"].max() - _df["DateTime"].min()).total_seconds()
+    timespan = (cast(datetime, _df["DateTime"].max()) -
+                cast(datetime, _df["DateTime"].min())).total_seconds()
 
     # number of sample points in input dataframe.
     numer_of_datapoints = _df.shape[0]

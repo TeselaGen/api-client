@@ -865,9 +865,11 @@ class TESTClient():
 
     # File Endpoints
 
-    def get_files_info(self,
-                       experiment_id: Optional[str] = None,
-                       assay_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_files_info(
+        self,
+        experiment_id: Optional[str] = None,
+        assay_id: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
         """
             Fetches all files from the selected Laboratory. You can also filter the results by experiment or by assay using the
             'experiment_id' and 'assay_id' arguments.
@@ -1201,7 +1203,7 @@ class TESTClient():
 
     @staticmethod
     def _filter_imported_files(files: List[Any]) -> List[Any]:
-
+        """ Takes in a list of file IDs and returns only those that are successfully imported in TEST """
         if isinstance(files, list) and len(files) > 0:
             filtered_files = list(
                 filter(
