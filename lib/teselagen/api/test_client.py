@@ -668,7 +668,6 @@ class TESTClient():
             if file_ids is None:
                 # Get the files imported into the assay and only keep the ones that have successfully been imported.
                 assay_files = self.get_files_info(assay_id=assay_id)
-
                 assay_imported_files = self._filter_imported_files(assay_files)
 
                 if len(assay_imported_files) > 0:
@@ -696,6 +695,7 @@ class TESTClient():
 
             if len(final_assay_results) == 1:
                 # When assay has just one imported data file, simply return the data object.
+                # This makes it compatible with version 0.3.2
                 return final_assay_results[0]['data']
             else:
                 return final_assay_results
