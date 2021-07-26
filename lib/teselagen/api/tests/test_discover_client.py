@@ -16,7 +16,6 @@ MODEL_TYPES_TO_BE_TESTED: List[Optional[str]] = [
     "predictive", "evolutive", "generative", "null"
 ]
 
-@pytest.mark.incremental
 class TestDISCOVERClient():
     @pytest.fixture
     def client(self, host_url, api_token_name) -> TeselaGenClient:
