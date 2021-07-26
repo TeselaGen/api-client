@@ -7,11 +7,10 @@ import json
 from os.path import join
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-from typing_extensions import TypedDict
+from typing_extensions import Literal, TypedDict
 import warnings
 
 import pandas as pd
-from teselagen.api.client import TeselaGenClient
 from teselagen.utils import delete
 from teselagen.utils import get
 from teselagen.utils import post
@@ -28,8 +27,8 @@ class IAssayResults(TypedDict):
     data: Union[pd.DataFrame, List[Dict[str, Any]]]
 
 
-DEFAULT_PAGE_SIZE = 200
-IMPORTED_FILE_STATUSES = ["FINISHED", "FINISHED-DISCARDED"]
+DEFAULT_PAGE_SIZE: Literal[200] = 200
+IMPORTED_FILE_STATUSES: List[str] = ["FINISHED", "FINISHED-DISCARDED"]
 
 
 class TESTClient():
@@ -612,20 +611,20 @@ class TESTClient():
 
         return response
 
-    # TODO: For assays with multiple imported files, evaluate support for retrieving the assay results merged together.
+    # TODO : For assays with multiple imported files, evaluate support for retrieving the assay results merged together.
     # This requires first validating that data files have a common schema or common reference column used as join key.
     def get_assay_results(
         self,
         assay_id: str,
-        file_ids: Optional[Union[str, List[str]]] = None,
+        file_ids: Optional[List[str]] = None,
         page_number: Optional[int] = None,
         page_size: Optional[int] = None,
         as_dataframe: Optional[bool] = True,
         with_subject_data: Optional[bool] = True,
-    ) -> List[IAssayResults]:
+    ) -> Union[Any, List[IAssayResults]]:
         """
-            Calls Teselagen TEST API endpoint: `GET /assays/:assayId/results`. It implemented data pagination controllable via the
-            `page_size` and `page_number` arguments passed as query parameters to the endpoint.
+            Calls Teselagen TEST API endpoint: `GET /assays/:assayId/results`. It implements data pagination controllable via the
+            `page_size` and `page_number` arguments further passed as query parameters to the endpoint.
 
             For Assays with multiple imported files, a list of dictionaries will be returned, with file information and a dataframe with its tabular content.
             You can specify which files you want to include in the results. By default a page of results from each of them will be returned.
@@ -634,7 +633,7 @@ class TESTClient():
 
             Args:
                 assay_id (str): Assay identifier.
-                file_ids (Optional[Union[str, List[str]]]): File identifiers.
+                file_ids (Optional[List[str]]): File identifiers.
                 page_size (Optional[int]): Page size for data pagination.
                 page_number (Optional[int]): Page number for data pagination.
                 as_dataframe (Optional[bool]): Flag indicating whether to return the data as a dataframe (default=True).
@@ -665,7 +664,6 @@ class TESTClient():
             )
 
         try:
-
             # If no file IDs are passed, query them from the Assay.
             if file_ids is None:
                 # Get the files imported into the assay and only keep the ones that have successfully been imported.
@@ -673,8 +671,7 @@ class TESTClient():
 
                 assay_imported_files = self._filter_imported_files(assay_files)
 
-                if assay_imported_files[
-                        0] is not None and "id" in assay_imported_files[0]:
+                if len(assay_imported_files) > 0:
                     file_ids = list(
                         map(
                             lambda x: x["id"],
@@ -687,7 +684,7 @@ class TESTClient():
 
             final_assay_results: List[IAssayResults] = []
             for file_id in file_ids:
-                final_result = self._get_assay_file_results(
+                final_result: IAssayResults = self._get_assay_file_results(
                     assay_id=assay_id,
                     file_id=file_id,
                     page_number=page_number,
@@ -697,7 +694,11 @@ class TESTClient():
                 )
                 final_assay_results.append(final_result)
 
-            return final_assay_results
+            if len(final_assay_results) == 1:
+                # When assay has just one imported data file, simply return the data object.
+                return final_assay_results[0]['data']
+            else:
+                return final_assay_results
 
         except Exception as e:
             print(e)
@@ -746,7 +747,7 @@ class TESTClient():
 
             if len(assay_results) == 0:
                 raise Exception(
-                    f"Error getting assay results from assay with ID={assay_id}. Make sure assay has imported results."
+                    f"Error getting assay results from assay with ID={assay_id}. Make sure assay has imported data files."
                 )
 
             tabular_assay_results, assay_result_indexes = self._tabular_format_assay_result_data(
@@ -855,6 +856,7 @@ class TESTClient():
             api_result = json.loads(response["content"])
 
         except Exception as e:
+            print(e)
             raise Exception(
                 f"Error getting assay results from assay with ID={assay_id}. Make sure assay exists or that has imported results."
             )
@@ -1203,8 +1205,8 @@ class TESTClient():
         if isinstance(files, list) and len(files) > 0:
             filtered_files = list(
                 filter(
-                    lambda x: "importStatus" in x and x["importStatus"] in
-                    IMPORTED_FILE_STATUSES, files))
+                    lambda x: "id" in x and "importStatus" in x and x[
+                        "importStatus"] in IMPORTED_FILE_STATUSES, files))
             return filtered_files
         else:
             return []

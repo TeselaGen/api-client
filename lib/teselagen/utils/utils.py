@@ -2,8 +2,7 @@
 import getpass
 import json
 from pathlib import Path
-import time
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 import pandas as pd
 import requests
 import teselagen
