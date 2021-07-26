@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 import getpass
 import json
+import math
+from datetime import datetime, timedelta, date, time
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union, List, cast
+from typing_extensions import Literal
 import pandas as pd
 import requests
 import teselagen
@@ -10,22 +13,110 @@ import teselagen
 DEFAULT_HOST_URL: str = "https://platform.teselagen.com"
 DEFAULT_API_TOKEN_NAME: str = "x-tg-cli-token"
 
+DEFAULT_MAX_DATAPOINTS: int = 100
+TimeUnit = Literal["miliseconds", "seconds", "minutes", "hours", "days"]
 
-def xlsx_parser(filepath: Path, as_dataframe: bool = True) -> Dict[str, Union[pd.DataFrame, dict]]:
+
+def downsample_data(
+    dataframe: pd.DataFrame,
+    time_column: str,
+    max_samples: int = DEFAULT_MAX_DATAPOINTS,
+    sampling_period: Optional[int] = None,
+    verbose: Optional[bool] = False,
+) -> pd.DataFrame:
+    """
+        This function can down sample any tabular data that contains a time column. Data must be input as a dataframe togther with the necessary arguments.
+        One can downsample based on a maximum number of sample points expected or by passing a sampling period.
+
+        NOTE: Down sampling removes samples from the dataframe. The criteria used to remove sample points within the sampling period is to keep the first sample
+            in each sampling period and remove the rest ('pandas.DataFrame.resample(...).first().dropna()').
+        TODO: Add support for other down sampling criteria functions such as 'last', 'average', etc.
+
+        Args:
+            dataframe (pd.DataFrame): Input data as a pandas dataframe.
+            time_column (str): name of the column that contains the sample time values used as reference for the down sampling.
+            sampling_period (int): This input determines the interval by which to downsample the dataframe.
+            max_samples (int): Serves as an alternative to 'sampling_period'. If no sampling_period is provided, it will be automatically computed based
+                on the maximum number of desired samples.
+            verbose (Optional[bool]): If set to 'True', it will print information relevant to the function such the input dataframe's timespan.
+
+        Returns: A down sampled version of the input dataframe.
+    """
+
+    _df = dataframe.copy()
+
+    # Create a date time column for decimation with pandas resample. A dummy date with a dummy seconds time unit will be used.
+    _df["DateTime"] = _df[f"{time_column}"].apply(
+        lambda timevalues: datetime.combine(date.today(), time()) + timedelta(
+            seconds=timevalues))
+
+    # Compute the time span in seconds.
+    timespan = (_df["DateTime"].max() - _df["DateTime"].min()).total_seconds()
+
+    # number of sample points in input dataframe.
+    numer_of_datapoints = _df.shape[0]
+
+    # If no sampling period is provided use 'max_samples' to determine the sampling period.
+    if sampling_period is None:
+
+        # If the actual number of datapoints in the dataframe or the dataframe's timespan is 'leq'
+        # than the max number of datapoints no downsampling is needed.
+        is_down_sampling_needed = (numer_of_datapoints >
+                                   max_samples) or (timespan > max_samples)
+
+        if is_down_sampling_needed:
+            # Compute the sampling period automatically based on the number of datapoints wanted (defaulted to 'DEFAULT_max_samples').
+            sampling_period = math.floor(timespan / max_samples)
+            _df.set_index("DateTime", inplace=True)
+            _df = _df.resample(
+                rule=f"{sampling_period}s").first().dropna().reset_index(
+                    drop=True)
+
+        # If no down sampling is needed simply return the input dataframe.
+        else:
+            return dataframe
+
+    # If a sampling period is provided, resample the dataframe by it.
+    else:
+        _df.set_index("DateTime", inplace=True)
+        _df = _df.resample(
+            rule=f"{sampling_period}s").first().dropna().reset_index(drop=True)
+
+    if verbose:
+        print(f"Data timespan: {timespan}")
+        print(f"Sample points left: {_df.shape[0]}")
+        print(f"Sample points removed: {dataframe.shape[0] - _df.shape[0]}")
+
+    return _df
+
+
+def xlsx_parser(
+    filepath: Union[str, Path],
+    sheet_names: Optional[List[str]] = None,
+) -> Dict[str, Union[pd.DataFrame, dict]]:
     '''
         This method takes in a *.xlsx file and converts it to a dictionary with its sheet names as keys
-        and the sheet's data as its values. The sheet's data comes as a dataframe by default but can also come as a dictionary (JSON).
+        and the sheet's data as its values. The sheet's data comes as a dataframe.
+
+        Args:
+         - filepath (Union[str, Path]): file path to the XLSX file.
+         - sheet_names (Optional[List[str]]): Sheet names to process. If None is provided, all sheets will be processed.
     '''
     sheets_data = {}
     reader = pd.ExcelFile(filepath, engine="openpyxl")
     for sheet_name in reader.sheet_names:
+        # If sheet_names is provided, skip sheets not in 'sheet_names'
+        if isinstance(sheet_names, list) and len(
+                sheet_names) > 0 and sheet_name not in sheet_names:
+            continue
+
         print(f"Reading data from sheet: {sheet_name}")
         sheet_df = pd.read_excel(
-            filepath,
+            str(filepath),
             sheet_name=sheet_name,
             engine="openpyxl",
         )
-        sheets_data[sheet_name] = sheet_df if as_dataframe is True else sheet_df.to_dict()
+        sheets_data[sheet_name] = sheet_df
 
     return sheets_data
 
@@ -52,7 +143,7 @@ def load_from_json(filepath: Path) -> Any:
 def get_project_root() -> Path:
     """ Returns project's root folder <absolute/path/to>/lib
     """
-    return Path(teselagen.__path__[0]).parent.resolve()
+    return Path(cast(list, teselagen.__path__)[0]).parent.resolve()
 
 
 def get_credentials_path() -> Path:
