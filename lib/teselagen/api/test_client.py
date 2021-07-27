@@ -621,7 +621,7 @@ class TESTClient():
         page_size: Optional[int] = None,
         as_dataframe: Optional[bool] = True,
         with_subject_data: Optional[bool] = True,
-    ) -> Union[Any, List[IAssayResults]]:
+    ) -> List[IAssayResults]:
         """
             Calls Teselagen TEST API endpoint: `GET /assays/:assayId/results`. It implements data pagination controllable via the
             `page_size` and `page_number` arguments further passed as query parameters to the endpoint.
@@ -693,12 +693,7 @@ class TESTClient():
                 )
                 final_assay_results.append(final_result)
 
-            if len(final_assay_results) == 1:
-                # When assay has just one imported data file, simply return the data object.
-                # This makes it compatible with version 0.3.2
-                return final_assay_results[0]['data']
-            else:
-                return final_assay_results
+            return final_assay_results
 
         except Exception as e:
             print(e)
