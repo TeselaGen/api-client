@@ -30,13 +30,6 @@ TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Exam
 
 class TestTESTClient():
 
-    # @pytest.fixture
-    # def headers(self) -> Dict[str, str]:
-    #     _headers: Dict[str, str] = {"Content-type": "application/json"}
-    #     return _headers
-
-    
-
     @pytest.fixture
     def lab_id(self, client: TeselaGenClient) -> int:
         """

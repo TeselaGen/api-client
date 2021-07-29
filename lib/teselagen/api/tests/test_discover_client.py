@@ -9,7 +9,7 @@ import pytest
 import requests_mock
 import fastaparser
 
-from teselagen.api import TeselaGenClient, DISCOVERClient
+from teselagen.api import TeselaGenClient
 from teselagen.utils import load_from_json, get_project_root
 
 MODEL_TYPES_TO_BE_TESTED: List[Optional[str]] = [
