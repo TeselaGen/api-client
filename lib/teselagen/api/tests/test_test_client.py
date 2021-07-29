@@ -30,51 +30,12 @@ TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Exam
 
 class TestTESTClient():
 
-    @pytest.fixture
-    def expiration_time(self) -> str:
-        _expiration_time: str = "30m"
-        return _expiration_time
+    # @pytest.fixture
+    # def headers(self) -> Dict[str, str]:
+    #     _headers: Dict[str, str] = {"Content-type": "application/json"}
+    #     return _headers
 
-    @pytest.fixture
-    def headers(self) -> Dict[str, str]:
-        _headers: Dict[str, str] = {"Content-type": "application/json"}
-        return _headers
-
-    @pytest.fixture
-    def client(self, host_url: str, api_token_name: str) -> TeselaGenClient:
-        """
-
-        A TeselaGen client instance.
-
-        Returns:
-            (TeselaGenClient) : An instance of TeselaGen client.
-
-        """
-        test_client = TeselaGenClient(api_token_name=api_token_name,
-                                      host_url=host_url,
-                                      module_name='test')
-        return test_client
-
-    @pytest.fixture
-    def logged_client(
-        self,
-        client: TeselaGenClient,
-        expiration_time: str,
-    ) -> TeselaGenClient:
-        """
-
-        A logged TEST client instance.
-
-        Returns:
-            (TeselaGenClient) : An instance of the TEST client.
-
-        """
-        client.login(
-            expiration_time=expiration_time
-            #username=credentials["test_user"],
-            #passwd=credentials["test_password"],
-        )
-        return client
+    
 
     @pytest.fixture
     def lab_id(self, client: TeselaGenClient) -> int:
