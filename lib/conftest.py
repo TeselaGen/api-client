@@ -56,20 +56,20 @@ def test_configuration():
             warnings.warn(f"Host URL was set to: {configuration['host_url']}")
     return configuration
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def host_url(test_configuration) -> str:
     return test_configuration['host_url']
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def api_token_name(test_configuration) -> str:
     return test_configuration['api_token_name']
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def expiration_time() -> str:
     _expiration_time: str = "30m"
     return _expiration_time
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def client(host_url: str, api_token_name: str) -> TeselaGenClient:
     """
 
@@ -84,7 +84,7 @@ def client(host_url: str, api_token_name: str) -> TeselaGenClient:
                                   module_name='test')
     return test_client
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def logged_client(
     client: TeselaGenClient,
     expiration_time: str,
