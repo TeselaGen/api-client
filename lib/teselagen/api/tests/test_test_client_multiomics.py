@@ -400,6 +400,7 @@ class TestTESTClientMultiomicsData():
         assert len(filtered_assays)==1, "Expecting just one assay for this assertion"
 
     def test_download_data(self, upload_transcriptomics, client_with_lab, test_data):
+        """Check mapped data is downloaded ok"""
         filtered_assays = [assay for assay in client_with_lab.test.get_assays() if assay["name"]=="Wild Type Transcriptomics"]
         
         # First we download data without subject data
@@ -417,4 +418,13 @@ class TestTESTClientMultiomicsData():
             with_subject_data=True)
         assert len(results_with_subject_data[0]["data"])==9, "Wrong number of output rows"
         assert len(results_with_subject_data[0]["data"].columns)==24, "Wrong number of output columns"
+
+    def test_download_file(self, upload_transcriptomics, client_with_lab, test_data):
+        """Check files download"""
+        file_name = "TEST_OD_WT.csv"
+        files = client_with_lab.test.get_files_info()
+        fileterd_files = [file_i for file_i in files if file_i["name"]==file_name]
+        #assert len(fileterd_files)==1, "Expecting just one file for this assertion"
+        downloaded = pd.read_csv(client_with_lab.test.download_file(file_id=fileterd_files[0]["id"]))
+        assert downloaded.shape == (10, 5)
         
