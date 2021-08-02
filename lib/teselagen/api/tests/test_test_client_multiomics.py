@@ -28,6 +28,12 @@ def wait_for_status(method: Callable, validate: Optional[Callable]=None, **metho
         assert validate(result), "Validation failed"
     return result
 
+def delete_file(file_name, client_with_lab, ):
+    # Get file id 
+    files = client_with_lab.test.get_files_info()
+    fileterd_files = [file_i for file_i in files if file_i["name"]==file_name]
+    client_with_lab.test.delete_file(file_id=fileterd_files[-1]["id"])
+
 @pytest.fixture(scope="module")
 def temp_dir(tmp_path_factory)->Path:
     """This works similar to pytest's testdir but with "module" scope"""
@@ -262,7 +268,9 @@ def optical_density_upload(metadata, test_data, temp_dir, client_with_lab, wild_
         validate=lambda x: x["content"]["status"]["code"] == "FINISHED", 
         importId=response['importId'])
 
-    return response
+    yield response
+
+    delete_file(file_name=new_od_filepath.name, client_with_lab=client_with_lab, )
 
 @pytest.fixture(scope="module")
 def multiomics_mapper(metadata):
@@ -338,7 +346,9 @@ def upload_external_metabolites( temp_dir, test_data, client_with_lab, wild_type
         validate=lambda x: x["content"]["status"]["code"] == "FINISHED", 
         importId=response['importId'])
 
-    return response
+    yield response
+
+    delete_file(file_name=new_wt_ext_metabolites_filepath.name, client_with_lab=client_with_lab, )
 
 @pytest.fixture(scope="module")
 def upload_transcriptomics( temp_dir, test_data, client_with_lab, wild_type_experiment, multiomics_mapper):
@@ -363,7 +373,9 @@ def upload_transcriptomics( temp_dir, test_data, client_with_lab, wild_type_expe
         validate=lambda x: x["content"]["status"]["code"] == "FINISHED", 
         importId=response['importId'])
 
-    return response
+    yield response
+
+    delete_file(file_name=new_wt_transcriptomics_filepath.name, client_with_lab=client_with_lab, )
     
 
 class TestTESTClientMultiomicsData():
@@ -419,7 +431,7 @@ class TestTESTClientMultiomicsData():
         assert len(results_with_subject_data[0]["data"])==9, "Wrong number of output rows"
         assert len(results_with_subject_data[0]["data"].columns)==24, "Wrong number of output columns"
 
-    def test_download_file(self, upload_transcriptomics, client_with_lab, test_data):
+    def test_download_file(self, optical_density_upload, client_with_lab, test_data):
         """Check files download"""
         file_name = "TEST_OD_WT.csv"
         files = client_with_lab.test.get_files_info()
