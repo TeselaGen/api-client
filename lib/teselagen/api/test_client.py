@@ -7,10 +7,10 @@ import json
 from os.path import join
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+from typing_extensions import Literal, TypedDict
+import warnings
 
 import pandas as pd
-from teselagen.utils import DEFAULT_API_TOKEN_NAME
-from teselagen.utils import DEFAULT_HOST_URL
 from teselagen.utils import delete
 from teselagen.utils import get
 from teselagen.utils import post
@@ -19,6 +19,16 @@ from teselagen.utils import put
 # NOTE : Related to Postman and Python requests
 #       "body" goes into the "json" argument
 #       "Query Params" goes into "params" argument
+
+
+class IAssayResults(TypedDict):
+    assayId: str
+    fileId: str
+    data: Union[pd.DataFrame, List[Dict[str, Any]]]
+
+
+DEFAULT_PAGE_SIZE: Literal[200] = 200
+IMPORTED_FILE_STATUSES: List[str] = ["FINISHED", "FINISHED-DISCARDED"]
 
 
 class TESTClient():
@@ -601,115 +611,263 @@ class TESTClient():
 
         return response
 
+    # TODO : For assays with multiple imported files, evaluate support for retrieving the assay results merged together.
+    # This requires first validating that data files have a common schema or common reference column used as join key.
     def get_assay_results(
         self,
-        assay_id: int,
-        as_dataframe: bool = True,
-        with_subject_data: bool = True,
-        group: bool = True,
-    ):
+        assay_id: str,
+        file_ids: Optional[List[str]] = None,
+        page_number: Optional[int] = None,
+        page_size: Optional[int] = None,
+        as_dataframe: Optional[bool] = True,
+        with_subject_data: Optional[bool] = True,
+    ) -> List[IAssayResults]:
         """
-            Calls Teselagen TEST API endpoint: `GET /assays/:assayId/results`.
+            Calls Teselagen TEST API endpoint: `GET /assays/:assayId/results`. It implements data pagination controllable via the
+            `page_size` and `page_number` arguments further passed as query parameters to the endpoint.
+
+            For Assays with multiple imported files, a list of dictionaries will be returned, with file information and a dataframe with its tabular content.
+            You can specify which files you want to include in the results. By default a page of results from each of them will be returned.
+
             More information at https://api-docs.teselagen.com/#operation/AssaysGetAssayResults.
 
             Args:
-                assay_id (int): Assay identifier.
-                as_dataframe (bool): Flag indicating whether to return the data as a dataframe (default=True).
-                with_subject_data (bool): Flag indicating whether to return the assay results together with a more complete
+                assay_id (str): Assay identifier.
+                file_ids (Optional[List[str]]): File identifiers.
+                page_size (Optional[int]): Page size for data pagination.
+                page_number (Optional[int]): Page number for data pagination.
+                as_dataframe (Optional[bool]): Flag indicating whether to return the data as a dataframe (default=True).
+                with_subject_data (Optional[bool]): Flag indicating whether to return the assay results together with a more complete
                     information on the assay subjects (default=True).
-                group (bool): Flag indicating whether to group the assay results and assay subjects by the corresponding tabular indexes.
-                    Only used when the 'as_dataframe' is set to True (default=True).
 
-            Returns: Either a dataframe or a JSON Array. The information included in the returned object is all the assay results,
-                plus the assay name, and assay subject information (if 'with_subject_data' is set to True).
+
+            Returns: A IAssayResults object or a list of IAssayResults objects. The information included in the returned object is the assay results,
+                plus the assay name, file information and assay subject information (if 'with_subject_data' is set to True).
         """
-        # NOTE: depending on the different flags, the order of the columns may vary.
-        api_result = self._get_assay_results_from_api(assay_id=assay_id)
+        if page_size is None:
+            print(
+                f"Using the 'page_size' argument for pagination is advised (default page_size={DEFAULT_PAGE_SIZE})."
+            )
 
-        assay_results = api_result['results']
-        tabular_assay_results, assay_result_indexes =\
-            self._tabular_format_assay_result_data(assay_results)
+        if page_number is None:
+            print(
+                f"Using the 'page_number' argument for pagination is advised (default page_number=1)."
+            )
 
-        if as_dataframe:
-            final_results = pd.DataFrame(tabular_assay_results).set_index(
-                assay_result_indexes[0])
-            final_results.insert(0, "Assay", api_result['name'])
-            # If required, group by the assay results and assay subject indexes.
-            # Usually these indexes are going to be the assay subject id and any reference dimension found in the assay results.
-            final_results = final_results.groupby(
-                by=[*assay_result_indexes
-                   ]).first().reset_index() if group else final_results
+        if isinstance(page_size, int) and page_size > 2 * DEFAULT_PAGE_SIZE:
+            warnings.warn(
+                f"Page sizes this big could end up timing out the request. Using pagination with lower page sizes is advised.",
+                ResourceWarning,
+            )
+            print(
+                f"ResourceWarning: Page sizes greater than {2 * DEFAULT_PAGE_SIZE} could end up timing out the request. Using pagination with lower page sizes is advised."
+            )
 
-            if with_subject_data:
-                assaySubjectIds = list(
-                    set([
-                        assay_result['assaySubjectId']
-                        for assay_result in assay_results
-                    ]))
-                # assay_subjects = [assaySubject for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
-                assay_subjects = self.get_assay_subjects(
-                    assay_subject_ids=assaySubjectIds, summarized=False)
+        try:
+            # If no file IDs are passed, query them from the Assay.
+            if file_ids is None:
+                # Get the files imported into the assay and only keep the ones that have successfully been imported.
+                assay_files = self.get_files_info(assay_id=assay_id)
+                assay_imported_files = self._filter_imported_files(assay_files)
 
-                tabular_assay_subjects, assay_subject_indexes =\
-                    self._tabular_format_assay_subject_data(assay_subjects)
+                if len(assay_imported_files) > 0:
+                    file_ids = list(
+                        map(
+                            lambda x: x["id"],
+                            assay_imported_files,
+                        ))
+                else:
+                    raise Exception(
+                        f"Assay with ID={assay_id} has none successfully imported data files."
+                    )
 
-                assay_subjects_df = pd.DataFrame(
-                    tabular_assay_subjects).set_index(assay_subject_indexes)
+            final_assay_results: List[IAssayResults] = []
+            for file_id in file_ids:
+                final_result: IAssayResults = self._get_assay_file_results(
+                    assay_id=assay_id,
+                    file_id=file_id,
+                    page_number=page_number,
+                    page_size=page_size,
+                    as_dataframe=as_dataframe,
+                    with_subject_data=with_subject_data,
+                )
+                final_assay_results.append(final_result)
 
-                # Here we merge both dataframes.
-                final_results = assay_subjects_df.merge(
-                    final_results,
-                    left_on=assay_subject_indexes,
-                    right_on=assay_subject_indexes,
+            return final_assay_results
+
+        except Exception as e:
+            print(e)
+            raise Exception("Error fetching assay results")
+
+    def _get_assay_file_results(
+        self: "TESTClient",
+        assay_id: str,
+        file_id: str,
+        page_number: Optional[int] = None,
+        page_size: Optional[int] = None,
+        as_dataframe: Optional[bool] = True,
+        with_subject_data: Optional[bool] = True,
+    ) -> IAssayResults:
+        """
+            Calls Teselagen TEST API endpoint: `GET /assays/:assayId/results?fileId=file_id`. It implements data pagination controllable via the
+            `page_size` and `page_number` arguments passed as query parameters to the endpoint.
+
+            Returns assay results from a specific imported assay file.
+
+            More information at https://api-docs.teselagen.com/#operation/AssaysGetAssayResults.
+
+            Args:
+                assay_id (str): Assay identifier.
+                file_id (str): File identifier.
+                page_size (Optional[int]): Page size for data pagination.
+                page_number (Optional[int]): Page number for data pagination.
+                as_dataframe (Optional[bool]): Flag indicating whether to return the data as a dataframe (default=True).
+                with_subject_data (Optional[bool]): Flag indicating whether to return the assay results together with a more complete
+                    information on the assay subjects (default=True).
+
+
+            Returns: A IAssayResults object. The information included in the returned object is the assay results,
+                plus the assay name, file information and assay subject information (if 'with_subject_data' is set to True).
+        """
+        try:
+            # NOTE: depending on the different flags, the order of the columns may vary.
+            api_result = self._get_assay_file_results_from_api(
+                assay_id=assay_id,
+                file_id=file_id,
+                page_number=page_number,
+                page_size=page_size,
+            )
+            assay_name = api_result['name']
+            assay_results = api_result['results']
+
+            if len(assay_results) == 0:
+                raise Exception(
+                    f"Error getting assay results from assay with ID={assay_id}. Make sure assay has imported data files."
                 )
 
-        else:
-            if with_subject_data:
-                assaySubjectIds = list(
-                    set([
-                        assay_result['assaySubjectId']
-                        for assay_result in assay_results
-                    ]))
-                # assay_subjects = [assaySubject for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
-                assay_subjects = self.get_assay_subjects(
-                    assay_subject_ids=assaySubjectIds,
-                    summarized=False,
-                )
-                tabular_assay_subjects, assay_subject_indexes =\
-                    self._tabular_format_assay_subject_data(assay_subjects)
+            tabular_assay_results, assay_result_indexes = self._tabular_format_assay_result_data(
+                assay_results)
 
-                final_results = [{
-                    **{
-                        "Assay": api_result['name']
-                    },
-                    **assay_subject,
-                    **assay_result
-                } for (assay_subject, assay_result
-                      ) in zip(tabular_assay_subjects, tabular_assay_results)]
+            if as_dataframe:
+                final_results = pd.DataFrame(tabular_assay_results).set_index(
+                    assay_result_indexes[0])
+                final_results.insert(0, "Assay", assay_name)
+                # If required, group by the assay results and assay subject indexes.
+                # Usually these indexes are going to be the assay subject id and any reference dimension found in the assay results.
+                final_results = final_results.groupby(
+                    by=[*assay_result_indexes]).first().reset_index()
+
+                if with_subject_data:
+                    assaySubjectIds = list(
+                        set([
+                            assay_result['assaySubjectId']
+                            for assay_result in assay_results
+                        ]))
+                    # assay_subjects = [assaySubject for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
+                    assay_subjects = self.get_assay_subjects(
+                        assay_subject_ids=assaySubjectIds, summarized=False)
+
+                    tabular_assay_subjects, assay_subject_indexes =\
+                        self._tabular_format_assay_subject_data(assay_subjects)
+
+                    assay_subjects_df = pd.DataFrame(
+                        tabular_assay_subjects).set_index(assay_subject_indexes)
+
+                    # Here we merge both dataframes.
+                    final_results = assay_subjects_df.merge(
+                        final_results,
+                        left_on=assay_subject_indexes,
+                        right_on=assay_subject_indexes,
+                    )
+
             else:
-                final_results = [{
-                    **{
-                        "Assay": api_result['name']
-                    },
-                    **assay_result
-                } for assay_result in tabular_assay_results]
-        return final_results
+                if with_subject_data:
+                    assaySubjectIds = list(
+                        set([
+                            assay_result['assaySubjectId']
+                            for assay_result in assay_results
+                        ]))
+                    # assay_subjects = [assaySubject for assaySubject in tqdm(self.get_assay_subjects(assaySubjectIds))]
+                    assay_subjects = self.get_assay_subjects(
+                        assay_subject_ids=assaySubjectIds,
+                        summarized=False,
+                    )
+                    tabular_assay_subjects, assay_subject_indexes =\
+                        self._tabular_format_assay_subject_data(assay_subjects)
 
-    def _get_assay_results_from_api(self, assay_id: int):
+                    final_results = [{
+                        **{
+                            "Assay": assay_name
+                        },
+                        **assay_subject,
+                        **assay_result
+                    } for (assay_subject, assay_result) in zip(
+                        tabular_assay_subjects, tabular_assay_results)]
+                else:
+                    final_results = [{
+                        **{
+                            "Assay": assay_name
+                        },
+                        **assay_result
+                    } for assay_result in tabular_assay_results]
+
+            assayResults: IAssayResults = {
+                "assayId": assay_id,
+                "fileId": file_id,
+                "data": final_results
+            }
+
+            return assayResults
+
+        except Exception as e:
+            raise Exception("Error fetching assay file results")
+
+    def _get_assay_file_results_from_api(
+        self,
+        assay_id: str,
+        file_id: str,
+        page_number: Optional[int] = None,
+        page_size: Optional[int] = None,
+    ) -> Any:
 
         url = self.assay_results_url.format(assay_id)
 
-        response: Dict[str, Any] = get(url=url, headers=self.headers)
+        params = {
+            "fileId":
+                file_id,
+            "pageNumber":
+                page_number if page_number is not None else 1,
+            "pageSize":
+                page_size if page_size is not None else DEFAULT_PAGE_SIZE
+        }
 
-        api_result = json.loads(response["content"])
+        api_result = None
+        try:
+            response: Dict[str, Any] = get(
+                url=url,
+                headers=self.headers,
+                params=params,
+            )
+            api_result = json.loads(response["content"])
+
+        except Exception as e:
+            print(e)
+            raise Exception(
+                f"Error getting assay results from assay with ID={assay_id}. Make sure assay exists or that has imported results."
+            )
 
         return api_result
 
     # File Endpoints
 
-    def get_files_info(self) -> List[Dict[str, Any]]:
+    def get_files_info(
+        self,
+        experiment_id: Optional[str] = None,
+        assay_id: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
         """
-            Fetches all files from the selected Laboratory.
+            Fetches all files from the selected Laboratory. You can also filter the results by experiment or by assay using the
+            'experiment_id' and 'assay_id' arguments.
 
             Returns :
                 () :
@@ -734,9 +892,17 @@ class TESTClient():
             ```
         """
 
+        params = {"experimentId": experiment_id, "assayId": assay_id}
+
+        # Removes params with None values.
+        params = {
+            key: value for key, value in params.items() if value is not None
+        }
+
         response: Dict[str, Any] = get(
             url=self.get_files_info_url,
             headers=self.headers,
+            params=params,
         )
 
         response["content"] = json.loads(response["content"])
@@ -922,15 +1088,13 @@ class TESTClient():
 
         return True
 
-    # Others
-
     # TEST Client Utils
 
     def get_or_create_assay(
         self,
         assay_name: str,
         experiment_id: str,
-    ) -> Optional[str]:
+    ) -> str:
         ''' Supports creating a new assay by providing an assay name and an experiment ID.'''
         assay_id = None
         if (experiment_id is not None):
@@ -973,7 +1137,7 @@ class TESTClient():
                 )
                 file_id = file['id']
         else:
-            raise FileNotFoundError(f"Prvided 'filepath' does not exist.")
+            raise FileNotFoundError(f"Provided 'filepath' does not exist.")
         return file_id
 
     def _tabular_format_assay_subject_data(self, assay_subjects_data: Any):
@@ -1031,3 +1195,15 @@ class TESTClient():
         indexes = [assaySubjectColumnName, *list(referenceDimensions)]
 
         return tabular_assay_results, indexes
+
+    @staticmethod
+    def _filter_imported_files(files: List[Any]) -> List[Any]:
+        """ Takes in a list of file IDs and returns only those that are successfully imported in TEST """
+        if isinstance(files, list) and len(files) > 0:
+            filtered_files = list(
+                filter(
+                    lambda x: "id" in x and "importStatus" in x and x[
+                        "importStatus"] in IMPORTED_FILE_STATUSES, files))
+            return filtered_files
+        else:
+            return []

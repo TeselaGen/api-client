@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 import pytest
 from teselagen.api import TeselaGenClient
 from teselagen.api import TESTClient
-from teselagen.utils import load_from_json
+from teselagen.utils import get_project_root
 
 TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Example Descriptor 2,Teselagen Example Target,Teselagen Example Target Metric
 1,A0,B1,1,ug/mL
@@ -29,52 +29,6 @@ TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Exam
 
 
 class TestTESTClient():
-
-    @pytest.fixture
-    def expiration_time(self) -> str:
-        _expiration_time: str = "30m"
-        return _expiration_time
-
-    @pytest.fixture
-    def headers(self) -> Dict[str, str]:
-        _headers: Dict[str, str] = {"Content-type": "application/json"}
-        return _headers
-
-    @pytest.fixture
-    def client(self, host_url: str, api_token_name: str) -> TeselaGenClient:
-        """
-
-        A TeselaGen client instance.
-
-        Returns:
-            (TeselaGenClient) : An instance of TeselaGen client.
-
-        """
-        test_client = TeselaGenClient(api_token_name=api_token_name,
-                                      host_url=host_url,
-                                      module_name='test')
-        return test_client
-
-    @pytest.fixture
-    def logged_client(
-        self,
-        client: TeselaGenClient,
-        expiration_time: str,
-    ) -> TeselaGenClient:
-        """
-
-        A logged TEST client instance.
-
-        Returns:
-            (TeselaGenClient) : An instance of the TEST client.
-
-        """
-        client.login(
-            expiration_time=expiration_time
-            #username=credentials["test_user"],
-            #passwd=credentials["test_password"],
-        )
-        return client
 
     @pytest.fixture
     def lab_id(self, client: TeselaGenClient) -> int:
@@ -138,7 +92,7 @@ class TestTESTClient():
         experiment_name: str = "Python Test Client Experiment"
         experiment: Dict[str, Any] = client.create_experiment(
             experiment_name=experiment_name)
-        
+
         yield experiment
 
         # Tear down
@@ -365,14 +319,15 @@ class TestTESTClient():
     ):
         client = logged_client.test
 
-        filepath: Path = Path("./teselagen/api/tests/example_file.csv")
+        filepath: Path = get_project_root() / Path(
+            "teselagen/api/tests/example_file.csv")
         assay_id: Optional[int] = None
         response: Dict[str, Any] = client.upload_file(
             filepath=filepath,
             assay_id=assay_id,
         )
 
-        assert all(key in ["id", "name", "assay", "experiment"]
+        assert all(key in ["id", "importStatus", "name", "assay", "experiment"]
                    for key in response.keys())
 
     # @pytest.mark.skip(reason="The files endpoints are under maintenance.")
@@ -398,7 +353,8 @@ class TestTESTClient():
     ):
         client = logged_client.test
 
-        filepath: Path = Path("./teselagen/api/tests/example_file.csv")
+        filepath: Path = get_project_root() / Path(
+            "teselagen/api/tests/example_file.csv")
         upload_response: Dict[str, Any] = client.upload_file(filepath=filepath,)
 
         file_id: str = upload_response['id']
