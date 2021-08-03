@@ -438,5 +438,5 @@ class TestTESTClientMultiomicsData():
         fileterd_files = [file_i for file_i in files if file_i["name"]==file_name]
         #assert len(fileterd_files)==1, "Expecting just one file for this assertion"
         downloaded = pd.read_csv(client_with_lab.test.download_file(file_id=fileterd_files[0]["id"]))
-        assert downloaded.shape == (10, 5)
+        assert downloaded.shape == (10, 5), "Wrong shape"
         
