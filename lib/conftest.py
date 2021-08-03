@@ -2,6 +2,7 @@
 import pytest
 from pathlib import Path
 from teselagen.utils import load_from_json, get_test_configuration_path
+from teselagen.api.client import TeselaGenClient
 import warnings
 
 @pytest.fixture(scope='session')
@@ -55,10 +56,48 @@ def test_configuration():
             warnings.warn(f"Host URL was set to: {configuration['host_url']}")
     return configuration
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def host_url(test_configuration) -> str:
     return test_configuration['host_url']
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def api_token_name(test_configuration) -> str:
     return test_configuration['api_token_name']
+
+@pytest.fixture(scope='session')
+def expiration_time() -> str:
+    _expiration_time: str = "30m"
+    return _expiration_time
+
+@pytest.fixture(scope='function')
+def client(host_url: str, api_token_name: str) -> TeselaGenClient:
+    """
+
+    A TeselaGen client instance.
+
+    Returns:
+        (TeselaGenClient) : An instance of TeselaGen client.
+
+    """
+    test_client = TeselaGenClient(api_token_name=api_token_name,
+                                  host_url=host_url,
+                                  module_name='test')
+    return test_client
+
+@pytest.fixture(scope='function')
+def logged_client(
+    client: TeselaGenClient,
+    expiration_time: str,
+) -> TeselaGenClient:
+    """
+
+    A logged TEST client instance.
+
+    Returns:
+        (TeselaGenClient) : An instance of the TEST client.
+
+    """
+    client.login(
+        expiration_time=expiration_time,
+    )
+    return client

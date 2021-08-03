@@ -9,7 +9,7 @@ import pytest
 import requests_mock
 import fastaparser
 
-from teselagen.api import TeselaGenClient, DISCOVERClient
+from teselagen.api import TeselaGenClient
 from teselagen.utils import load_from_json, get_project_root
 
 MODEL_TYPES_TO_BE_TESTED: List[Optional[str]] = [
@@ -17,36 +17,9 @@ MODEL_TYPES_TO_BE_TESTED: List[Optional[str]] = [
 ]
 
 class TestDISCOVERClient():
-    @pytest.fixture
-    def client(self, host_url, api_token_name) -> TeselaGenClient:
-        """
-
-        A TeselaGen client instance.
-
-        Returns:
-            (TeselaGenClient) : An instance of TeselaGen client.
-
-        """
-        tg_client = TeselaGenClient(api_token_name=api_token_name, host_url=host_url)
-        return tg_client
 
     @pytest.fixture
-    def logged_client(self, client: TeselaGenClient) -> DISCOVERClient:
-        """
-
-        A logged EVOLVE client instance.
-
-        Returns:
-            (DISCOVERClient) : An instance of the EVOLVE client.
-
-        """
-        expiration_time: str = "30m"
-        client.login(
-                     expiration_time=expiration_time)
-        return client.discover
-
-    @pytest.fixture
-    def submitted_model_name(self, logged_client):
+    def submitted_model_name(self, logged_client: TeselaGenClient):
         # Define synthetic problem parameters
         params = {
             "name": f"Model X times Y {uuid.uuid1()}",
@@ -60,20 +33,20 @@ class TestDISCOVERClient():
         result = logged_client.submit_model(**params)
         return params['name']
 
-    def test_client_attributes(self, logged_client: DISCOVERClient):
-
+    def test_client_attributes(self, logged_client: TeselaGenClient):
+        discover_client = logged_client.discover
         # We check if the client has the required attributes.
-        assert hasattr(logged_client, "create_model_url")
-        assert hasattr(logged_client, "get_model_url")
-        assert hasattr(logged_client, "get_models_by_type_url")
-        assert hasattr(logged_client, "get_model_datapoints_url")
-        assert hasattr(logged_client, "submit_model_url")
-        assert hasattr(logged_client, "delete_model_url")
-        assert hasattr(logged_client, "cancel_model_url")
-        assert hasattr(logged_client, "get_models_url")
-        assert hasattr(logged_client, "get_completed_tasks_url")
+        assert hasattr(discover_client, "create_model_url")
+        assert hasattr(discover_client, "get_model_url")
+        assert hasattr(discover_client, "get_models_by_type_url")
+        assert hasattr(discover_client, "get_model_datapoints_url")
+        assert hasattr(discover_client, "submit_model_url")
+        assert hasattr(discover_client, "delete_model_url")
+        assert hasattr(discover_client, "cancel_model_url")
+        assert hasattr(discover_client, "get_models_url")
+        assert hasattr(discover_client, "get_completed_tasks_url")
 
-    def test_login(self, client: DISCOVERClient, api_token_name):
+    def test_login(self, client: TeselaGenClient, api_token_name):
         # Before login, the client has no tokens
         assert client.auth_token is None
         assert api_token_name not in client.headers.keys()
@@ -89,10 +62,10 @@ class TestDISCOVERClient():
 
     @pytest.mark.skip(reason="Test not finished")
     #@pytest.mark.parametrize("model_type", MODEL_TYPES_TO_BE_TESTED)
-    def test_get_models_by_type(self, logged_client: DISCOVERClient,
+    def test_get_models_by_type(self, logged_client: TeselaGenClient,
                                 model_type: Optional[str]):
 
-        client = logged_client
+        client = logged_client.discover
         response = client.get_models_by_type(model_type=model_type)
         assert isinstance(response, dict)
 
@@ -138,7 +111,7 @@ class TestDISCOVERClient():
     #     assert isinstance(response, dict)
 
     @pytest.mark.skip(reason="Test is fine, but needs remote host to fix (https://github.com/TeselaGen/lims/pull/6506)")
-    def test_design_crispr_grnas(self, logged_client):
+    def test_design_crispr_grnas(self, logged_client: TeselaGenClient):
         # Fasta file
         seq_filepath = get_project_root() / "teselagen/examples/dummy_organism.fasta"
         # Load file
@@ -148,22 +121,22 @@ class TestDISCOVERClient():
                 fasta_seq=seq.sequence_as_string()
                 break
         # Call method to be tested
-        res = logged_client.design_crispr_grnas(
+        res = logged_client.discover.design_crispr_grnas(
             sequence=fasta_seq,
             target_indexes=[500, 600],
         )
         assert isinstance(res, list)
         assert len(res) == 7
 
-    def test_design_crispr_grnas_mock(self, logged_client, requests_mock):
-        expected_url = logged_client.crispr_guide_rnas_url
+    def test_design_crispr_grnas_mock(self, logged_client: TeselaGenClient, requests_mock):
+        expected_url = logged_client.discover.crispr_guide_rnas_url
         sequence = "AGTCAGGTACGGTACGGTACGGTATGGCAAAAGGACGGATGGACAGGCT"
         target_indexes = [10, 14]
         endpoint_output = [
             {"start": 10, "end": 12, "offTargetScore": 0.8, "forward": True, "pam": "CGG", "onTargetScore": 0.6}
         ]
         requests_mock.post(expected_url, json=endpoint_output)
-        res = logged_client.design_crispr_grnas(
+        res = logged_client.discover.design_crispr_grnas(
             sequence=sequence,
             target_indexes=target_indexes,
         )
@@ -171,20 +144,20 @@ class TestDISCOVERClient():
         assert res == endpoint_output
 
     @pytest.mark.skip(reason="Test is fine, but needs remote host to fix (https://github.com/TeselaGen/lims/pull/6506)")
-    def test_get_model_submit_get_cancel_delete(self, logged_client, submitted_model_name):
+    def test_get_model_submit_get_cancel_delete(self, logged_client: TeselaGenClient, submitted_model_name):
         for n_attempt in range(3):
-            res = logged_client.get_models_by_type(model_type="predictive")
+            res = logged_client.discover.get_models_by_type(model_type="predictive")
             new_model = list(filter(lambda x: x['name']==submitted_model_name, res))
             if len(new_model) > 0: break
         assert len(new_model) == 1
         assert new_model[0]['status'] in {'in-progress', 'pending', 'completed-successfully', 'submitting'}
-        res_cancel = logged_client.cancel_model(new_model[0]['id'])
+        res_cancel = logged_client.discover.cancel_model(new_model[0]['id'])
         assert 'id' in res_cancel and res_cancel['id'] == new_model[0]['id']
-        res_delete = logged_client.delete_model(new_model[0]['id'])
+        res_delete = logged_client.discover.delete_model(new_model[0]['id'])
         assert 'id' in res_delete and res_delete['id'] == new_model[0]['id']
 
-    def test_submit_model_mock(self, logged_client, requests_mock):
-        expected_url = logged_client.submit_model_url
+    def test_submit_model_mock(self, logged_client: TeselaGenClient, requests_mock):
+        expected_url = logged_client.discover.submit_model_url
         endpoint_output = {
             "message": "Submission success.",
             "data": {'id':0}}
@@ -201,7 +174,7 @@ class TestDISCOVERClient():
             "configs": {},
             "description": ""
         }
-        result = logged_client.submit_model(**params)
+        result = logged_client.discover.submit_model(**params)
         assert result == endpoint_output['data']
         # Names to camel case:
         expected_params = params.copy()
