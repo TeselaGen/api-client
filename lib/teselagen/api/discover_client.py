@@ -13,8 +13,7 @@ from teselagen.utils import DEFAULT_API_TOKEN_NAME
 from teselagen.utils import DEFAULT_HOST_URL
 from teselagen.utils import get
 from teselagen.utils import post
-from teselagen.utils import put
-from teselagen.utils import requires_login
+from teselagen.utils import wait_for_status
 
 # NOTE : Related to Postman and Python requests
 #       "body" goes into the "json" argument
@@ -65,6 +64,7 @@ class DISCOVERClient():
         self.get_completed_tasks_url: str = f"{api_url_base}/get-completed-tasks"
 
         self.crispr_guide_rnas_url: str = f"{api_url_base}/crispr-grnas"
+        self.crispr_guide_rnas_result_url: str = self.crispr_guide_rnas_url + "/{}"
 
     def _get_data_from_content(self, content_dict: dict) -> dict:
         """Checks that an output dict from evolve endpoint is healthy, and returns the 'data' field
@@ -757,7 +757,24 @@ class DISCOVERClient():
                             target_sequence: Optional[str] = None,
                             pam_site: str = 'NGG',
                             min_score: float = 40.0,
-                            max_number: Optional[int] = 50):
+                            max_number: Optional[int] = 50,
+                            wait_for_results: bool = True):
+        """Gets CRISPR guide RNAs
+
+        Args:
+            sequence (str): [description]
+            target_indexes (Optional[Tuple[int, int]], optional): [description]. Defaults to None.
+            target_sequence (Optional[str], optional): [description]. Defaults to None.
+            pam_site (str, optional): [description]. Defaults to 'NGG'.
+            min_score (float, optional): [description]. Defaults to 40.0.
+            max_number (Optional[int], optional): [description]. Defaults to 50.
+            wait_for_results (bool, optional): If `True`, the method waits for results to be ready 
+                from server and gives a complete output. If `False` just returns a submit confirmation
+                object without waiting for finalization. Defaults to `True`.
+
+        Returns:
+            [type]: [description]
+        """
         body: Dict[str, Any] = {
             'data': {
                 'sequence': sequence
@@ -777,6 +794,21 @@ class DISCOVERClient():
         response: Dict[str, Any] = post(url=self.crispr_guide_rnas_url,
                                         headers=self.headers,
                                         json=body)
+        result = json.loads(response["content"])
+
+        if wait_for_results is True and 'taskId' in result:
+            result = wait_for_status(
+                method=self._design_crispr_grnas_get_result, 
+                validate=lambda x: x["status"] == "completed-successfully", 
+                task_id=result["taskId"])['data']
+        
+        return result
+
+    def _design_crispr_grnas_get_result(self, task_id: int):
+        response: Dict[str, Any] = get(
+            url=self.crispr_guide_rnas_result_url.format(task_id),
+            headers=self.headers)
+
         return json.loads(response["content"])
 
     def submit_generative_model(
