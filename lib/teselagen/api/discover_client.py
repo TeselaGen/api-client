@@ -814,6 +814,15 @@ class DISCOVERClient():
         return result
 
     def _design_crispr_grnas_get_result(self, task_id: int):
+        """Gets results from a design_crispr_grnas process
+
+        Args:
+            task_id (int): Process id
+
+        Returns:
+            dict: status of the process and, if finished, guides information
+                as described in `design_crispr_grnas`
+        """
         response: Dict[str, Any] = get(
             url=self.crispr_guide_rnas_result_url.format(task_id),
             headers=self.headers)
