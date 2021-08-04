@@ -449,7 +449,6 @@ def wait_for_status(
     validate: Optional[Callable]=None,
     fixed_wait_time: int = 5,
     timeout: int = 300,
-    max_attempts: int = 10,
     **method_kwargs)->Any:
     """Tries to run *method* (and run also a validation of its output) until no AssertionError is raised
 
@@ -459,19 +458,20 @@ def wait_for_status(
         method (Callable): An unreliable method (or a status query). The method will be executed
             while: (it raises an AssetionError or the `validation` function outputs `False`) and
             none of the ending conditions is satisfied (look at int arguments)
+
         validate (Optional[Callable], optional): A callable that validates the output of *method*. 
             It must receives the output of `method`  as argument and returns `True` if it is ok 
             and `False` if it is invalid. Defaults to None, meaning no validation will be executed.
+
         fixed_wait_time (int, optional): Time (in seconds) to wait between attempts. Defaults to 5.
+        
         timeout (int, optional): Time (in seconds) after which no more attempts are made. Defaults 
             to 300 (5 minutes).
-        max_attempts (int, optional): Max number of tries. Defaults to 10.
 
     Returns:
         [Any]: The method's output
     """
-    
-    @retry(wait=wait_fixed(fixed_wait_time),stop=(stop_after_delay(timeout) | stop_after_attempt(max_attempts)), retry=retry_if_exception_type(AssertionError))
+    @retry(wait=wait_fixed(fixed_wait_time),stop=stop_after_delay(timeout), retry=retry_if_exception_type(AssertionError))
     def _wait_for_status(method: Callable, validate: Optional[Callable]=None, **method_kwargs)->Any:
         """Runs the method and apply validation"""
         result = method(**method_kwargs)
