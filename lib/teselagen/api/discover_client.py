@@ -758,22 +758,31 @@ class DISCOVERClient():
                             pam_site: str = 'NGG',
                             min_score: float = 40.0,
                             max_number: Optional[int] = 50,
-                            wait_for_results: bool = True):
+                            wait_for_results: bool = True)->Dict[str, Any]:
         """Gets CRISPR guide RNAs
 
         Args:
-            sequence (str): [description]
-            target_indexes (Optional[Tuple[int, int]], optional): [description]. Defaults to None.
-            target_sequence (Optional[str], optional): [description]. Defaults to None.
-            pam_site (str, optional): [description]. Defaults to 'NGG'.
-            min_score (float, optional): [description]. Defaults to 40.0.
-            max_number (Optional[int], optional): [description]. Defaults to 50.
+            sequence (str): This is the genome sequence. The whole genome sequence is needed for more 
+                accurate on/off target score predictions.
+            target_indexes (Optional[Tuple[int, int]], optional): Start and End position (indexed from 0) of 
+                the target sequence relative to the genome sequence. Defaults to None, meaning 
+                `target_sequence` parameter will be used instead.
+            target_sequence (Optional[str], optional): Sequence of the target. Defaults to None, meaning
+                `target_indexes` will be used.
+            pam_site (str, optional): PAM Site of your CRISPR Enzyme (default: SpyoCas9 with PAM Site: 'NGG'). 
+                Supported CRISPR Enzymes: SpyoCas9 ('NGG'), SaurCas9 ('NNGRR'), AsCas12a ('TTTV'). Defaults to 'NGG'.
+            min_score (float, optional): Minimum on-target score desired for the designed guide RNAs. Defaults to 40.0.
+            max_number (Optional[int], optional): Maximum number of guide RNAs to expected as a response. Defaults to 50.
             wait_for_results (bool, optional): If `True`, the method waits for results to be ready 
                 from server and gives a complete output. If `False` just returns a submit confirmation
                 object without waiting for finalization. Defaults to `True`.
 
         Returns:
-            [type]: [description]
+            dict: If `wait_for_results` is `True`, the output will contain `guides`, a list with dictionaries 
+                containing guide info (`sequence`, `start`, `end`, `onTargetScore` and `offTargetScore`) 
+                and `target_indexes`, a list with the target start, end indexes within the main sequence. 
+                If `wait_for_results` is `False` it will just return a dict with `taskID`, the id of the
+                submitted task, and a `message` string. 
         """
         body: Dict[str, Any] = {
             'data': {
