@@ -60,7 +60,7 @@ class TestDISCOVERClient():
         assert api_token_name in client.headers.keys()
         assert isinstance(client.headers[api_token_name], str)
 
-    @pytest.mark.skip(reason="Test not finished")
+    #@pytest.mark.skip(reason="Test not finished")
     #@pytest.mark.parametrize("model_type", MODEL_TYPES_TO_BE_TESTED)
     def test_get_models_by_type(self, logged_client: TeselaGenClient,
                                 model_type: Optional[str]):
@@ -110,10 +110,10 @@ class TestDISCOVERClient():
     #     response = client.get_model(model_id=model_id)
     #     assert isinstance(response, dict)
 
-    @pytest.mark.skip(reason="Test is fine, but needs remote host to fix (https://github.com/TeselaGen/lims/pull/6506)")
+    #@pytest.mark.skip(reason="Test is fine, but needs remote host to fix (https://github.com/TeselaGen/lims/pull/6506)")
     def test_design_crispr_grnas(self, logged_client: TeselaGenClient):
         # Fasta file
-        seq_filepath = get_project_root() / "teselagen/examples/dummy_organism.fasta"
+        seq_filepath = get_project_root() / "teselagen/examples/pytested/dummy_organism.fasta"
         # Load file
         with open(seq_filepath) as fasta_file:
             parser = fastaparser.Reader(fasta_file)
@@ -125,8 +125,10 @@ class TestDISCOVERClient():
             sequence=fasta_seq,
             target_indexes=[500, 600],
         )
-        assert isinstance(res, list)
-        assert len(res) == 7
+        assert isinstance(res, dict)
+        assert 'guides' in res
+        assert 'target_indexes' in res
+        assert len(res['guides']) == 7
 
     def test_design_crispr_grnas_mock(self, logged_client: TeselaGenClient, requests_mock):
         expected_url = logged_client.discover.crispr_guide_rnas_url
@@ -143,7 +145,7 @@ class TestDISCOVERClient():
         assert isinstance(res, list)
         assert res == endpoint_output
 
-    @pytest.mark.skip(reason="Test is fine, but needs remote host to fix (https://github.com/TeselaGen/lims/pull/6506)")
+    #@pytest.mark.skip(reason="Test is fine, but needs remote host to fix (https://github.com/TeselaGen/lims/pull/6506)")
     def test_get_model_submit_get_cancel_delete(self, logged_client: TeselaGenClient, submitted_model_name):
         for n_attempt in range(3):
             res = logged_client.discover.get_models_by_type(model_type="predictive")
