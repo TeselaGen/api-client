@@ -474,9 +474,14 @@ def wait_for_status(
     @retry(wait=wait_fixed(fixed_wait_time),stop=stop_after_delay(timeout), retry=retry_if_exception_type(AssertionError))
     def _wait_for_status(method: Callable, validate: Optional[Callable]=None, **method_kwargs)->Any:
         """Runs the method and apply validation"""
-        result = method(**method_kwargs)
-        if validate is not None:
-            assert validate(result), f"Validation failed. Result is {result}"
+        try:
+            result = method(**method_kwargs)
+            if validate is not None:
+                assert validate(result), f"Validation failed. Result is {result}"
+        except Exception as ex:
+            if not isinstance(ex, AssertionError):
+                print(f"An unexpected error was detected, method result was: {result}")
+            raise ex
         return result
 
     return _wait_for_status(method=method, validate=validate, **method_kwargs)
