@@ -9,17 +9,22 @@ import pytest
 import requests_mock
 import fastaparser
 
-from teselagen.api import TeselaGenClient
+from teselagen.api import TeselaGenClient, DISCOVERClient
 from teselagen.utils import load_from_json, get_project_root
 
 MODEL_TYPES_TO_BE_TESTED: List[Optional[str]] = [
-    "predictive", "evolutive", "generative", "null"
+    "predictive", "evolutive", "generative"
 ]
 
 class TestDISCOVERClient():
 
     @pytest.fixture
-    def submitted_model_name(self, logged_client: TeselaGenClient):
+    def discover_client(self,logged_client: TeselaGenClient)->DISCOVERClient:
+        logged_client.select_laboratory(lab_name="The Test Lab")
+        return logged_client.discover
+
+    @pytest.fixture
+    def submitted_model_name(self, discover_client: DISCOVERClient):
         # Define synthetic problem parameters
         params = {
             "name": f"Model X times Y {uuid.uuid1()}",
@@ -30,11 +35,10 @@ class TestDISCOVERClient():
                 {"name": "Z", "id":2, "value_type":"numeric", "type": "target"}],
             "model_type": "predictive"
         }
-        result = logged_client.submit_model(**params)
+        result = discover_client.submit_model(**params)
         return params['name']
 
-    def test_client_attributes(self, logged_client: TeselaGenClient):
-        discover_client = logged_client.discover
+    def test_client_attributes(self, discover_client: DISCOVERClient):
         # We check if the client has the required attributes.
         assert hasattr(discover_client, "create_model_url")
         assert hasattr(discover_client, "get_model_url")
@@ -60,60 +64,45 @@ class TestDISCOVERClient():
         assert api_token_name in client.headers.keys()
         assert isinstance(client.headers[api_token_name], str)
 
-    @pytest.mark.skip(reason="Test not finished")
-    #@pytest.mark.parametrize("model_type", MODEL_TYPES_TO_BE_TESTED)
-    def test_get_models_by_type(self, logged_client: TeselaGenClient,
+    
+    @pytest.mark.parametrize("model_type", MODEL_TYPES_TO_BE_TESTED)
+    def test_get_models_by_type(self, discover_client: DISCOVERClient,
                                 model_type: Optional[str]):
 
-        client = logged_client.discover
-        response = client.get_models_by_type(model_type=model_type)
-        assert isinstance(response, dict)
+        response = discover_client.get_models_by_type(model_type=model_type)
+        assert isinstance(response, list)
 
-        # 1
-        expected_keys: List[str] = ["message", "data"]
-        assert all(
-            [key if model_type != "null" else "message"][0] in response.keys()
-            for key in expected_keys)
-
-        # 2
         expected_keys: List[str] = [
             "id", "labId", "modelType", "name", "description", "status",
             "evolveModelInfo"
         ]
 
-        if model_type != "null":
+        for data in response:#["data"]:
 
-            for data in response["data"]:
+            for key in expected_keys:
+                assert key in data.keys()
 
-                for key in expected_keys:
-                    assert key in data.keys()
+                if key == "evolveModelInfo":
 
-                    if key == "evolveModelInfo":
+                    assert isinstance(data[key], dict)
 
-                        assert isinstance(data[key], dict)
+                    expected_evolveModelInfokeys: List[str] = [
+                        "microserviceQueueId", "dataSchema", "modelStats"
+                    ]
 
-                        expected_evolveModelInfokeys: List[str] = [
-                            "microserviceQueueId", "dataSchema", "modelStats"
-                        ]
+                    assert all(k in data[key].keys()
+                                for k in expected_evolveModelInfokeys)
 
-                        assert all(k in data[key].keys()
-                                   for k in expected_evolveModelInfokeys)
+                elif key == "labId":
+                    assert isinstance(data[key], str) or data[key] is None
 
-                    if key == "labId":
-                        assert isinstance(data[key], str) or data[key] is None
+                else:
+                    assert isinstance(data[key], str)
 
-                    else:
-                        assert isinstance(data[key], str)
 
-    # def test_get_model(self, logged_client: DISCOVERClient, model_id: int):
-    #     client = logged_client
-    #     response = client.get_model(model_id=model_id)
-    #     assert isinstance(response, dict)
-
-    @pytest.mark.skip(reason="Test is fine, but needs remote host to fix (https://github.com/TeselaGen/lims/pull/6506)")
-    def test_design_crispr_grnas(self, logged_client: TeselaGenClient):
+    def test_design_crispr_grnas(self, discover_client: DISCOVERClient):
         # Fasta file
-        seq_filepath = get_project_root() / "teselagen/examples/dummy_organism.fasta"
+        seq_filepath = get_project_root() / "teselagen/examples/pytested/dummy_organism.fasta"
         # Load file
         with open(seq_filepath) as fasta_file:
             parser = fastaparser.Reader(fasta_file)
@@ -121,43 +110,44 @@ class TestDISCOVERClient():
                 fasta_seq=seq.sequence_as_string()
                 break
         # Call method to be tested
-        res = logged_client.discover.design_crispr_grnas(
+        res = discover_client.design_crispr_grnas(
             sequence=fasta_seq,
             target_indexes=[500, 600],
         )
-        assert isinstance(res, list)
-        assert len(res) == 7
+        assert isinstance(res, dict)
+        assert 'guides' in res
+        assert 'target_indexes' in res
+        assert len(res['guides']) == 7
 
-    def test_design_crispr_grnas_mock(self, logged_client: TeselaGenClient, requests_mock):
-        expected_url = logged_client.discover.crispr_guide_rnas_url
+    def test_design_crispr_grnas_mock(self, discover_client: DISCOVERClient, requests_mock):
+        expected_url = discover_client.crispr_guide_rnas_url
         sequence = "AGTCAGGTACGGTACGGTACGGTATGGCAAAAGGACGGATGGACAGGCT"
         target_indexes = [10, 14]
         endpoint_output = [
             {"start": 10, "end": 12, "offTargetScore": 0.8, "forward": True, "pam": "CGG", "onTargetScore": 0.6}
         ]
         requests_mock.post(expected_url, json=endpoint_output)
-        res = logged_client.discover.design_crispr_grnas(
+        res = discover_client.design_crispr_grnas(
             sequence=sequence,
             target_indexes=target_indexes,
         )
         assert isinstance(res, list)
         assert res == endpoint_output
 
-    @pytest.mark.skip(reason="Test is fine, but needs remote host to fix (https://github.com/TeselaGen/lims/pull/6506)")
-    def test_get_model_submit_get_cancel_delete(self, logged_client: TeselaGenClient, submitted_model_name):
+    def test_get_model_submit_get_cancel_delete(self, discover_client: DISCOVERClient, submitted_model_name):
         for n_attempt in range(3):
-            res = logged_client.discover.get_models_by_type(model_type="predictive")
+            res = discover_client.get_models_by_type(model_type="predictive")
             new_model = list(filter(lambda x: x['name']==submitted_model_name, res))
             if len(new_model) > 0: break
         assert len(new_model) == 1
         assert new_model[0]['status'] in {'in-progress', 'pending', 'completed-successfully', 'submitting'}
-        res_cancel = logged_client.discover.cancel_model(new_model[0]['id'])
+        res_cancel = discover_client.cancel_model(new_model[0]['id'])
         assert 'id' in res_cancel and res_cancel['id'] == new_model[0]['id']
-        res_delete = logged_client.discover.delete_model(new_model[0]['id'])
+        res_delete = discover_client.delete_model(new_model[0]['id'])
         assert 'id' in res_delete and res_delete['id'] == new_model[0]['id']
 
-    def test_submit_model_mock(self, logged_client: TeselaGenClient, requests_mock):
-        expected_url = logged_client.discover.submit_model_url
+    def test_submit_model_mock(self, discover_client: DISCOVERClient, requests_mock):
+        expected_url = discover_client.submit_model_url
         endpoint_output = {
             "message": "Submission success.",
             "data": {'id':0}}
@@ -174,7 +164,7 @@ class TestDISCOVERClient():
             "configs": {},
             "description": ""
         }
-        result = logged_client.discover.submit_model(**params)
+        result = discover_client.submit_model(**params)
         assert result == endpoint_output['data']
         # Names to camel case:
         expected_params = params.copy()

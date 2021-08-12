@@ -10,23 +10,7 @@ import pandas as pd
 from tenacity import retry, stop_after_delay, stop_after_attempt, wait_fixed
 
 from teselagen.api import TeselaGenClient
-
-@retry(wait=wait_fixed(5),stop=(stop_after_delay(5*60) | stop_after_attempt(10)))
-def wait_for_status(method: Callable, validate: Optional[Callable]=None, **method_kwargs)->Any:
-    """ Tries to run *method* (and run also a validation of its output) until no exception is raised
-
-    Args:
-        method (Callable): An unreliable method (or a status query)
-        validate (Optional[Callable], optional): A callable that validates the output of *method*. 
-            Might rise an exception when result is not what expected. Defaults to None.
-
-    Returns:
-        [Any]: The method's output
-    """
-    result = method(**method_kwargs)
-    if validate is not None:
-        assert validate(result), "Validation failed"
-    return result
+from teselagen.utils.utils import wait_for_status
 
 def delete_file(file_name, client_with_lab, ):
     # Get file id 

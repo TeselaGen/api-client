@@ -4,9 +4,10 @@ import json
 import math
 from datetime import datetime, timedelta, date, time
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Union, List, cast
+from typing import Any, Dict, Optional, Tuple, Union, List, cast, Callable
 from typing_extensions import Literal
 import pandas as pd
+from tenacity import retry, stop_after_delay, stop_after_attempt, wait_fixed, retry_if_exception_type
 import requests
 import teselagen
 
@@ -442,3 +443,45 @@ def download_file(url: str, local_filename: str = None, **kwargs) -> str:
                 if chunk:
                     f.write(chunk)
     return local_filename
+
+def wait_for_status(
+    method: Callable, 
+    validate: Optional[Callable]=None,
+    fixed_wait_time: int = 5,
+    timeout: int = 300,
+    **method_kwargs)->Any:
+    """Tries to run *method* (and run also a validation of its output) until no AssertionError is raised
+
+    Arguments are described below. More keyword arguments can be given for `method`.
+
+    Args:
+        method (Callable): An unreliable method (or a status query). The method will be executed
+            while: (it raises an AssetionError or the `validation` function outputs `False`) and
+            none of the ending conditions is satisfied (look at int arguments)
+
+        validate (Optional[Callable], optional): A callable that validates the output of *method*. 
+            It must receives the output of `method`  as argument and returns `True` if it is ok 
+            and `False` if it is invalid. Defaults to None, meaning no validation will be executed.
+
+        fixed_wait_time (int, optional): Time (in seconds) to wait between attempts. Defaults to 5.
+        
+        timeout (int, optional): Time (in seconds) after which no more attempts are made. Defaults 
+            to 300 (5 minutes).
+
+    Returns:
+        [Any]: The method's output
+    """
+    @retry(wait=wait_fixed(fixed_wait_time),stop=stop_after_delay(timeout), retry=retry_if_exception_type(AssertionError))
+    def _wait_for_status(method: Callable, validate: Optional[Callable]=None, **method_kwargs)->Any:
+        """Runs the method and apply validation"""
+        try:
+            result = method(**method_kwargs)
+            if validate is not None:
+                assert validate(result), f"Validation failed. Result is {result}"
+        except Exception as ex:
+            if not isinstance(ex, AssertionError):
+                print(f"An unexpected error was detected, method result was: {result}")
+            raise ex
+        return result
+
+    return _wait_for_status(method=method, validate=validate, **method_kwargs)

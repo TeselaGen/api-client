@@ -13,8 +13,7 @@ from teselagen.utils import DEFAULT_API_TOKEN_NAME
 from teselagen.utils import DEFAULT_HOST_URL
 from teselagen.utils import get
 from teselagen.utils import post
-from teselagen.utils import put
-from teselagen.utils import requires_login
+from teselagen.utils import wait_for_status
 
 # NOTE : Related to Postman and Python requests
 #       "body" goes into the "json" argument
@@ -65,6 +64,7 @@ class DISCOVERClient():
         self.get_completed_tasks_url: str = f"{api_url_base}/get-completed-tasks"
 
         self.crispr_guide_rnas_url: str = f"{api_url_base}/crispr-grnas"
+        self.crispr_guide_rnas_result_url: str = self.crispr_guide_rnas_url + "/{}"
 
     def _get_data_from_content(self, content_dict: dict) -> dict:
         """Checks that an output dict from evolve endpoint is healthy, and returns the 'data' field
@@ -757,7 +757,33 @@ class DISCOVERClient():
                             target_sequence: Optional[str] = None,
                             pam_site: str = 'NGG',
                             min_score: float = 40.0,
-                            max_number: Optional[int] = 50):
+                            max_number: Optional[int] = 50,
+                            wait_for_results: bool = True)->Dict[str, Any]:
+        """Gets CRISPR guide RNAs
+
+        Args:
+            sequence (str): This is the genome sequence. The whole genome sequence is needed for more 
+                accurate on/off target score predictions.
+            target_indexes (Optional[Tuple[int, int]], optional): Start and End position (indexed from 0) of 
+                the target sequence relative to the genome sequence. Defaults to None, meaning 
+                `target_sequence` parameter will be used instead.
+            target_sequence (Optional[str], optional): Sequence of the target. Defaults to None, meaning
+                `target_indexes` will be used.
+            pam_site (str, optional): PAM Site of your CRISPR Enzyme (default: SpyoCas9 with PAM Site: 'NGG'). 
+                Supported CRISPR Enzymes: SpyoCas9 ('NGG'), SaurCas9 ('NNGRR'), AsCas12a ('TTTV'). Defaults to 'NGG'.
+            min_score (float, optional): Minimum on-target score desired for the designed guide RNAs. Defaults to 40.0.
+            max_number (Optional[int], optional): Maximum number of guide RNAs to expected as a response. Defaults to 50.
+            wait_for_results (bool, optional): If `True`, the method waits for results to be ready 
+                from server and gives a complete output. If `False` just returns a submit confirmation
+                object without waiting for finalization. Defaults to `True`.
+
+        Returns:
+            dict: If `wait_for_results` is `True`, the output will contain `guides`, a list with dictionaries 
+                containing guide info (`sequence`, `start`, `end`, `onTargetScore` and `offTargetScore`) 
+                and `target_indexes`, a list with the target start, end indexes within the main sequence. 
+                If `wait_for_results` is `False` it will just return a dict with `taskID`, the id of the
+                submitted task, and a `message` string. 
+        """
         body: Dict[str, Any] = {
             'data': {
                 'sequence': sequence
@@ -777,6 +803,30 @@ class DISCOVERClient():
         response: Dict[str, Any] = post(url=self.crispr_guide_rnas_url,
                                         headers=self.headers,
                                         json=body)
+        result = json.loads(response["content"])
+
+        if wait_for_results is True and 'taskId' in result:
+            result = wait_for_status(
+                method=self._design_crispr_grnas_get_result, 
+                validate=lambda x: x["status"] == "completed-successfully", 
+                task_id=result["taskId"])['data']
+        
+        return result
+
+    def _design_crispr_grnas_get_result(self, task_id: int):
+        """Gets results from a design_crispr_grnas process
+
+        Args:
+            task_id (int): Process id
+
+        Returns:
+            dict: status of the process and, if finished, guides information
+                as described in `design_crispr_grnas`
+        """
+        response: Dict[str, Any] = get(
+            url=self.crispr_guide_rnas_result_url.format(task_id),
+            headers=self.headers)
+
         return json.loads(response["content"])
 
     def submit_generative_model(
