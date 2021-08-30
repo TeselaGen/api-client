@@ -223,7 +223,7 @@ class TeselaGenClient():
         self.update_token(token=None)
 
         username, password = get_credentials(username=username,
-                                             password=passwords)
+                                             password=password)
 
         # We create a temporary token, and wait until it expires.
         _ = self.create_token(username=username,
