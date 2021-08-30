@@ -76,7 +76,7 @@ class TeselaGenClient():
 
         # Here we define a common Base URL. Using the DESIGN Module as the target server for these common endpoints.
         _module_name: str = module_name if module_name is not "discover" else "evolve"
-        module_url: str = f"{self.host_url}/{_module_name}"
+        module_url: str = str(Path(self.host_url) / Path(_module_name))
         api_url_base: str = f"{module_url}/cli-api"
 
         # Here we define the client endpoints. Using the DESIGN Module as the target server for these common endpoints.
@@ -223,7 +223,7 @@ class TeselaGenClient():
         self.update_token(token=None)
 
         username, password = get_credentials(username=username,
-                                             password=password)
+                                             password=passwords)
 
         # We create a temporary token, and wait until it expires.
         _ = self.create_token(username=username,
