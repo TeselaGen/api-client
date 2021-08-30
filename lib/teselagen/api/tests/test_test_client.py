@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from io import StringIO
+from datetime import datetime
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -85,11 +86,13 @@ class TestTESTClient():
     @pytest.fixture
     def experiment(
         self,
+        request,
         logged_client: TeselaGenClient,
         select_laboratory,
     ) -> Dict[str, Any]:
         client = logged_client.test
-        experiment_name: str = "Python Test Client Experiment"
+        test_name: str = request.node.name
+        experiment_name: str = f"Python Test Client Experiment - Test: {test_name} - Run at: {str(datetime.now())} "
         experiment: Dict[str, Any] = client.create_experiment(
             experiment_name=experiment_name)
 
