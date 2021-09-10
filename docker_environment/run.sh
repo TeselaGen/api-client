@@ -7,7 +7,9 @@ source ./config.sh
 # For more info, run : docker run --help
 # --publish list : Publish a container's port(s) to the host
 # --detach       : Run container in background and print container ID
+# --init         : Makes process PID=1 be docker-init backed by tini: https://docs.docker.com/engine/reference/run/#specify-an-init-process
 docker run --publish ${hostPort}:${containerPort} \
+           --init \
            --name ${containerName} \
            --interactive \
            --tty \
