@@ -100,4 +100,6 @@ def logged_client(
     client.login(
         expiration_time=expiration_time,
     )
-    return client
+    yield client
+
+    client.logout()

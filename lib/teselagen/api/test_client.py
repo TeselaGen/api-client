@@ -419,7 +419,7 @@ class TESTClient():
             )
         except Exception as e:
             # TODO : Use a logger
-            raise Exception(e)
+            raise
 
         assay_res = json.loads(response["content"])[0]
         # Retrieve the created object
