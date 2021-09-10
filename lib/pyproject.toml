@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "teselagen"
-version = "0.4.0"
+version = "0.4.1"
 description = "Teselagen Biotechnology API client"
 authors = ["Your Name <you@example.com>"]
 license = "MIT"
@@ -33,7 +33,7 @@ tqdm = "^4.61.2"
 single_version = "^1.5.1"
 SecretColors = "^1.2.4"
 tenacity = "^8.0.0"
-
+openpyxl = "^3.0.7"
 
 [tool.poetry.dev-dependencies]
 seaborn = "^0.11.1"
