@@ -549,15 +549,16 @@ class TESTClient():
             Returns: a JSON object with a status and an import process ID. Which can be used to check the status of the import progress
                 by means of the 'get_assay_results_import_status' function.
         """
+        if assay_id is None and assay_name is None:
+            raise Exception(
+                f"Please provide a valid 'assay_id' or 'assay_name'.")
+
         if (assay_id is None and assay_name is not None):
             # Supports creating a new assay by providing an assay name and an experiment ID.
             assay_id = self.get_or_create_assay(
                 assay_name=assay_name,
                 experiment_id=str(experiment_id),
             )
-        else:
-            raise Exception(
-                f"Please provide a valid 'assay_id' or 'assay_name'.")
         # Implements the ability to do the file upload behind the scenes.
         if (file_id is None and filepath is not None):
             file_id = self.get_or_upload_file(
@@ -864,10 +865,11 @@ class TESTClient():
         self,
         experiment_id: Optional[str] = None,
         assay_id: Optional[str] = None,
+        file_id: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
-            Fetches all files from the selected Laboratory. You can also filter the results by experiment or by assay using the
-            'experiment_id' and 'assay_id' arguments.
+            Fetches all files from the selected Laboratory. You can also filter the results by experiment, by assay or by file, using the
+            'experiment_id', 'assay_id' and/or 'file_id' arguments.
 
             Returns :
                 () :
@@ -905,9 +907,13 @@ class TESTClient():
             params=params,
         )
 
-        response["content"] = json.loads(response["content"])
+        results: List[Dict[str, Any]] = json.loads(response["content"])
 
-        return response["content"]
+
+        if file_id is not None:
+            results = list(filter(lambda x: x['id'] == file_id, results))
+
+        return results
 
     def upload_file(
         self,
