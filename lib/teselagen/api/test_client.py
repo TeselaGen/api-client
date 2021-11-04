@@ -52,6 +52,10 @@ class TESTClient():
         self.delete_assay_subject_url: str = join(api_url_base,
                                                   "assay-subjects") + "/{}"
         self.put_assay_subject_descriptors_url: str = f"{api_url_base}/assay-subjects/descriptors"
+        ## Two endpoints for posting and getting an import job (specially useful for long running imports)
+        self.post_assay_subjects_descriptors_import_url: str = f"{api_url_base}/assay-subjects/imports"
+        self.get_assay_subjects_descriptors_import_url: str = join(
+            api_url_base, "assay-subjects/imports") + "/{}"
 
         # Experiments
         self.get_experiments_url: str = f"{api_url_base}/experiments"
@@ -67,13 +71,13 @@ class TESTClient():
         self.create_assay_url: str = join(api_url_base,
                                           "experiments") + "/{}/assays"
         self.delete_assay_url: str = join(api_url_base, "assays") + "/{}"
-
-        self.post_assay_results_import_url: str = f"{api_url_base}/assays/results/import"
-        self.get_assay_results_import_url: str = join(
-            api_url_base, "assays") + "/results/import/{}"
-
         self.assay_results_url: str = join(api_url_base,
                                            "assays") + "/{}/results"
+        ## Two endpoints for posting and getting an import job (specially useful for long running imports)
+        self.post_assay_results_import_url: str = join(api_url_base,
+                                                       "assays") + "/{}/imports"
+        self.get_assay_results_import_url: str = join(api_url_base,
+                                                      "imports") + "/{}"
 
         # Files
         self.get_files_info_url: str = f"{api_url_base}/files"
@@ -231,9 +235,6 @@ class TESTClient():
         filepath: Optional[str] = None,
         createSubjectsFromFile: Optional[bool] = False,
     ):
-        #TODO: This is a temporary implementation while a better solution
-        # for long task is implemented.
-
         # Implements the ability to do the file upload behind the scenes.
         if (file_id is None):
             if filepath is not None and (Path(filepath).exists()):
@@ -247,7 +248,7 @@ class TESTClient():
             "createSubjectsFromFile": createSubjectsFromFile
         }
         response: Dict[str, Any] = post(
-            url=self.post_assay_results_import_url,
+            url=self.post_assay_subjects_descriptors_import_url,
             headers=self.headers,
             json=body,
         )
@@ -270,7 +271,8 @@ class TESTClient():
         '''
         try:
             response: Dict[str, Any] = get(
-                url=self.get_assay_results_import_url.format(importId),
+                url=self.get_assay_subjects_descriptors_import_url.format(
+                    importId),
                 headers=self.headers,
             )
         except Exception as e:
@@ -569,13 +571,12 @@ class TESTClient():
             raise Exception(
                 f"Please provide a valid 'file_id' or an existant 'filepath'.")
         body = {
-            "assayId": assay_id,
             "fileId": file_id,
             "mapper": mapper,
         }
         try:
             response: Dict[str, Any] = post(
-                url=self.post_assay_results_import_url,
+                url=self.post_assay_results_import_url.format(assay_id),
                 headers=self.headers,
                 json=body,
             )

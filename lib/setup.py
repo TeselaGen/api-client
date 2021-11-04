@@ -6,6 +6,7 @@ from typing import Dict, List
 
 from setuptools import find_packages
 from setuptools import setup
+from teselagen.utils.setup_commands import SingleTestCommand
 
 #PATH_ROOT = os.path.dirname(__file__)
 
@@ -20,12 +21,17 @@ version: str = "0.0.0"
 setup_requires: List[str] = ["pytest-runner"]
 tests_require: List[str] = ["pytest"]
 
-setup(name=name,
-      version=__version__,
-      packages=find_packages(),
-      #description=description,
-      #author=author,
-      #url=url,
-      setup_requires=setup_requires,
-      #install_requires=_load_requirements(PATH_ROOT),
-      tests_require=tests_require)
+setup(
+    name=name,
+    version=__version__,
+    packages=find_packages(),
+    #description=description,
+    #author=author,
+    #url=url,
+    setup_requires=setup_requires,
+    #install_requires=_load_requirements(PATH_ROOT),
+    tests_require=tests_require,
+    cmdclass={
+        "stest": SingleTestCommand,
+    },
+)
