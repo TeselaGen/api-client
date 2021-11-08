@@ -1,0 +1,14 @@
+{
+    "recommendations": [
+        "eamodio.gitlens",
+        "GitHub.remotehub",
+        "github.vscode-pull-request-github",
+        "gruntfuggly.todo-tree",
+        "ibm.output-colorizer",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter-renderers",
+        "njpwerner.autodocstring",
+        "sourcery.sourcery"
+    ]
+}
