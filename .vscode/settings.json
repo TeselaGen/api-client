@@ -67,6 +67,7 @@
         "**/typesheds": true,
         "**/typestubs": true,
         "**/typings": true,
+        "**/.coverage": true,
         // modify the following to your needs
         "**/run_*.sh": false,
     },
