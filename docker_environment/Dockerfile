@@ -111,7 +111,7 @@ RUN set -ex \
     # ensure to remove package's state information (it can be recreated with 'apt-get update')
     && rm -rf /var/lib/apt/lists/*
 
-# Add poetry to the `PATH` environment variable
+# Add poetry to the 'PATH' environment variable
 ENV PATH="/root/.poetry/bin:$PATH"
 
 RUN set -ex \
@@ -133,6 +133,7 @@ COPY . .
 RUN set -ex \
     # poetry installations are not editable
     && cd lib/ \
+    # to avoid installing development packages, use 'poetry install --no-dev'
     && POETRY_VIRTUALENVS_CREATE=false poetry install \
     && cd .. \
     # sanity checks
