@@ -27,14 +27,8 @@ delete_docker_image ${imageName} ${versionTag}
 # We delete previous intermediate dangling images if the flag "--clear" has been passed from command line.
 delete_intermediate_dangling_images $1
 
-# --build-arg list : Set build-time variables
-# Example :
-# To replace default ARG values,
-#       docker build . \
-#           --build-arg arg_name_1=new_value_1 \
-#           --build-arg arg_name_2=new_value_new_value_2
-
 # We build the image, and tag it with image name and version
+# Use the `--no-cache` flag of the `docker build` command if required.
 echo "building ${imageName}:${versionTag}"
 docker build --tag ${imageName}:${versionTag} .
 echo "built ${imageName}:${versionTag}"
