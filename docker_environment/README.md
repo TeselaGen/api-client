@@ -9,25 +9,25 @@ Here are some guidelines to _build_ and _run_ the docker container for the `Tese
 
     Use the flag `--clear` to remove the dangling intermediate images created during the building.
 
-    ```
+    ```bash
     bash build.sh --clear
     ```
 
 1. Run the docker container from the (already built) docker image
 
-    ```
+    ```bash
     bash run.sh
     ```
 
 1.  Alternatively, build the docker image and run the docker container in one line
 
-    ```
+    ```bash
     bash build.sh --clear && bash run.sh
     ```
 
 1. A different option would be to run the following script
 
-    ```
+    ```bash
     bash remove_build_run.sh
     ```
 
@@ -35,8 +35,7 @@ Here are some guidelines to _build_ and _run_ the docker container for the `Tese
 
 1. Once the docker container is running, you can access jupyter notebooks from your browser at `localhost:8888`
 
-1. You can create your own run command to mount folders from your computer into the container. Alternatively, you may  use
-    the `sh run_dev.sh <path/to/local/folder>` command (instead of `run.sh`) to mount a directory into `/home/development/Notebooks`.
+1. You can create your own run command to mount folders from your computer into the container. Alternatively, you may  use the `sh run_dev.sh <path/to/local/folder>` command (instead of `run.sh`) to mount a directory into `/home/development/Notebooks`.
 
 # Others
 
@@ -45,19 +44,19 @@ Here we list some common commands.
 
 1. To list _runing_ containers
 
-    ```
+    ```bash
     docker ps
     ```
 
     Use the `--all` flag to list _all_ containers
 
-    ```
+    ```bash
     docker ps --all
     ```
 
 1. To list all _images_
 
-    ```
+    ```bash
     docker images --all
     ```
 
@@ -65,7 +64,7 @@ Here we list some common commands.
 
     Replace `containerName`
 
-    ```
+    ```bash
     docker restart containerName
     ```
 
@@ -73,7 +72,7 @@ Here we list some common commands.
 
     Replace `containerName`
 
-    ```
+    ```bash
     docker stop containerName
     ```
 
@@ -81,7 +80,7 @@ Here we list some common commands.
 
     Replace `containerName`
 
-    ```
+    ```bash
     docker start containerName
     ```
 
@@ -91,7 +90,7 @@ Here we list some common commands.
 
     Use the `--force` flag to force the removal of a running container.
 
-    ```
+    ```bash
     docker rm containerName --force
     ```
 
@@ -101,12 +100,12 @@ Here we list some common commands.
 
     Use the flag `--force` to force the removal of the image.
 
-    ```
+    ```bash
     docker rmi imageName:$versionTag --force
     ```
 
 1. To pretty print the list of containers using a `Go` template
-    ```
+    ```bash
     docker ps --all --format 'table {{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}\t{{.ID}}\t{{.Mounts}}' --no-trunc
     ```
 
@@ -114,20 +113,20 @@ Here we list some common commands.
 
     Replace `containerName`
 
-    ```
+    ```bash
     docker exec --tty --interactive containerName bash
     ```
 
 1. Verify the library is installed
 
     * From inside the container
-        ```
+        ```bash
         pip freeze | grep --ignore-case teselagen
         ```
 
     * From outside the container
 
-        ```
+        ```bash
         docker exec --tty --interactive tgclient  bash -c "pip freeze | grep --ignore-case teselagen"
         ```
 
@@ -139,7 +138,7 @@ Here we list some common commands.
 
     Here is an example to run the command `jupyter notebook list` inside the container, to get the notebook token.
 
-    ```
+    ```bash
     docker exec --tty --interactive containerName bash -c "jupyter notebook list"
     ```
 

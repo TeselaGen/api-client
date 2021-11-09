@@ -1,9 +1,7 @@
 #!/bin/bash
 
 # If both, container and image, already exist.
-# This script will attempt to remove them, and
-# then it will build the image and run the
-# container.
+# This script will attempt to remove them, and then it will build the image and run the container.
 
 # We import values from the configuration file.
 source ./config.sh

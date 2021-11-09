@@ -22,8 +22,7 @@ cp -avR ../lib ./lib
 # We delete the image if it already exists.
 delete_docker_image ${imageName} ${versionTag}
 
-# We delete previous intermediate dangling images
-# if the flag "--clear" has been passed from command line.
+# We delete previous intermediate dangling images if the flag "--clear" has been passed from command line.
 delete_intermediate_dangling_images $1
 
 # --file           : Name of the Dockerfile (Default is 'PATH/Dockerfile')
@@ -54,8 +53,7 @@ docker builder build . \
 
 echo "built ${imageName}:${versionTag}"
 
-# We delete posterior intermediate dangling images
-# if the flag "--clear" has been passed from command line.
+# We delete posterior intermediate dangling images if the flag "--clear" has been passed from command line.
 delete_intermediate_dangling_images $1
 
 # Remove lib copy

@@ -4,19 +4,18 @@
 ARG BASE_CONTAINER=ubuntu:bionic-20200112
 # ARG BASE_CONTAINER=ubuntu:18.04
 
-# We set the some default ARG values. Those values can be overwritten
-# from the command line by using the "--build-arg" argument.
+# We set the some default ARG values. Those values can be overwritten from the command line by using the
+# "--build-arg" argument.
 
 
-# Let's say we define default values for the "arg1" and "arg2"
-# variables in the Dockerfile, as follows:
+# Let's say we define default values for the "arg1" and "arg2" ariables in the Dockerfile, as follows:
 #   ARG arg1=old_value_1
 #   ARG arg2=new_value_2
 # And we want to update the values
 #   "arg1" <- "new_value_1"
 #   "arg2" <- "new_value_2",
 # For this purpose, we can simply run
-#         docker builder build . --build-arg arg1=new_value_1 --build-arg arg2=new_value_2
+#   docker builder build . --build-arg arg1=new_value_1 --build-arg arg2=new_value_2
 # This will overwrite the default values with the new values.
 
 
@@ -91,7 +90,7 @@ RUN set -x \
     && apt-get install -y curl \
     && curl -sSL  https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py \
     && python3 get-poetry.py --version 1.1.7
-    #&& rm -rf get-poetry.py
+# && rm -rf get-poetry.py
 ENV PATH="/root/.poetry/bin:$PATH"
 
 # Tell poetry to install everything on system's python
@@ -121,9 +120,8 @@ RUN jupyter notebook --generate-config
 #     jupyter contrib nbextension install --system && \
 #     jupyter nbextensions_configurator enable --user
 
-# After the installation, we copy the examples folder to the home directory
-# And then we delete the content of the working directory that was used for
-# building and installing everything.
+# After the installation, we copy the examples folder to the home directory and then we delete the content of the
+# working directory that was used for building and installing everything.
 RUN rsync ${PATH_TO_EXAMPLES} /home/ \
     --human-readable \
     --progress \
@@ -133,7 +131,7 @@ RUN rsync ${PATH_TO_EXAMPLES} /home/ \
     --exclude "*requirements.txt"
 
 # Delete all from the local folder, except the file with the given name.
-#RUN find . \! -name "*start.sh" -delete
+# RUN find . \! -name "*start.sh" -delete
 
 # Set on bash start script
 RUN echo source "/tmp/on_bash_start.sh" >> ~/.bashrc
@@ -146,4 +144,4 @@ RUN chmod +x on_start.sh
 WORKDIR /home/
 
 ENTRYPOINT ["/tmp/on_start.sh"]
-#ENTRYPOINT ["tail", "-f", "/dev/null"]
+# ENTRYPOINT ["tail", "-f", "/dev/null"]
