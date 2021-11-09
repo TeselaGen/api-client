@@ -47,7 +47,7 @@ You can use the provided docker environment that contains a ready to use install
 
 #### Install dependencies
 
-If lock file exists (the lock file contains fixed versions of dependencies), the `poetry install` command will install all dependencies according to the lock file (lock file **must** be added to the repo). If the file doens't exist it will generate the lock file again.
+If lock file exists (the lock file contains fixed versions of dependencies), the `poetry install` command will install all dependencies according to the lock file (lock file **must** be added to the repo). If the file does not exist, it will generate the lock file again.
 
 #### Update dependencies
 
