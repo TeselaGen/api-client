@@ -8,8 +8,6 @@ source ./config.sh
 docker run --publish ${hostPort}:${containerPort} \
            --init \
            --name ${containerName} \
-           --interactive \
-           --tty \
            --detach \
            --ipc=host \
            ${imageName}:${versionTag}

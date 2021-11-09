@@ -28,8 +28,6 @@ docker run --publish ${hostPort}:${containerPort} \
            --name ${containerName} \
            --volume $parentDir"/lib/:/home/development/lib" \
            $additionalVolume \
-           --interactive \
-           --tty \
            --detach \
            --ipc=host \
            ${imageName}:${versionTag}
