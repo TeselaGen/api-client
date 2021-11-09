@@ -43,7 +43,7 @@ def client_with_lab(
         host_url=host_url,
         module_name='test',
     )
-    client.login(expiration_time=expiration_time,)
+    client.login(expiration_time=expiration_time)
     client.select_laboratory(lab_name="The Test Lab")
     return client
 
@@ -51,18 +51,24 @@ def client_with_lab(
 @pytest.fixture(scope="module")
 def wild_type_experiment(client_with_lab: TeselaGenClient) -> Dict[str, Any]:
     """Creates an experiment for "Wild Type" data and destroys it when finished."""
+    # set-up
     experiment_name = "Test multiomics data for WT Strain"
     experiment = client_with_lab.test.create_experiment(experiment_name=experiment_name)
+    # yield
     yield experiment
+    # tear-down
     client_with_lab.test.delete_experiment(experiment['id'])
 
 
 @pytest.fixture(scope="module")
 def bio_engineered_experiment(client_with_lab: TeselaGenClient) -> Dict[str, Any]:
     """Creates an experiment for "Bio Engineered" data and destroys it when finished."""
+    # set-up
     experiment_name = "Test multiomics data for BE Strain"
     experiment = client_with_lab.test.create_experiment(experiment_name=experiment_name)
+    # yield
     yield experiment
+    # tear-down
     client_with_lab.test.delete_experiment(experiment['id'])
 
 
@@ -100,12 +106,14 @@ def metadata(
         Dict[str, Any]: Metadata maps from name to ID
     """
     _metadata = {}
+
     # Descriptor types
     # Here we are going to create the necessary Descriptor Types
     # that are going to be used to map the different Strains' charactetristics described in
     # the experiment description files.
     # The first column name is omitted, since it's the 'Line Name' which is not a descriptor but the Strain itself.
     descriptorTypeNames = test_data["EDD_experiment_description_file_WT"].columns.values.tolist()[1:]
+
     # Here we construct the 'descriptorTypes' metadata records.
     # Also, we strip any leading or trailing spaces in the file header names.
     descriptorTypes = [{
@@ -115,6 +123,7 @@ def metadata(
         metadataType="descriptorType",
         metadataRecord=descriptorTypes,
     )
+
     # After creating the descriptor types, we are going to construct a mapper dictionary
     # that we will use to know the metadata descriptorType record IDs from their names.
     _metadata['descriptor_types'] = {x['name']: x['id'] for x in result}
@@ -128,6 +137,7 @@ def metadata(
         metadataType="measurementTarget",
         metadataRecord=measurementTarget,
     )
+
     # Again, we here construct this auxiliary mapper dictionary
     # that we will use to know the metadata measurementTarget record ID from its name.
     _metadata['measurement_targets'] = {
@@ -141,6 +151,7 @@ def metadata(
         metadataType="assaySubjectClass",
         metadataRecord=assaySubjectClass,
     )
+
     # Again, we here construct this auxiliary mapper dictionary: 'assaySubjectClassNameToId',
     # that we will use to know the metadata assaySubjectClass record ID from its name.
     _metadata["assay_subject_class"] = {
@@ -165,6 +176,7 @@ def metadata(
         },
     )
     unitDimensionId = result[0]['id']
+
     # Then we are going to create this 'dummy' dimensionless unitScale metadata record.
     result = client_with_lab.test.create_metadata(
         metadataType="unitScale",
@@ -174,9 +186,11 @@ def metadata(
         },
     )
     unitScales = client_with_lab.test.get_metadata(metadataType="unitScale")
+
     # Here we just construct an auxiliary mapper dictionary that that we will use
     # to know the metadata unitScale record ID from its name.
     unitScalesNameToId = {unitScale['name']: unitScale['id'] for unitScale in unitScales}
+
     # The next units are used by the metabolomics, transcriptomics and proteomics dataset.
     # And these three units are of type Concentration, so we'll add the to the 'Metric Concentration' unit scale.
     # The fourth and last unit called 'n/a', will be used to import the Optical Density data.
@@ -202,6 +216,7 @@ def metadata(
             },
         ],
     )
+
     _metadata['unit_scales'] = unitScalesNameToId
 
     return _metadata
@@ -250,6 +265,7 @@ def experiment_description_upload(
         "EDD_experiment_description_file_WT",
         "EDD_experiment_description_file_BE_designs",
     ]
+
     responses = {}
     for exp_description_data_name in exp_description_data_names:
         # Write data to file
@@ -260,6 +276,7 @@ def experiment_description_upload(
             filepath=description_path,
             mapper=experiment_description_mapper,
         )
+
     # Wait until upload and processing is finished
     for exp_description_data_name in exp_description_data_names:
         _ = wait_for_status(
@@ -410,6 +427,7 @@ def upload_external_metabolites(
     multiomics_mapper,
 ):
     """Uploads externa metabolites data from files."""
+    # set-up
     wt_ext_metabolites_df = test_data["EDD_external_metabolites_WT"].copy()
     # Adds a "unit" column for Time
     client_with_lab.test.get_metadata(metadataType="unit")
@@ -433,8 +451,10 @@ def upload_external_metabolites(
         importId=response['importId'],
     )
 
+    # yield
     yield response
 
+    # tear-down
     delete_file(
         file_name=new_wt_ext_metabolites_filepath.name,
         client_with_lab=client_with_lab,
@@ -450,6 +470,7 @@ def upload_transcriptomics(
     multiomics_mapper,
 ):
     """Uploads transcriptomics data from file."""
+    # set-up
     wt_transcriptomics_df = test_data["EDD_transcriptomics_WTSM"].copy()
     # Adds a "unit" column for Time
     wt_transcriptomics_df["time units"] = "hrs"
@@ -471,8 +492,10 @@ def upload_transcriptomics(
         importId=response['importId'],
     )
 
+    # yield
     yield response
 
+    # tear-down
     delete_file(
         file_name=new_wt_transcriptomics_filepath.name,
         client_with_lab=client_with_lab,
@@ -500,6 +523,7 @@ class TestTESTClientMultiomicsData():
         # Some assertions
         assert 'importId' in optical_density_upload
         assert 'message' in optical_density_upload
+
         filtered_assays = [
             assay for assay in client_with_lab.test.get_assays() if assay["name"] == "Wild Type Optical Density"
         ]
@@ -514,6 +538,7 @@ class TestTESTClientMultiomicsData():
         # Some assertions
         assert 'importId' in upload_external_metabolites
         assert 'message' in upload_external_metabolites
+
         filtered_assays = [
             assay for assay in client_with_lab.test.get_assays() if assay["name"] == "Wild Type External Metabolites"
         ]
@@ -528,6 +553,7 @@ class TestTESTClientMultiomicsData():
         # Some assertions
         assert 'importId' in upload_transcriptomics
         assert 'message' in upload_transcriptomics
+
         filtered_assays = [
             assay for assay in client_with_lab.test.get_assays() if assay["name"] == "Wild Type Transcriptomics"
         ]
@@ -572,6 +598,7 @@ class TestTESTClientMultiomicsData():
         file_name = "TEST_OD_WT.csv"
         files = client_with_lab.test.get_files_info()
         fileterd_files = [file_i for file_i in files if file_i["name"] == file_name]
-        #assert len(fileterd_files)==1, "Expecting just one file for this assertion"
+        # assert len(fileterd_files)==1, "Expecting just one file for this assertion"
+
         downloaded = pd.read_csv(client_with_lab.test.download_file(file_id=fileterd_files[0]["id"]))
         assert downloaded.shape == (10, 5), "Wrong shape"
