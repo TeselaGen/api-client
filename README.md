@@ -62,7 +62,7 @@ It is the equivalent to make an install after deleting the `lock` file.
 
 1. Add your credentials
 
-    To run the tests, you must create a `.credentials` file containing the test username and password, in the root folder (`teselagenpy/lib`).
+    To run the tests, you must create a `.credentials` file containing the test _username_ and _password_, in the _root_ folder (`lib`).
 
     The content of `.credentials` file should look similar to the following:
 
