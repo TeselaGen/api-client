@@ -1,3 +1,16 @@
+# Customs
+
+**/.credentials
+**/.test_configuration
+
+build.sh
+config.sh
+remove_build_run.sh
+run_dev.sh
+run.sh
+utils.sh
+
+# Defaults
 **/.classpath
 **/.dockerignore
 **/.env
@@ -21,7 +34,5 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
-**/.credentials
-**/.test_configuration
 
 README.md
