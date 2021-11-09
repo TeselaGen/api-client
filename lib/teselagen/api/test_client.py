@@ -417,8 +417,7 @@ class TESTClient():
                 json=body,
             )
         except Exception as e:
-            # TODO : Use a logger
-            raise Exception(e)
+            raise
 
         assay_res = json.loads(response["content"])[0]
 
