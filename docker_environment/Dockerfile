@@ -1,88 +1,87 @@
-# Ubuntu 18.04 (bionic)
-# https://hub.docker.com/_/ubuntu/?tab=tags&name=bionic
-# We use an updated ubuntu image.
-ARG BASE_CONTAINER=ubuntu:bionic-20200112
-# ARG BASE_CONTAINER=ubuntu:18.04
+FROM ubuntu:18.04
 
-# We set the some default ARG values. Those values can be overwritten from the command line by using the
-# "--build-arg" argument.
-
-
-# Let's say we define default values for the "arg1" and "arg2" ariables in the Dockerfile, as follows:
-#   ARG arg1=old_value_1
-#   ARG arg2=new_value_2
-# And we want to update the values
-#   "arg1" <- "new_value_1"
-#   "arg2" <- "new_value_2",
-# For this purpose, we can simply run
-#   docker builder build . --build-arg arg1=new_value_1 --build-arg arg2=new_value_2
-# This will overwrite the default values with the new values.
-
-
-# (Default) IP address the notebook server will listen on.
-ARG notebookIP=0.0.0.0
-
-# (Default) The port the notebook server will listen on.
-ARG notebookPort=8888
-
-# We set the user as "root" during the building process
-ARG USERNAME=root
-
-FROM $BASE_CONTAINER AS base
-ENV LANG C.UTF-8
-USER $USERNAME
-EXPOSE $notebookPort
+# Enable the non interactive frontend for automatic installs, which accepts all default answers to questions.
 ARG DEBIAN_FRONTEND=noninteractive
 
-# Configure Python3.9 repo on the system
-RUN apt-get update && apt install -y software-properties-common && \
-    add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Enable terminal colors
+ENV TERM=xterm-color
+ENV COLORTERM=truecolor
 
-# Install
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# >>>>>> Configure Locale >>>>>>
+RUN set -ex \
+    && apt-get update --fix-missing \
+    # configure 'locale' properly
+    && apt-get install -y locales \
+    && locale-gen en_US.UTF-8 \
+    \
+    # uninstall non-essential libraries, so as not to increase the size of this layer (if applicable)
+    \
+    # ensure to remove package's state information after creating another layer in the docker image (it can be recreated with 'apt-get update')
+    && rm -rf /var/lib/apt/lists/*
+
+# Set the locale environment variables after locale installation and configuration has been performed. Setting them before may show some unharmful warnings.
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+ENV LC_CTYPE=UTF-8
+# <<<<<< Configure Locale <<<<<<
+
+# We set the user as "root" during the building process
+USER root
+EXPOSE 8888
+
+RUN set -e \
+    && apt-get update \
+    # Configure Python3.9 repo on the system
+    && apt install -y software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    # ensure to remove package's state information (it can be recreated with 'apt-get update')
+    && rm -rf /var/lib/apt/lists/*
+
+# Install python3.9
+RUN set -x \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+    # install Python3 (and pip3)
     python3.9 \
     python3-pip \
-    && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Create symbolic links:
-#         python -> python3
-#         pip -> pip3
-RUN ln -sfn /usr/bin/python3.9 /usr/bin/python & \
-    ln -sfn /usr/bin/python3.9 /usr/bin/python3 & \
-    ln -s /usr/bin/pip3 /usr/bin/pip
+    # Create symbolic links:
+    #   python -> python3
+    #   pip -> pip3
+    && ln -sfn /usr/bin/python3.9 /usr/bin/python \
+    && ln -sfn /usr/bin/python3.9 /usr/bin/python3 \
+    && ln -s /usr/bin/pip3 /usr/bin/pip \
+    # ensure to remove package's state information (it can be recreated with 'apt-get update')
+    && rm -rf /var/lib/apt/lists/*
 
 # We install needed dependencies
-RUN apt-get update && \
-    apt-get install -yq \
-    #--no-install-recommends \
+RUN set -x \
+    && apt-get update \
+    && apt-get install -yq \
+    # --no-install-recommends \
     apt-utils \
     python3.9-distutils \
-    #python3-setuptools\
-    #python3 \
-    #python3-pip \
+    # python3-setuptools \
+    # python3 \
+    # python3-pip \
     python3-venv \
+    # install data transfer tool (and other required packages)
+    ca-certificates curl gnupg2 \
     wget \
     nano \
     bzip2 \
-    ca-certificates \
     sudo \
-    locales \
     fonts-liberation \
     run-one \
     htop \
-    rsync && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    rsync \
+    # ensure to remove package's state information (it can be recreated with 'apt-get update')
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Update pip
-RUN python -m pip install --upgrade pip==21.1.3
-
-# Install setuptools and wheel
-RUN pip install setuptools==57.2.0 --no-cache-dir
+RUN set -x \
+    # upgrade 'pip', 'setuptools', 'wheel'
+    #   pip==21.1.3 setuptools==57.2.0 wheel==0.33.6
+    && python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
 
 # Install poetry
 RUN set -x \
@@ -90,17 +89,17 @@ RUN set -x \
     && apt-get install -y curl \
     && curl -sSL  https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py \
     && python3 get-poetry.py --version 1.1.7
-# && rm -rf get-poetry.py
+#     && rm -rf get-poetry.py
 ENV PATH="/root/.poetry/bin:$PATH"
 
 # Tell poetry to install everything on system's python
-RUN poetry config virtualenvs.create false
+RUN set -x \
+    poetry config virtualenvs.create false
 
 # We set the current working directory
 WORKDIR /tmp
 
-# We add/copy files from the local folder to the working directory
-# NOTE : Using ADD allows to copy from remote sources (e.g, from a URL)
+# We copy files from the local folder to the working directory
 COPY . .
 
 # We define some PATHs arguments
@@ -109,20 +108,27 @@ ARG PATH_TO_MODULE_REQUIREMENTS=lib/requirements.txt
 ARG PATH_TO_EXAMPLES_REQUIREMENTS=lib/teselagen/examples/requirements.txt
 
 # Poetry installations are not editable
-RUN cd lib/ && POETRY_VIRTUALENVS_CREATE=false poetry install && cd ..
+RUN set -x \
+    cd lib/ \
+    && POETRY_VIRTUALENVS_CREATE=false poetry install \
+    && cd ..
 
 # Generate Jupyter Config
 ENV PATH="~/.local/bin/jupyter-notebook:$PATH"
-RUN jupyter notebook --generate-config
+RUN set -x \
+    jupyter notebook --generate-config
 
-# Install Jupyter Extensions
-# RUN pip install jupyter_contrib_nbextensions && \
-#     jupyter contrib nbextension install --system && \
-#     jupyter nbextensions_configurator enable --user
+# # >>>>>> Install Jupyter Extensions >>>>>>
+# RUN set -x \
+#     pip install jupyter_contrib_nbextensions \
+#     && jupyter contrib nbextension install --system \
+#     && jupyter nbextensions_configurator enable --user
+# # <<<<<< Install Jupyter Extensions <<<<<<
 
 # After the installation, we copy the examples folder to the home directory and then we delete the content of the
 # working directory that was used for building and installing everything.
-RUN rsync ${PATH_TO_EXAMPLES} /home/ \
+RUN set -x \
+    rsync ${PATH_TO_EXAMPLES} /home/ \
     --human-readable \
     --progress \
     --perms \
@@ -134,11 +140,13 @@ RUN rsync ${PATH_TO_EXAMPLES} /home/ \
 # RUN find . \! -name "*start.sh" -delete
 
 # Set on bash start script
-RUN echo source "/tmp/on_bash_start.sh" >> ~/.bashrc
-RUN chmod 775 /tmp/on_bash_start.sh
+RUN set -x \
+    echo source "/tmp/on_bash_start.sh" >> ~/.bashrc \
+    && chmod 775 /tmp/on_bash_start.sh
 
 # Entry point
-RUN chmod +x on_start.sh
+RUN set -x \
+    chmod +x on_start.sh
 
 # And we set the "home" as the default working directory
 WORKDIR /home/
