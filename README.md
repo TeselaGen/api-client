@@ -124,6 +124,12 @@ poetry publish
 # apply end-of-line normalization
 git add --renormalize .
 
+# attach to the container
+docker exec --tty --interactive tgclient bash
+
+# go to the lib folder
+cd /home/development/lib
+
 # run docstrings formatter
 python3 -m docformatter --recursive --wrap-summaries 119 --wrap-descriptions 119 --in-place .
 
@@ -137,11 +143,9 @@ python3 -m yapf --in-place --recursive --parallel .
 python3 -m autoflake --verbose --remove-all-unused-imports --ignore-init-module-imports --recursive --in-place .
 
 # run tests
-cd /home/development/lib
 python3 setup.py test
 
 # run coverage
-cd /home/development/lib
 pytest --cov="teselagen" --cov-report term:skip-covered
 
 -->
