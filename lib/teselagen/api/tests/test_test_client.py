@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import pytest
+
 from teselagen.api import TeselaGenClient
 from teselagen.api import TESTClient
 from teselagen.utils import get_project_root
@@ -31,14 +32,14 @@ TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Exam
 class TestTESTClient():
 
     @pytest.fixture
-    def lab_id(self, client: TeselaGenClient) -> int:
-        """
-
-        Get the lab id used for testing.
+    def lab_id(
+        self,
+        client: TeselaGenClient,
+    ) -> int:
+        """Get the lab id used for testing.
 
         Returns:
             (int) : The laboratory identifier used for testing.
-
         """
         available_labs = client.get_laboratories()
         _lab_id: int = available_labs[0]['id']
@@ -47,37 +48,35 @@ class TestTESTClient():
         return _lab_id
 
     @pytest.fixture
-    def select_laboratory(self, client: TeselaGenClient, lab_id: int) -> None:
-        """
-
-        A selected lab to work on.
-        """
+    def select_laboratory(
+        self,
+        client: TeselaGenClient,
+        lab_id: int,
+    ) -> None:
+        """A selected lab to work on."""
         # available_labs = client.get_laboratories()
         # lab_id: int = available_labs[0]['id']
         client.select_laboratory(lab_id=lab_id)
 
     @pytest.fixture
-    def experiment_id(self, experiment: Dict[str, Any]) -> str:
-        """
-
-        Get the experiment id used for testing.
+    def experiment_id(
+        self,
+        experiment: Dict[str, Any],
+    ) -> str:
+        """Get the experiment id used for testing.
 
         Returns:
             (int) : The experiment identifier used for testing.
-
         """
         _experiment_id: str = experiment["id"]
         return _experiment_id
 
     @pytest.fixture
     def assay_id(self) -> int:
-        """
-
-        Get the assay id used for testing.
+        """Get the assay id used for testing.
 
         Returns:
             (int) : The assay identifier used for testing.
-
         """
         _assay_id: int = 1  # None
         return _assay_id
@@ -90,8 +89,7 @@ class TestTESTClient():
     ) -> Dict[str, Any]:
         client = logged_client.test
         experiment_name: str = "Python Test Client Experiment"
-        experiment: Dict[str, Any] = client.create_experiment(
-            experiment_name=experiment_name)
+        experiment: Dict[str, Any] = client.create_experiment(experiment_name=experiment_name)
 
         yield experiment
 
@@ -109,8 +107,7 @@ class TestTESTClient():
         client = logged_client.test
         experiment_id: str = experiment["id"]
         assay_name: str = "Python Test Client Assay"
-        # TODO : We may need to update this, probably with a parser or
-        #        parser_id fixture
+        # TODO : We may need to update this, probably with a parser or parser_id fixture
         parser_id: Optional[int] = None
         response: Dict[str, Any] = client.create_assay(
             experiment_id=experiment_id,
@@ -120,31 +117,47 @@ class TestTESTClient():
         return response
 
     def test_class_attributes(self) -> None:
-
         # We check if the class inherit the parents methods.
 
         # parent_class_methods: List[str] = [
-        #     "register", "login", "logout", "get_server_status", "create_token",
-        #     "update_token", "get_api_info", "get_current_user",
-        #     "get_laboratories", "select_laboratory", "unselect_laboratory"
+        #     "register",
+        #     "login",
+        #     "logout",
+        #     "get_server_status",
+        #     "create_token",
+        #     "update_token",
+        #     "get_api_info",
+        #     "get_current_user",
+        #     "get_laboratories",
+        #     "select_laboratory",
+        #     "unselect_laboratory",
         # ]
 
         # We check if the class has the required methods.
 
         experiment_methods: List[str] = [
-            "get_experiments", "create_experiment", "delete_experiment"
+            "get_experiments",
+            "create_experiment",
+            "delete_experiment",
         ]
 
         assay_methods: List[str] = [
-            "get_assays", "create_assay", "delete_assay"
+            "get_assays",
+            "create_assay",
+            "delete_assay",
         ]
 
         file_methods: List[str] = [
-            "get_files_info", "upload_file", "download_file", "delete_file"
+            "get_files_info",
+            "upload_file",
+            "download_file",
+            "delete_file",
         ]
 
         metadata_methods: List[str] = [
-            "get_metadata", "create_metadata", "delete_metadata"
+            "get_metadata",
+            "create_metadata",
+            "delete_metadata",
         ]
 
         attributes: List[str] = [
@@ -157,30 +170,40 @@ class TestTESTClient():
 
         assert all(hasattr(TESTClient, attribute) for attribute in attributes)
 
-    def test_instance_attributes(self, logged_client: TeselaGenClient) -> None:
-
+    def test_instance_attributes(
+        self,
+        logged_client: TeselaGenClient,
+    ) -> None:
         # We check if the client inherit the required parents attributes.
         # parent_class_attributes: List[str] = ["labs_url"]
 
         # We check if the client has the required attributes.
 
         experiment_attributes: List[str] = [
-            "get_experiments_url", "create_experiment_url",
-            "delete_experiment_url"
+            "get_experiments_url",
+            "create_experiment_url",
+            "delete_experiment_url",
         ]
 
         assay_attributes: List[str] = [
-            "get_assays_url", "get_assays_by_experiment_url",
-            "create_assay_url", "delete_assay_url"
+            "get_assays_url",
+            "get_assays_by_experiment_url",
+            "create_assay_url",
+            "delete_assay_url",
         ]
 
         file_attributes: List[str] = [
-            "get_files_info_url", "get_file_data_url", "delete_file_url",
-            "upload_file_url", "upload_file_into_assay_url"
+            "get_files_info_url",
+            "get_file_data_url",
+            "delete_file_url",
+            "upload_file_url",
+            "upload_file_into_assay_url",
         ]
 
         metadata_attributes: List[str] = [
-            "get_metadata_url", "create_metadata_url", "delete_metadata_url"
+            "get_metadata_url",
+            "create_metadata_url",
+            "delete_metadata_url",
         ]
 
         attributes: List[str] = [
@@ -191,8 +214,7 @@ class TestTESTClient():
             *metadata_attributes,
         ]
 
-        assert all(
-            hasattr(logged_client.test, attribute) for attribute in attributes)
+        assert all(hasattr(logged_client.test, attribute) for attribute in attributes)
 
     def test_login(
         self,
@@ -205,8 +227,9 @@ class TestTESTClient():
         assert api_token_name not in client.headers.keys()
 
         # LOGIN
-        client.login(  #username=credentials["test_user"],
-            #passwd=credentials["test_password"],
+        client.login(
+            # username=credentials["test_user"],
+            # passwd=credentials["test_password"],
             expiration_time=expiration_time)
 
         # After login, the client has tokens
@@ -214,7 +237,10 @@ class TestTESTClient():
         assert api_token_name in client.headers.keys()
         assert isinstance(client.headers[api_token_name], str)
 
-    def test_create_experiment(self, experiment: List[Dict[str, Any]]) -> None:
+    def test_create_experiment(
+        self,
+        experiment: List[Dict[str, Any]],
+    ) -> None:
         response = experiment
         assert isinstance(response, dict)
         assert "id" in response.keys()
@@ -230,7 +256,10 @@ class TestTESTClient():
         response = client.delete_experiment(experiment_id=experiment_id)
         assert response is None
 
-    def test_create_assay(self, assay: List[Dict[str, Any]]) -> None:
+    def test_create_assay(
+        self,
+        assay: List[Dict[str, Any]],
+    ) -> None:
         response = assay
         assert isinstance(response, dict)
         assert "id" in response.keys()
@@ -260,9 +289,8 @@ class TestTESTClient():
         assert isinstance(response, list)
         assert len(response) > 0
         assert all(isinstance(element, dict) for element in response)
-        assert all(key in element.keys() and element[key] is not None
-                   for element in response
-                   for key in ["id", "name"])
+        assert all(
+            key in element.keys() and element[key] is not None for element in response for key in ["id", "name"])
         # assert all(element[key] is not None for element in response for key in ["id", "name"])
 
     def test_get_assays(
@@ -272,23 +300,18 @@ class TestTESTClient():
         select_laboratory,
         assay: List[Dict[str, Any]],
     ) -> None:
-
         client = logged_client.test
 
-        response: List[Dict[str, Any]] = client.get_assays(
-            experiment_id=experiment_id,)
+        response: List[Dict[str, Any]] = client.get_assays(experiment_id=experiment_id)
 
         assert isinstance(response, list)
         # NOTE: It may be an empty list (?)
         assert len(response) > 0
         assert all(isinstance(element, dict) for element in response)
 
-        # TODO : We may have to test if an "experiment" object containing an
-        #       "id" and "name" is included
-
-        assert all(key in element.keys() and element[key] is not None
-                   for element in response
-                   for key in ["id", "name"])
+        # TODO : We may have to test if an "experiment" object containing an "id" and "name" is included
+        assert all(
+            key in element.keys() and element[key] is not None for element in response for key in ["id", "name"])
         # assert all( element[key] is not None for element in response for key in ["id", "name"])
 
     # @pytest.mark.skip(reason="The files endpoints are under maintenance.")
@@ -305,10 +328,8 @@ class TestTESTClient():
         assert len(response) > 0
         assert all(isinstance(element, dict) for element in response)
 
-        # TODO : We should expect an "assay" key that may be None
-        assert all(key in element.keys()
-                   for element in response
-                   for key in ["id", "name", "assay", "experiment"])
+        # TODO: We should expect an "assay" key that may be None
+        assert all(key in element.keys() for element in response for key in ["id", "name", "assay", "experiment"])
 
     # @pytest.mark.skip(reason="The files endpoints are under maintenance.")
     def test_upload_file(
@@ -319,16 +340,14 @@ class TestTESTClient():
     ):
         client = logged_client.test
 
-        filepath: Path = get_project_root() / Path(
-            "teselagen/api/tests/example_file.csv")
+        filepath: Path = get_project_root() / Path("teselagen/api/tests/example_file.csv")
         assay_id: Optional[int] = None
         response: Dict[str, Any] = client.upload_file(
             filepath=filepath,
             assay_id=assay_id,
         )
 
-        assert all(key in ["id", "importStatus", "name", "assay", "experiment"]
-                   for key in response.keys())
+        assert all(key in ["id", "importStatus", "name", "assay", "experiment"] for key in response)
 
     # @pytest.mark.skip(reason="The files endpoints are under maintenance.")
     def test_download_file(
@@ -353,9 +372,8 @@ class TestTESTClient():
     ):
         client = logged_client.test
 
-        filepath: Path = get_project_root() / Path(
-            "teselagen/api/tests/example_file.csv")
-        upload_response: Dict[str, Any] = client.upload_file(filepath=filepath,)
+        filepath: Path = get_project_root() / Path("teselagen/api/tests/example_file.csv")
+        upload_response: Dict[str, Any] = client.upload_file(filepath=filepath)
 
         file_id: str = upload_response['id']
         response = client.delete_file(file_id=file_id)
@@ -370,7 +388,6 @@ class TestTESTClient():
         expected_downloaded_assay_length,
         expected_downloaded_assay_row,
     ) -> None:
-
         client: TESTClient = logged_client.test
 
         # DOWNLOAD ASSAY
@@ -401,10 +418,11 @@ class TestTESTClient():
 
         assert row == expected_row
 
-    @pytest.mark.skip(
-        reason="We don't know which experiment and parser IDs to use")
-    def test_upload_assays(self, logged_client) -> None:
-
+    @pytest.mark.skip(reason="We don't know which experiment and parser IDs to use")
+    def test_upload_assays(
+        self,
+        logged_client,
+    ) -> None:
         client = logged_client
 
         # UPLOAD ASSAY
@@ -414,24 +432,20 @@ class TestTESTClient():
         experiment_id: str = '1'
         parser_id: str = '1'
 
-        number_of_previous_assays = len(
-            client.get_assays(experiment_id=experiment_id))
+        number_of_previous_assays = len(client.get_assays(experiment_id=experiment_id))
 
-        uploaded_assay_id = client.upload_assay(filename=filename,
-                                                contents=contents,
-                                                experiment_id=experiment_id,
-                                                parser_id=parser_id,
-                                                assay_name=assay_name)
-
+        uploaded_assay_id = client.upload_assay(
+            filename=filename,
+            contents=contents,
+            experiment_id=experiment_id,
+            parser_id=parser_id,
+            assay_name=assay_name,
+        )
         assert isinstance(uploaded_assay_id, int)
 
-        number_of_current_assays = len(
-            client.get_assays(experiment_id=experiment_id))
-
+        number_of_current_assays = len(client.get_assays(experiment_id=experiment_id))
         assert number_of_current_assays == number_of_previous_assays + 1
 
         # ASSAY LENGTH
-        length_of_the_uploaded_assay: int = client.get_length_of_an_assay(
-            assay_id=uploaded_assay_id)
-
+        length_of_the_uploaded_assay: int = client.get_length_of_an_assay(assay_id=uploaded_assay_id)
         assert length_of_the_uploaded_assay == 9

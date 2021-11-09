@@ -26,15 +26,16 @@ if input("login credentials ? [yes|no] : ").lower() in ["y", "yes"]:
     username: str = input("username : ")
     password: str = getpass.getpass(prompt="password : ")
 
-    credentials: Dict[str, str] = {"username": username, "password": password}
+    credentials: Dict[str, str] = {
+        "username": username,
+        "password": password,
+    }
 
     print(f"Saving credentials to : {credentials_path.absolute()}")
 
     logger.info(f"Saving credentials to : {credentials_path.absolute()}")
 
-    json.dump(credentials,
-              credentials_path.open("w", encoding="utf-8"),
-              indent=4)
+    json.dump(credentials, credentials_path.open("w", encoding="utf-8"), indent=4)
 
     del username, password, credentials
 
@@ -43,16 +44,13 @@ if input("test configuration ? [yes|no] : ").lower() in ["y", "yes"]:
     # test configuration
     host_url: str = input(f"host_url [default: {DEFAULT_HOST_URL}] : ")
     configuration: Dict[str, str] = {
-        "host_url": host_url if host_url is not "" else DEFAULT_HOST_URL
+        "host_url": host_url if host_url != "" else DEFAULT_HOST_URL,
     }
 
     print(f"Saving test configuration to : {configuration_path.absolute()}")
 
-    logger.info(
-        f"Saving test configuration to : {configuration_path.absolute()}")
+    logger.info(f"Saving test configuration to : {configuration_path.absolute()}")
 
-    json.dump(configuration,
-              configuration_path.open("w", encoding="utf-8"),
-              indent=4)
+    json.dump(configuration, configuration_path.open("w", encoding="utf-8"), indent=4)
 
     del host_url, configuration

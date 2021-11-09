@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 
 import numpy as np
 import pandas as pd
+
 from teselagen.utils import DEFAULT_API_TOKEN_NAME
 from teselagen.utils import DEFAULT_HOST_URL
 from teselagen.utils import download_file
@@ -20,17 +21,28 @@ from teselagen.utils import post
 from teselagen.utils import put
 from teselagen.utils import requires_login
 
-SUPPORTED_AA_EXPORT_FORMATS = ['JSON', 'FASTA', 'GENBANK']
+SUPPORTED_AA_EXPORT_FORMATS = [
+    'JSON',
+    'FASTA',
+    'GENBANK',
+]
 # NOTE : Related to Postman and Python requests
-#       "body" goes into the "json" argument
-#       "Query Params" goes into "params" argument
+#           "body" goes into the "json" argument
+#           "Query Params" goes into "params" argument
 
 
 class DESIGNClient():
-    ALLOWED_SEQ_FORMATS = {'json', 'fasta', 'genbank'}
+    ALLOWED_SEQ_FORMATS = {
+        'json',
+        'fasta',
+        'genbank',
+    }
     URL_GET_ASSEMBLY_REPORT = "/assembly-report/export"
 
-    def __init__(self, teselagen_client: Any):
+    def __init__(
+        self,
+        teselagen_client: Any,
+    ) -> None:
         module_name: str = "design"
 
         self.host_url = teselagen_client.host_url
@@ -89,13 +101,11 @@ class DESIGNClient():
 
         # GET
         # /rbs-calculator/jobs/
-        self.rbs_calculator_jobs_url: str = join(api_url_base,
-                                                 "rbs-calculator/jobs")
+        self.rbs_calculator_jobs_url: str = join(api_url_base, "rbs-calculator/jobs")
 
         # GET
         # /rbs-calculator/jobs/:jobId
-        self.rbs_calculator_job_url: str = join(api_url_base,
-                                                "rbs-calculator/jobs") + "/{}"
+        self.rbs_calculator_job_url: str = join(api_url_base, "rbs-calculator/jobs") + "/{}"
 
         # GET
         # /rbs-calculator/organisms
@@ -111,35 +121,34 @@ class DESIGNClient():
         #  - the first one being the format ("FASTA", "GENBANK", "JSON")
         #  - the second one being the sequence id.
         # example: `self.export_aa_url.format("JSON", 2)`
-        self.export_aa_url: str = join(api_url_base, "export",
-                                       "aminoacids") + "/{}/{}"
+        self.export_aa_url: str = join(api_url_base, "export", "aminoacids") + "/{}/{}"
 
     def get_dna_sequence(
-            self,
-            seq_id: int,
-            out_format: str = 'json',
-            out_filepath: Optional[str] = None) -> Union[str, dict]:
-        """Gets full sequence record from its ID
+        self,
+        seq_id: int,
+        out_format: str = 'json',
+        out_filepath: Optional[str] = None,
+    ) -> Union[str, dict]:
+        """Gets full sequence record from its ID.
 
         Args:
             seq_id (int): Sequence id (can be found within the sequence detail url at UI)
-            out_format (str, optional): Output format. Use 'json' and the method
-                will return a dict and 'fasta', or 'genbank' to return a string based
-                on those formats. This also determines the output format when writing an
-                output file. Defaults to 'json'.
-            out_filepath (Optional[str], optional): Path to output file. If None it will
-                not create any file. Defaults to None.
+
+            out_format (str, optional): Output format. Use 'json' and the method will return a dict and 'fasta', or \
+                'genbank' to return a string based on those formats. This also determines the output format when \
+                writing an output file. Defaults to 'json'.
+
+            out_filepath (Optional[str], optional): Path to output file. If None it will not create any file. \
+                Defaults to None.
 
         Raises:
             ValueError: If format not available
 
         Returns:
-            Union[str, dict]: A dict object with json data or a string if another format
-                is chosen.
+            Union[str, dict]: A dict object with json data or a string if another format is chosen.
         """
         if out_format not in self.ALLOWED_SEQ_FORMATS:
-            raise ValueError(
-                f"Format {out_format} not in {self.ALLOWED_SEQ_FORMATS}")
+            raise ValueError(f"Format {out_format} not in {self.ALLOWED_SEQ_FORMATS}")
         url = urljoin(self.export_dna_sequence_url, f'{out_format}/{seq_id}')
         response: Dict[str, Any] = get(url=url, headers=self.headers)
         # Write output file
@@ -152,37 +161,37 @@ class DESIGNClient():
         # Finish
         return response["content"]
 
-    def get_dna_sequences(self, name: str) -> List[dict]:
-        """ Get all sequences which names matches a string
+    def get_dna_sequences(
+        self,
+        name: str,
+    ) -> List[dict]:
+        """Get all sequences which names matches a string.
 
         Args:
             name (str): name of sequences to download
 
         Returns:
-            List[dict]: [description]
+            List[dict]: List of dicts with sequence data.
         """
         args = {'name': name}
-        response: Dict[str, Any] = get(url=self.export_dna_sequences_url,
-                                       headers=self.headers,
-                                       params=args)
-        out = json.loads(response["content"])
-        return out
+        response: Dict[str, Any] = get(url=self.export_dna_sequences_url, headers=self.headers, params=args)
+        return json.loads(response["content"])
 
-    def get_designs(self,
-                    name: Optional[str] = None,
-                    gql_filter: Optional[dict] = None) -> List[dict]:
-        """Retrieves a list of designs summary
+    def get_designs(
+        self,
+        name: Optional[str] = None,
+        gql_filter: Optional[dict] = None,
+    ) -> List[dict]:
+        """Retrieves a list of designs summary.
 
         Args:
-            name (str, optional):  Design's name
-                to filter query. Defaults to None.
-            gql_filter (dict, optional): GraphicQL
-                filter dictionary. May be used to add additional filter conditions.
-                See api-docs.Defaults to None.
+            name (str, optional):  Design's name to filter query. Defaults to None.
+
+            gql_filter (dict, optional): GraphicQL filter dictionary. May be used to add additional filter \
+                conditions. See api-docs. Defaults to None.
 
         Returns:
-            List[dict]: A list of designs info. Each dict in the list contains name and
-                id of each design.
+            List[dict]: A list of designs info. Each dict in the list contains name and id of each design.
         """
         # Prepare parameters
         args: Dict[str, Any] = {'gqlFilter': {}}
@@ -193,17 +202,18 @@ class DESIGNClient():
         # Param gqlFilter should be a json string
         args['gqlFilter'] = json.dumps(args['gqlFilter'])
         # Make request and process output
-        response: Dict[str, Any] = get(url=self.get_designs_url,
-                                       headers=self.headers,
-                                       params=args)
+        response: Dict[str, Any] = get(url=self.get_designs_url, headers=self.headers, params=args)
         out = json.loads(response["content"])
         # Remove unuseful key
         for el in out:
             el.pop("__typename")
         return out
 
-    def get_design(self, design_id: Union[int, str]) -> dict:
-        """ Retrieves the design with specified id
+    def get_design(
+        self,
+        design_id: Union[int, str],
+    ) -> dict:
+        """Retrieves the design with specified id.
 
         Raises error if design_id is not found
 
@@ -213,144 +223,165 @@ class DESIGNClient():
         Returns:
             dict: A dict containing designs information
         """
-        response: Dict[str, Any] = get(url=f"{self.get_design_url}/{design_id}",
-                                       headers=self.headers)
-        #params=args)
-        out = json.loads(response["content"])
-        return out
+        response: Dict[str, Any] = get(url=f"{self.get_design_url}/{design_id}", headers=self.headers)
+        # params=args)
 
-    def post_design(self, design: dict, allow_duplicates: bool = False):
-        """ Sumbits a new design into DESIGN module
+        return json.loads(response["content"])
+
+    def post_design(
+        self,
+        design: dict,
+        allow_duplicates: bool = False,
+    ):
+        """Sumbits a new design into DESIGN module.
 
         Args:
-            design (dict): A dictionary with the design. This dictionary
-                is very complex, but it can be generated easily with the
-                `build_design_from_candidates` method at *utils*
-            allow_duplicates (bool): Set to True to avoid raising errors on
-                detection of parts duplication (default value is False).
+            design (dict): A dictionary with the design. This dictionary is very complex, but it can be generated \
+                easily with the `build_design_from_candidates` method at *utils*
+
+            allow_duplicates (bool): Set to True to avoid raising errors on detection of parts duplication (default \
+                value is False).
 
         Returns:
             dict: On success, returns a dict containing the id of the new design (ex: `{'id': 5}` )
         """
-        body = {"designJson": design, "allowDuplicates": allow_duplicates}
-        response: Dict[str, Any] = post(url=self.post_designs_url,
-                                        headers=self.headers,
-                                        json=body)
+        body = {
+            "designJson": design,
+            "allowDuplicates": allow_duplicates,
+        }
+        response: Dict[str, Any] = post(url=self.post_designs_url, headers=self.headers, json=body)
         return json.loads(response["content"])
 
-    def get_assembly_report(self, report_id: int, local_filename=None) -> str:
-        """
-        Retrieves an assembly report given an id
+    def get_assembly_report(
+        self,
+        report_id: int,
+        local_filename=None,
+    ) -> str:
+        """Retrieves an assembly report given an id.
 
         Args:
-            report_id (int): The id of report as can be seen
-                on the browser URL for that report view in the
-                DESIGN module
+            report_id (int): The id of report as can be seen on the browser URL for that report view in the DESIGN \
+                module.
+
         Returns:
             str path to output file
-
         """
         if local_filename is None:
             local_filename = f"report_{report_id}.zip"
         # url = f"{self.api_url_base}{self.URL_GET_ASSEMBLY_REPORT}/{report_id}"
         url = self.get_assembly_report_url.format(report_id)
-        return download_file(url=url,
-                             local_filename=local_filename,
-                             headers=self.headers)
+        return download_file(url=url, local_filename=local_filename, headers=self.headers)
 
-    def post_codon_optimization_job(self,
-                                    algorithm="ALGORITHMS_NAME",
-                                    parameters={}):
-        body = {"algorithm": algorithm, "parameters": parameters}
-        response: Dict[str, Any] = post(url=self.post_codon_op,
-                                        headers=self.headers,
-                                        json=body)
+    def post_codon_optimization_job(
+        self,
+        algorithm="ALGORITHMS_NAME",
+        parameters=None,
+    ):
+        parameters = {} if parameters is None else parameters
+
+        body = {
+            "algorithm": algorithm,
+            "parameters": parameters,
+        }
+        response: Dict[str, Any] = post(url=self.post_codon_op, headers=self.headers, json=body)
         return json.loads(response["content"])
 
-    def get_codon_optimization_job_results(self, job_id):
-        response: Dict[str,
-                       Any] = get(url=f"{self.get_codon_op_result}/{job_id}",
-                                  headers=self.headers)
-        #params=args)
-        out = json.loads(response["content"])
-        return out
+    def get_codon_optimization_job_results(
+        self,
+        job_id,
+    ):
+        response: Dict[str, Any] = get(url=f"{self.get_codon_op_result}/{job_id}", headers=self.headers)
+        # params=args)
+        return json.loads(response["content"])
 
     ## RBS Calculator Methods.
 
-    def rbs_calculator_set_token(self, rbs_token: str = None) -> None:
-        """
-        Sets TeselaGen-RBS calculator integration token.
+    def rbs_calculator_set_token(
+        self,
+        rbs_token: str = None,
+    ) -> None:
+        """Sets TeselaGen-RBS calculator integration token.
 
         Args:
-            rbs_token(str): Integration token. This is required to consume Tesealgen/RBS Calculator API. Please ask TeselaGen for your integration token.
+            rbs_token(str): Integration token. This is required to consume Tesealgen/RBS Calculator API. Please ask \
+                TeselaGen for your integration token.
 
         Returns:
             dict: {authenticated: boolean, success: boolean}
         """
-        rbs_token = getpass.getpass(
-            prompt="Enter x-tg-rbs-token: ") if rbs_token is None else rbs_token
+        rbs_token = getpass.getpass(prompt="Enter x-tg-rbs-token: ") if rbs_token is None else rbs_token
         self.headers = {**self.headers, "x-tg-rbs-token": rbs_token}
 
     def rbs_calculator_status(self) -> dict:
-        """
-        Checks the status of the RBS Calculator Integration API.
+        """Checks the status of the RBS Calculator Integration API.
 
         Returns:
             dict: {authenticated: boolean, success: boolean}
         """
         try:
-            result: Dict[str, Any] = get(url=self.rbs_calculator_status_url,
-                                         headers=self.headers)
+            result: Dict[str, Any] = get(url=self.rbs_calculator_status_url, headers=self.headers)
         except Exception as e:
-            return {"error": e}
+            return {
+                "error": e,
+            }
 
         return result["content"]
 
-    def rbs_calculator_get_jobs(self, job_id: str = None) -> dict:
-        """
-        Fetches an RBS Calculator Job with the provided job_id.
+    def rbs_calculator_get_jobs(
+        self,
+        job_id: str = None,
+    ) -> dict:
+        """Fetches an RBS Calculator Job with the provided job_id.
 
         Args:
             job_id (str): ID of an RBS Calculator Job
+
         Returns:
             dict: {authenticated: boolean, success: boolean}
         """
-
         try:
             result: Dict[str, Any] = get(
-                url=self.rbs_calculator_job_url.format(job_id)
-                if job_id is not None else self.rbs_calculator_jobs_url,
+                url=self.rbs_calculator_job_url.format(job_id) if job_id is not None else self.rbs_calculator_jobs_url,
                 headers=self.headers)
         except Exception as e:
-            return {"error": e}
+            return {
+                "error": e,
+            }
 
         return result["content"]
 
     def rbs_calculator_organisms(
-            self,
-            as_dataframe: bool = True) -> Union[pd.DataFrame, Dict[str, Any]]:
-        """
-        Fetches all available organisms or host supported by the RBS Calculator tools.
+        self,
+        as_dataframe: bool = True,
+    ) -> Union[pd.DataFrame, Dict[str, Any]]:
+        """Fetches all available organisms or host supported by the RBS Calculator tools.
 
         Args:
             as_dataframe(bool): Whether to return the response as a dataframe.
+
         Returns:
             List[Dict[str, str]]: A list of all the available organisms/hosts with their names and NCBI Accession IDs.
         """
-
         try:
             result: Union[pd.DataFrame, Dict[str, Any]] = get(url=self.rbs_calculator_organisms_url,
-                                         headers=self.headers)
+                                                              headers=self.headers)
         except Exception as e:
-            return {"error": e}
+            return {
+                "error": e,
+            }
 
         result = json.loads(result["content"])
         result = pd.DataFrame(result) if as_dataframe else result
+
         return result
 
-    def rbs_calculator_submit_job(self, algorithm: str, params: Dict[str, Any]) -> dict:
-        """
-        Submits a job to the RBS Calculator API Version v2.1. For deeper information on the RBS Calculator tools please refer to the following documentation:
+    def rbs_calculator_submit_job(
+        self,
+        algorithm: str,
+        params: Dict[str, Any],
+    ) -> dict:
+        """Submits a job to the RBS Calculator API Version v2.1. For deeper information on the RBS Calculator tools
+        please refer to the following documentation:
 
         - Paper: https://www.researchgate.net/publication/51155303_The_Ribosome_Binding_Site_Calculator.
         - Browser Application: https://salislab.net/software/
@@ -448,26 +479,29 @@ class DESIGNClient():
         Returns:
             JSON with RBS Calculator job response. This may depend on the chosen tool.
         """
+        _params: str = json.dumps({
+            **params,
+            **{
+                "algorithm": algorithm,
+            }
+        })
 
-        _params: str = json.dumps({**params, **{"algorithm": algorithm}})
         try:
-            result: Dict[str, Any] = post(url=self.rbs_calculator_submit_url,
-                          data=_params,
-                          headers=self.headers)
+            result: Dict[str, Any] = post(url=self.rbs_calculator_submit_url, data=_params, headers=self.headers)
         except Exception as e:
             return {"error": e}
 
         result = json.loads(result["content"])
+
         return result
 
     ## Amino acid sequence Methods.
-    def import_aa_sequences(self,
-                            aa_sequences: Union[pd.DataFrame, List[List[str]],
-                                                List[Tuple[str, str]],
-                                                List[Dict[str, str]]],
-                            tags: Optional[List[Dict[str, int]]] = None):
-        '''
-        This function imports one or many amino acid sequences by means of TeselaGen's DESIGN API.
+    def import_aa_sequences(
+        self,
+        aa_sequences: Union[pd.DataFrame, List[List[str]], List[Tuple[str, str]], List[Dict[str, str]]],
+        tags: Optional[List[Dict[str, int]]] = None,
+    ):
+        """This function imports one or many amino acid sequences by means of TeselaGen's DESIGN API.
 
         Args:
             aa_sequences(Union[pd.DataFrame, List[Dict[str,str]], List[Tuple[str, str]]): Amino acid sequences data. The data can come in three different ways:
@@ -482,51 +516,41 @@ class DESIGNClient():
             A JSON object with the following two key/values:
                 - createdAminoAcidSequences(): 'id' and 'name' of the created amino acid sequences.
                 - existingAminoAcidSequences(): 'id' of the updated amino acid sequences.
-        '''
+        """
         params = {}
-        if (aa_sequences is not None):
-            if isinstance(aa_sequences, pd.DataFrame):
-                params['name'] = aa_sequences.iloc[:, 0].values.tolist()
-                params['contents'] = aa_sequences.iloc[:, 1].values.tolist()
 
-            elif isinstance(aa_sequences, list):
-                if all(
-                        isinstance(x, list) and len(x) == 2
-                        for x in aa_sequences):
-                    params['name'] = list(map(lambda x: x[0], aa_sequences))
-                    params['contents'] = list(map(lambda x: x[1], aa_sequences))
-
-                if all(
-                        isinstance(x, tuple) and len(x) == 2
-                        for x in aa_sequences):
-                    params['name'] = list(map(lambda x: x[0], aa_sequences))
-                    params['contents'] = list(map(lambda x: x[1], aa_sequences))
-
-                elif all(isinstance(x, dict) for x in aa_sequences):
-                    params['name'] = list(
-                        map(lambda x: x['AA_NAME'], aa_sequences))
-                    params['contents'] = list(
-                        map(lambda x: x['AA_SEQUENCE'], aa_sequences))
-
-                else:
-                    raise ValueError(
-                        "All elements in list argument 'aa_sequences' must either be 2-element tuples or properly formatted dictionaries accroding to the function's Args description."
-                    )
-            else:
-                raise ValueError(
-                    f"Type {type(aa_sequences)} for argument 'aa_sequences' is not supported."
-                )
-
-        else:
+        if aa_sequences is None:
             raise Exception("The 'aa_sequences' argument is mandatory.")
 
-        if (tags is not None and isinstance(tags, list)):
+        if isinstance(aa_sequences, pd.DataFrame):
+            params['name'] = aa_sequences.iloc[:, 0].values.tolist()
+            params['contents'] = aa_sequences.iloc[:, 1].values.tolist()
+
+        elif isinstance(aa_sequences, list):
+            if all(isinstance(x, list) and len(x) == 2 for x in aa_sequences):
+                params['name'] = list(map(lambda x: x[0], aa_sequences))
+                params['contents'] = list(map(lambda x: x[1], aa_sequences))
+
+            if all(isinstance(x, tuple) and len(x) == 2 for x in aa_sequences):
+                params['name'] = list(map(lambda x: x[0], aa_sequences))
+                params['contents'] = list(map(lambda x: x[1], aa_sequences))
+
+            elif all(isinstance(x, dict) for x in aa_sequences):
+                params['name'] = list(map(lambda x: x['AA_NAME'], aa_sequences))
+                params['contents'] = list(map(lambda x: x['AA_SEQUENCE'], aa_sequences))
+
+            else:
+                raise ValueError(
+                    "All elements in list argument 'aa_sequences' must either be 2-element tuples or properly "
+                    "formatted dictionaries accroding to the function's Args description.")
+        else:
+            raise ValueError(f"Type {type(aa_sequences)} for argument 'aa_sequences' is not supported.")
+
+        if tags is not None and isinstance(tags, list):
             params["tags"] = list(map(lambda x: {"id": x}, tags))
 
         try:
-            result: Dict[str, Any] = post(url=self.import_aa_url,
-                          data=json.dumps(params),
-                          headers=self.headers)
+            result: Dict[str, Any] = post(url=self.import_aa_url, data=json.dumps(params), headers=self.headers)
         except Exception as e:
             return e
 
@@ -537,25 +561,26 @@ class DESIGNClient():
         created_aa_seqs_key = 'createdAminoAcidSequences'
         updated_aa_seqs_key = 'existingAminoAcidSequences'
 
-        if (created_aa_seqs_key in parsed_api_result.keys() and
-                len(parsed_api_result[created_aa_seqs_key]) > 0):
+        if (created_aa_seqs_key in parsed_api_result.keys() and len(parsed_api_result[created_aa_seqs_key]) > 0):
             formatted_response[created_aa_seqs_key] = list(
                 map(lambda x: {
                     "id": x['id'],
                     "name": x["name"]
                 }, parsed_api_result[created_aa_seqs_key]))
 
-        if (updated_aa_seqs_key in parsed_api_result.keys() and
-                len(parsed_api_result[updated_aa_seqs_key]) > 0):
+        if (updated_aa_seqs_key in parsed_api_result.keys() and len(parsed_api_result[updated_aa_seqs_key]) > 0):
             formatted_response[updated_aa_seqs_key] = list(
-                map(lambda x: {"id": x['id']},
-                    parsed_api_result[updated_aa_seqs_key]))
+                map(lambda x: {"id": x['id']}, parsed_api_result[updated_aa_seqs_key]))
 
         return formatted_response
 
-    def export_aa_sequence(self, aa_sequence_id: int, format: str = "JSON"):
-        '''
-        This functions exports one amino acid sequence from TeselaGen DESIGN Module. It requires the TeselaGen amino acid sequence ID.
+    def export_aa_sequence(
+        self,
+        aa_sequence_id: int,
+        format: str = "JSON",
+    ):
+        """This functions exports one amino acid sequence from TeselaGen DESIGN Module. It requires the TeselaGen amino
+        acid sequence ID.
 
         Args:
             aa_sequence_id(int): This is an integer ID corresponding to the TeselaGen amino acid sequence ID.
@@ -581,18 +606,16 @@ class DESIGNClient():
                 - isoPoint: Sequence isoelectric point (optional).
                 - uniprotId: UniProt ID for the amino acid sequence (optional).
                 - tags: any TeselaGen tags with which the amino acid sequence has been tagged (optional).
-        '''
+        """
         if not isinstance(aa_sequence_id, int):
             raise ValueError(
-                f"Argument 'aa_sequence_id' must be of type 'int', but received type '{type(aa_sequence_id)}'."
-            )
+                f"Argument 'aa_sequence_id' must be of type 'int', but received type '{type(aa_sequence_id)}'.")
+
         if format not in SUPPORTED_AA_EXPORT_FORMATS:
-            raise ValueError(
-                f"Argument 'format' can only be one of this three strings: JSON, FASTA or GENBANK."
-            )
+            raise ValueError("Argument 'format' can only be one of this three strings: JSON, FASTA or GENBANK.")
+
         try:
-            result: Dict[str, Any] = get(url=self.export_aa_url.format(format, aa_sequence_id),
-                         headers=self.headers)
+            result: Dict[str, Any] = get(url=self.export_aa_url.format(format, aa_sequence_id), headers=self.headers)
         except Exception as e:
             return e
 
@@ -619,11 +642,10 @@ class DESIGNClient():
                     parsed_response['regionAnnotations'],
                 'tags':
                     list(
-                        map(
-                            lambda x: {
-                                'id': x['tag']['id'],
-                                'name': x['tag']['name']
-                            }, parsed_response['taggedItems'])),
+                        map(lambda x: {
+                            'id': x['tag']['id'],
+                            'name': x['tag']['name']
+                        }, parsed_response['taggedItems'])),
                 'createdAt':
                     parsed_response['createdAt'],
                 'updatedAt':
@@ -634,11 +656,13 @@ class DESIGNClient():
 
         return formatted_response
 
-    def export_aa_sequences(self,
-                            aa_sequence_ids: Union[int, np.ndarray, List[int]],
-                            format: str = "JSON"):
-        '''
-        This functions exports one or many amino acid sequences from TeselaGen DESIGN Module. It requires one or a list of DESIGN amino acid sequence IDs.
+    def export_aa_sequences(
+        self,
+        aa_sequence_ids: Union[int, np.ndarray, List[int]],
+        format: str = "JSON",
+    ):
+        """This functions exports one or many amino acid sequences from TeselaGen DESIGN Module. It requires one or a
+        list of DESIGN amino acid sequence IDs.
 
         Args:
             aa_sequence_ids(Union[np.ndarray, List[int]]): This can be either a single integer DESIGN amino acid sequence ID or a list of them.
@@ -665,36 +689,35 @@ class DESIGNClient():
                 - isoPoint: Sequence isoelectric point (optional).
                 - uniprotId: UniProt ID for the amino acid sequence (optional).
                 - tags: any TeselaGen tags with which the amino acid sequence has been tagged (optional).
-        '''
-
+        """
         _sequence_ids: List[int] = []
+
         if isinstance(aa_sequence_ids, int):
             _sequence_ids.append(aa_sequence_ids)
+
         if isinstance(aa_sequence_ids, np.ndarray):
             if all(isinstance(x, int) for x in cast(np.ndarray, aa_sequence_ids)):
                 _sequence_ids.extend(cast(np.ndarray, aa_sequence_ids).tolist())
             else:
-                raise ValueError(
-                    "All elements in list argument 'aa_sequence_ids' must be of type int."
-                )
+                raise ValueError("All elements in list argument 'aa_sequence_ids' must be of type int.")
+
         if isinstance(aa_sequence_ids, list):
             if all(isinstance(x, int) for x in aa_sequence_ids):
                 _sequence_ids.extend(aa_sequence_ids)
             else:
-                raise ValueError(
-                    "All elements in list argument 'aa_sequence_ids' must be of type int."
-                )
+                raise ValueError("All elements in list argument 'aa_sequence_ids' must be of type int.")
         else:
             raise ValueError(
-                "Argument 'aa_sequence_ids' must either be of type int, List[int] or numpy array of int elements."
-            )
+                "Argument 'aa_sequence_ids' must either be of type int, List[int] or numpy array of int elements.")
 
         #TODO: Optimize exporting multiple amino acid sequences by extending DESIGN API such that implements an endpoint supporting this.
 
         formatted_response = []
         for sequence_id in _sequence_ids:
-            aa_sequence = self.export_aa_sequence(aa_sequence_id=sequence_id,
-                                                  format=format)
+            aa_sequence = self.export_aa_sequence(
+                aa_sequence_id=sequence_id,
+                format=format,
+            )
             formatted_response.append(aa_sequence)
 
         return formatted_response
