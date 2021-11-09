@@ -108,5 +108,11 @@ def logged_client(
     Returns:
         (TeselaGenClient) : An instance of the TEST client.
     """
+    # set-up
     client.login(expiration_time=expiration_time)
-    return client
+
+    # yield
+    yield client
+
+    # tear-down
+    client.logout()
