@@ -127,4 +127,6 @@ python3 -m isort --jobs=8 --color .
 
 python3 -m yapf --in-place --recursive --parallel .
 
- -->
+python3 -m autoflake --verbose --remove-all-unused-imports --ignore-init-module-imports --recursive --in-place .
+
+-->
