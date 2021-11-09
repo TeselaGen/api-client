@@ -22,7 +22,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/  # NOTE: Do not include this! since points to our library and not system libs.
 lib64/
 parts/
 sdist/
