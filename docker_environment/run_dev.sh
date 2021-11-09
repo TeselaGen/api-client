@@ -33,4 +33,7 @@ docker run --publish ${hostPort}:${containerPort} \
            --ipc=host \
            ${imageName}:${versionTag}
 
+# docker exec ${containerName} bash -c 'printf "{\n\t\"python.defaultInterpreterPath\": \"/usr/bin/python3\",\n\t\"python.experiments.enabled\": false,\n\t\"jupyter.experiments.enabled\": false\n}\n" > /root/.vscode-server/data/Machine/settings.json && cat /root/.vscode-server/data/Machine/settings.json'
+docker exec ${containerName} bash -c 'printf "{\n\t\"python.experiments.enabled\": false,\n\t\"jupyter.experiments.enabled\": false\n}\n" > /root/.vscode-server/data/Machine/settings.json && cat /root/.vscode-server/data/Machine/settings.json'
+
 docker exec ${containerName} bash -c "cd development/lib; python3 setup.py develop"
