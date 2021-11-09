@@ -30,7 +30,7 @@ delete_intermediate_dangling_images $1
 # We build the image, and tag it with image name and version
 # Use the `--no-cache` flag of the `docker build` command if required.
 echo "building ${imageName}:${versionTag}"
-docker build --tag ${imageName}:${versionTag} .
+docker build --no-cache --tag ${imageName}:${versionTag} .
 echo "built ${imageName}:${versionTag}"
 
 # We delete posterior intermediate dangling images if the flag "--clear" has been passed from command line.
