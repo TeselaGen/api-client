@@ -37,6 +37,7 @@ class DESIGNClient():
         'fasta',
         'genbank',
     }
+
     URL_GET_ASSEMBLY_REPORT = "/assembly-report/export"
 
     def __init__(

@@ -121,12 +121,27 @@ poetry publish
 
 <!--
 
+# apply end-of-line normalization
+git add --renormalize .
+
+# run docstrings formatter
 python3 -m docformatter --recursive --wrap-summaries 119 --wrap-descriptions 119 --in-place .
 
+# sort imports
 python3 -m isort --jobs=8 --color .
 
+# run code formatter
 python3 -m yapf --in-place --recursive --parallel .
 
+# remove unused imports
 python3 -m autoflake --verbose --remove-all-unused-imports --ignore-init-module-imports --recursive --in-place .
+
+# run tests
+cd /home/development/lib
+python3 setup.py test
+
+# run coverage
+cd /home/development/lib
+pytest --cov="teselagen" --cov-report term:skip-covered
 
 -->
