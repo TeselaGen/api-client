@@ -22,27 +22,27 @@ def test_configuration():
 
     ```json
     {
-        'host_url': "http://host.docker.internal:3000",
-        'api_token_name': "x-tg-cli-token"
+        "host_url": "http://host.docker.internal:3000",
+        "api_token_name": "x-tg-cli-token"
     }
     ```
 
     ```json
     {
-        'host_url': "http://platform.teselagen.com",
-        'api_token_name': "x-tg-cli-token"
+        "host_url": "http://platform.teselagen.com",
+        "api_token_name": "x-tg-cli-token"
     }
     ```
 
     ```json
     {
-        'host_url': "http://platform.teselagen.com",
+        "host_url": "http://platform.teselagen.com",
     }
     ```
     """
     DEFAULT_CONFIGURATION = {
-        'host_url': "http://host.docker.internal:3000",
-        'api_token_name': "x-tg-cli-token",
+        "host_url": "http://host.docker.internal:3000",
+        "api_token_name": "x-tg-cli-token",
     }
 
     configuration = DEFAULT_CONFIGURATION.copy()
@@ -54,8 +54,8 @@ def test_configuration():
         file_conf: dict = load_from_json(filepath=configuration_filepath.absolute())
 
         # Check keys are ok
-        assert all([key in configuration.keys() for key in file_conf.keys()
-                   ]), f"One or more of these keys are wrong: {file_conf.keys()}"
+        assert all(key in configuration.keys()
+                   for key in file_conf.keys()), f"One or more of these keys are wrong: {file_conf.keys()}"
 
         # Update values
         configuration.update(file_conf)
