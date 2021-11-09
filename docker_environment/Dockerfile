@@ -88,7 +88,7 @@ RUN set -x \
     && apt-get update \
     && apt-get install -y curl \
     && curl -sSL  https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py \
-    && python3 get-poetry.py --version 1.1.7
+    && python3 get-poetry.py --version 1.1.11
 #     && rm -rf get-poetry.py
 ENV PATH="/root/.poetry/bin:$PATH"
 
