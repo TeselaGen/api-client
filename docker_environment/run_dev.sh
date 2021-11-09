@@ -19,16 +19,18 @@ fi
 
 # We import values from the configuration file.
 source ./config.sh
-# https://docs.docker.com/config/containers/container-networking/
+
 # For more info, run: docker run --help
 #   --init: Makes process PID=1 be docker-init backed by tini: https://docs.docker.com/engine/reference/run/#specify-an-init-process
 parentDir="$(dirname "$(pwd -P)")"
+
 docker run --publish ${hostPort}:${containerPort} \
-           --init \
-           --name ${containerName} \
            --volume $parentDir"/lib/:/home/development/lib" \
            $additionalVolume \
+           --name ${containerName} \
            --detach \
+           --init \
            --ipc=host \
            ${imageName}:${versionTag}
+
 docker exec ${containerName} bash -c "cd development/lib; python3 setup.py develop"
