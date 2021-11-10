@@ -44,6 +44,10 @@
         "setup.cfg": "properties",
         "pyproject.toml": "properties",
         "poetry.lock": "properties",
+        // custom file types
+        ".credentials": "json",
+        ".test_configuration": "json",
+        // generic file types
         // "*.ini": "ini",
         // "*.cfg": "properties",
         // "*.toml": "properties",
