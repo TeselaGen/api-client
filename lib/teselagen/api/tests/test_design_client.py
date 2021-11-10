@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urlencode
 
 import pytest
-import requests_mock
+import requests_mock  # noqa: F401 # pylint: disable=unused-import
 
 from teselagen.api.client import get
 from teselagen.api.client import post
 from teselagen.api.client import TeselaGenClient
-from teselagen.utils import load_from_json
 
 # RBS MOCK DATA. These IDs are safe to be public.
 JOB_ID_ONE = 'lowxt1rzramybxeelijsctypix9vk6fl'

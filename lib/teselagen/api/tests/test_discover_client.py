@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 from itertools import product
-import json
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import List, Optional
 import uuid
 
 import fastaparser
 import pytest
-import requests_mock
+import requests_mock  # noqa: F401 # pylint: disable=unused-import
 
 from teselagen.api import DISCOVERClient
 from teselagen.api import TeselaGenClient
 from teselagen.utils import get_project_root
-from teselagen.utils import load_from_json
 
 MODEL_TYPES_TO_BE_TESTED: List[Optional[str]] = [
     "predictive",

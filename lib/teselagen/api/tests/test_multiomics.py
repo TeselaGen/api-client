@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
-import functools
 import os
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Dict
 
 import pandas as pd
 import pytest
-from tenacity import retry
-from tenacity import stop_after_attempt
-from tenacity import stop_after_delay
-from tenacity import wait_fixed
 
 from teselagen.api import TeselaGenClient
 from teselagen.utils.utils import wait_for_status
