@@ -6,20 +6,14 @@ import getpass
 import json
 from os.path import join
 from typing import Any, cast, Dict, List, Optional, Tuple, Union
-from urllib.parse import urlencode
 from urllib.parse import urljoin
-from urllib.parse import urlparse
 
 import numpy as np
 import pandas as pd
 
-from teselagen.utils import DEFAULT_API_TOKEN_NAME
-from teselagen.utils import DEFAULT_HOST_URL
 from teselagen.utils import download_file
 from teselagen.utils import get
 from teselagen.utils import post
-from teselagen.utils import put
-from teselagen.utils import requires_login
 
 SUPPORTED_AA_EXPORT_FORMATS = [
     'JSON',

@@ -1,7 +1,5 @@
 #!/usr/local/bin/python3
-import os
-import sys
-from typing import Dict, List
+from typing import List
 
 from setuptools import find_packages
 from setuptools import setup

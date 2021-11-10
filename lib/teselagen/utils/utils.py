@@ -14,7 +14,6 @@ import pandas as pd
 import requests
 from tenacity import retry
 from tenacity import retry_if_exception_type
-from tenacity import stop_after_attempt
 from tenacity import stop_after_delay
 from tenacity import wait_fixed
 from typing_extensions import Literal

@@ -3,15 +3,10 @@
 # License: MIT
 
 import json
-from os.path import join
-from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-import pandas as pd
-import requests
 
-from teselagen.utils import DEFAULT_API_TOKEN_NAME
-from teselagen.utils import DEFAULT_HOST_URL
 from teselagen.utils import get
 from teselagen.utils import post
 from teselagen.utils import wait_for_status

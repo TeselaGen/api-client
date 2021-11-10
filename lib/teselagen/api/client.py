@@ -1,13 +1,9 @@
 #!/usr/local/bin/python3
 # Copyright (C) 2018 TeselaGen Biotechnology, Inc.
 # License: MIT
-import getpass
 import json
-from pathlib import Path
 import time
-from typing import Any, Dict, List, Optional, Tuple, Union
-
-import requests
+from typing import Any, Dict, List, Optional, Union
 
 from teselagen.api.design_client import DESIGNClient
 from teselagen.api.discover_client import DISCOVERClient
@@ -16,11 +12,8 @@ from teselagen.utils import DEFAULT_API_TOKEN_NAME
 from teselagen.utils import DEFAULT_HOST_URL
 from teselagen.utils import get
 from teselagen.utils import get_credentials
-from teselagen.utils import get_credentials_path
-from teselagen.utils import load_from_json
 from teselagen.utils import post
 from teselagen.utils import put
-from teselagen.utils import requires_login
 
 # ["test", "learn"/"evolve"]
 AVAILABLE_MODULES: List[str] = [

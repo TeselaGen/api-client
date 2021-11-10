@@ -13,7 +13,6 @@ Some usage examples can be found below.
 import argparse
 import json
 import math
-from pathlib import Path
 import sys
 import textwrap
 from typing import List

@@ -3,13 +3,14 @@ import json
 from typing import Any, Dict, List, Optional, Tuple, Union
 import uuid
 
-from dna_features_viewer import CircularGraphicRecord  # , GraphicRecord
+from dna_features_viewer import CircularGraphicRecord
 from dna_features_viewer import GraphicFeature
-from IPython.display import display
 from IPython.display import display_html
 from IPython.display import display_javascript
 from matplotlib.axes import SubplotBase
 from SecretColors import Palette
+
+# from dna_features_viewer import GraphicRecord
 
 
 def plot_plasmid_features(
