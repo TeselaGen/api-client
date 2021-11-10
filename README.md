@@ -121,6 +121,7 @@ poetry publish
 
 <!--
 
+
 # apply end-of-line normalization
 git add --renormalize .
 
@@ -153,16 +154,28 @@ python3 -m autoflake --verbose --remove-all-unused-imports --ignore-init-module-
 
 
 # fix exceptions
-python3 -m tryceratops \
-        --experimental \
-        --autofix \
-        .
+# python3 -m tryceratops --experimental --autofix .
 
 
 # autopep8
 python3 -m autopep8 \
          --jobs=$(nproc) \
          --diff \
+         --aggressive \
+         --aggressive \
+         --aggressive \
+         --aggressive \
+         --aggressive \
+         --experimental \
+         --max-line-length=119 \
+         --select=E26,E265,E266,E731,E711 \
+         --recursive \
+         .
+
+
+python3 -m autopep8 \
+         --jobs=$(nproc) \
+         --in-place \
          --aggressive \
          --aggressive \
          --aggressive \
@@ -214,6 +227,18 @@ python3 -m isort --jobs=8 --color .
 python3 -m yapf --in-place --recursive --parallel .
 
 
+# run flake8
+flake8
+
+
+# run mypy
+mypy -p teselagen
+
+
+# run radon
+radon cc teselagen
+
+
 # run tests
 python3 setup.py test
 
@@ -222,47 +247,25 @@ python3 setup.py test
 pytest --cov="teselagen" --cov-report term:skip-covered
 
 
-# run mypy
-mypy -p teselagen
-
-
 # run pyclean
 cd /home
-python3 -m pyclean \
-        --verbose \
-        --dry-run \
-        .
+python3 -m pyclean --verbose --dry-run .
 cd /home/development/lib
 
 
 cd /home
-python3 -m pyclean \
-        --verbose \
-        .
+python3 -m pyclean --verbose .
 cd /home/development/lib
 
 
 # run cleanpy
 cd /home
-python3 -m cleanpy \
-        --include-builds \
-        --include-envs \
-        --include-testing \
-        --include-metadata \
-        --verbose \
-        --dry-run \
-        .
+python3 -m cleanpy --include-builds --include-envs --include-testing --include-metadata --verbose --dry-run .
 cd /home/development/lib
 
 
 cd /home
-python3 -m cleanpy \
-        --include-builds \
-        --include-envs \
-        --include-testing \
-        --include-metadata \
-        --verbose \
-        .
+python3 -m cleanpy --include-builds --include-envs --include-testing --include-metadata --verbose .
 cd /home/development/lib
 
 
