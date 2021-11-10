@@ -124,28 +124,139 @@ poetry publish
 # apply end-of-line normalization
 git add --renormalize .
 
+
 # attach to the container
 docker exec --tty --interactive tgclient bash
+
 
 # go to the lib folder
 cd /home/development/lib
 
+
+# validates the structure of the pyproject.toml file
+poetry check
+
+
+# list all available packages in the container
+poetry show
+# poetry show --tree
+# poetry show --outdated
+# poetry show --latest
+
+
 # run docstrings formatter
 python3 -m docformatter --recursive --wrap-summaries 119 --wrap-descriptions 119 --in-place .
+
 
 # remove unused imports
 python3 -m autoflake --verbose --remove-all-unused-imports --ignore-init-module-imports --recursive --in-place .
 
+
 # sort imports
 python3 -m isort --jobs=8 --color .
+
 
 # run code formatter
 python3 -m yapf --in-place --recursive --parallel .
 
+
 # run tests
 python3 setup.py test
 
+
 # run coverage
 pytest --cov="teselagen" --cov-report term:skip-covered
+
+
+# run mypy
+mypy -p teselagen
+
+
+# autopep8
+python3 -m autopep8 \
+         --jobs=$(nproc) \
+         --diff \
+         --aggressive \
+         --aggressive \
+         --aggressive \
+         --aggressive \
+         --aggressive \
+         --experimental \
+         --max-line-length=119 \
+         --select=E26,E265,E266,E731,E711 \
+         --recursive \
+         .
+
+
+# fixit
+python3 -m fixit.cli.run_rules \
+       --rules CollapseIsinstanceChecksRule \
+               NoInheritFromObjectRule \
+               NoRedundantLambdaRule \
+               NoRedundantListComprehensionRule \
+               ReplaceUnionWithOptionalRule \
+               RewriteToComprehensionRule \
+               UseIsNoneOnOptionalRule \
+               RewriteToLiteralRule \
+               NoRedundantArgumentsSuperRule \
+               NoRedundantFStringRule \
+               UseClsInClassmethodRule \
+               UseFstringRule
+
+python3 -m fixit.cli.apply_fix \
+       --skip-autoformatter \
+       --rules CollapseIsinstanceChecksRule \
+               NoInheritFromObjectRule \
+               NoRedundantLambdaRule \
+               NoRedundantListComprehensionRule \
+               ReplaceUnionWithOptionalRule \
+               RewriteToComprehensionRule \
+               UseIsNoneOnOptionalRule \
+               RewriteToLiteralRule \
+               NoRedundantArgumentsSuperRule \
+               NoRedundantFStringRule \
+               UseClsInClassmethodRule \
+               UseFstringRule
+
+
+# run pyclean
+cd /home
+python3 -m pyclean \
+        --verbose \
+        --dry-run \
+        .
+cd /home/development/lib
+
+
+cd /home
+python3 -m pyclean \
+        --verbose \
+        .
+cd /home/development/lib
+
+
+# run cleanpy
+cd /home
+python3 -m cleanpy \
+        --include-builds \
+        --include-envs \
+        --include-testing \
+        --include-metadata \
+        --verbose \
+        --dry-run \
+        .
+cd /home/development/lib
+
+
+cd /home
+python3 -m cleanpy \
+        --include-builds \
+        --include-envs \
+        --include-testing \
+        --include-metadata \
+        --verbose \
+        .
+cd /home/development/lib
+
 
 -->
