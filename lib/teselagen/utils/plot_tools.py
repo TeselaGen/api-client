@@ -56,7 +56,7 @@ def plot_plasmid_features(
     return record.plot(ax)
 
 
-class RenderJSON(object):
+class RenderJSON:
     """Provides a an interactive visualization for json (or serializable list/dict) objects."""
 
     def __init__(
@@ -99,9 +99,9 @@ class RenderJSON(object):
             """,
                      raw=True)
 
-        display_javascript("""
-            require(["https://rawgit.com/caldwell/renderjson/master/renderjson.js"], function() {
-            document.getElementById('%s').appendChild(renderjson(%s))
-            });
-            """ % (self.uuid, self.json_str),
+        display_javascript(f"""
+            require(["https://rawgit.com/caldwell/renderjson/master/renderjson.js"], function() {{
+            document.getElementById('{self.uuid}').appendChild(renderjson({self.json_str}))
+            }});
+            """,
                            raw=True)

@@ -167,7 +167,7 @@ def get_test_configuration_path() -> Path:
     return get_project_root() / '.test_configuration'
 
 
-## CLIENT UTILS
+# CLIENT UTILS
 
 
 def get_credentials(

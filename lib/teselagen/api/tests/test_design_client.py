@@ -149,7 +149,8 @@ class TestDESIGNClient():
             },
         ]
 
-    ## RBS Calculator Tests
+    # RBS Calculator Tests
+
     def test_rbs_calculator_requires_token(
         self,
         logged_client: TeselaGenClient,

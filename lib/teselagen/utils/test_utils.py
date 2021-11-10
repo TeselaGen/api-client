@@ -13,7 +13,9 @@ class TestUtils:
         """Tests wait_for_status happy and sad (timeout) paths with a dummy request."""
         fixed_wait_time = 0.2
         counter_limit = 5
-        validation_method = lambda x: x == "OK"
+
+        def validation_method(x):
+            return x == "OK"
 
         def a_status_request(count_limit: int):
             time.sleep(0.2)

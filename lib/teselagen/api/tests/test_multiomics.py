@@ -228,7 +228,7 @@ def experiment_description_mapper(
     # These structured headers include the column's 'name', plus 2 other properties: "class" and "subClass" information.
     # The 'class' property indicates which is the column's metadata class/type, while the "subClass" or "subClassId"
     # indicates the metadata record ID of such "class".
-    _experiment_description_mapper = list()
+    _experiment_description_mapper = []
     for column_name in test_data["EDD_experiment_description_file_WT"].columns.values.tolist():
         if column_name == "Line Name":
             structured_header = {

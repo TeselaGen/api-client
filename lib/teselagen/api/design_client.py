@@ -44,7 +44,9 @@ class DESIGNClient():
         self.headers = teselagen_client.headers
         # Here we define the Base CLI URL.
         api_url_base: str = f"{self.host_url}/{module_name}/cli-api"
+
         # EXPORT
+
         # GET
         # /export/sequence/{format}/{sequenceId}
         self.export_dna_sequence_url: str = f"{api_url_base}/export/sequence/"
@@ -53,20 +55,23 @@ class DESIGNClient():
         self.export_dna_sequences_url: str = f"{api_url_base}/export/sequences/json"
         # GET
         # /export/aminoacids/{format}/{sequenceId}
-        #self.export_aminoacid_sequence_url: str = f"{api_url_base}/export/aminoacids"
+        # self.export_aminoacid_sequence_url: str = f"{api_url_base}/export/aminoacids"
 
-        ## IMPORT
+        # IMPORT
+
         # POST
-        #self.import_dna_sequence_url: str = f"{api_url_base}/import/sequence"
+        # self.import_dna_sequence_url: str = f"{api_url_base}/import/sequence"
         # POST
-        #self.import_aminoacid_sequence_url: str = f"{api_url_base}/import/aminoacids"
-        ## DESIGN
+        # self.import_aminoacid_sequence_url: str = f"{api_url_base}/import/aminoacids"
+
+        # DESIGN
+
         # GET
         # /designs/{id}
         self.get_design_url: str = f"{api_url_base}/designs"
         # DEL
         # /designs/{id}
-        #self.delete_design_url: str = f"{api_url_base}/designs"
+        # self.delete_design_url: str = f"{api_url_base}/designs"
         # GET
         # /designs
         self.get_designs_url: str = f"{api_url_base}/designs"
@@ -84,7 +89,7 @@ class DESIGNClient():
         # /codon-optimization-jobs
         self.get_assembly_report_url: str = f"{api_url_base}/assembly-report/export" + "/{}"
 
-        ## RBS Calculator API Tesealgen Integration endpoints
+        # RBS Calculator API Tesealgen Integration endpoints
 
         # GET
         # /rbs-calculator/status
@@ -289,7 +294,7 @@ class DESIGNClient():
         # params=args)
         return json.loads(response["content"])
 
-    ## RBS Calculator Methods.
+    # RBS Calculator Methods.
 
     def rbs_calculator_set_token(
         self,
@@ -490,7 +495,8 @@ class DESIGNClient():
 
         return result
 
-    ## Amino acid sequence Methods.
+    # Amino acid sequence Methods.
+
     def import_aa_sequences(
         self,
         aa_sequences: Union[pd.DataFrame, List[List[str]], List[Tuple[str, str]], List[Dict[str, str]]],
@@ -705,7 +711,7 @@ class DESIGNClient():
             raise ValueError(
                 "Argument 'aa_sequence_ids' must either be of type int, List[int] or numpy array of int elements.")
 
-        #TODO: Optimize exporting multiple amino acid sequences by extending DESIGN API such that implements an endpoint supporting this.
+        # TODO: Optimize exporting multiple amino acid sequences by extending DESIGN API such that implements an endpoint supporting this.
 
         formatted_response = []
         for sequence_id in _sequence_ids:

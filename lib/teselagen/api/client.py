@@ -3,7 +3,7 @@
 # License: MIT
 import json
 import time
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from teselagen.api.design_client import DESIGNClient
 from teselagen.api.discover_client import DISCOVERClient
@@ -239,19 +239,19 @@ class TeselaGenClient():
         username: str,
         password: str,
         expiration_time: str,
-    ) -> Union[str, None]:
+    ) -> Optional[str]:
         """Create a new access token for the user with the given username, password and expiration time, and return \
         the new access token.
 
         Args:
-            username (str) : The username identifier to authenticate with the API.
+            username (str): The username identifier to authenticate with the API.
 
-            password (str) : The password identifier to authenticate with the API.
+            password (str): The password identifier to authenticate with the API.
 
-            expiration_time (str) : Expiration time for the authentication (token), in zeit/ms format. Example : "1d"
+            expiration_time (str): Expiration time for the authentication (token), in zeit/ms format. Example : "1d"
 
         Returns:
-            (Union[str, None]) : It returns the authentication token (as a string) for the given email address, or \
+            Optional[str]: It returns the authentication token (as a string) for the given email address, or \
                 None if the email address is not authenticated.
         """
         body = {
