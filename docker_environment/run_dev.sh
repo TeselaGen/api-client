@@ -26,6 +26,7 @@ parentDir="$(dirname "$(pwd -P)")"
 #   --init: Makes process PID=1 be docker-init backed by tini: https://docs.docker.com/engine/reference/run/#specify-an-init-process
 docker run --publish ${hostPort}:${containerPort} \
            --volume $parentDir"/lib/:/home/development/lib" \
+           --volume $parentDir"/.vscode/:/home/development/lib/.vscode" \
            $additionalVolume \
            --name ${containerName} \
            --detach \
