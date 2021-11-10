@@ -527,9 +527,10 @@ class TESTClient():
 
     def import_assay_results(
         self,
-        mapper: List[dict],
-        assay_id: Optional[Union[int, str]] = None,
-        file_id: Optional[Union[int, str]] = None,
+        assay_id: Optional[str] = None,
+        file_id: Optional[str] = None,
+        mapper_id: Optional[str] = None,
+        mapper: List[dict] = None,
         filepath: Optional[Union[str, Path]] = None,
         assay_name: Optional[str] = None,
         experiment_id: Optional[Union[str, int]] = None,
@@ -539,11 +540,13 @@ class TESTClient():
             The data can be passed via a local filepath or either the file ID after already uploading it.
 
             Args:
-                mapper (List[dict]): This is the JSON mapper used by the endpoint to understand each of the file columns. This mapper
-                    should be a list of Python Dictionary representing each structured header with a 'name', 'class' and 'subClassId' key.
-                    For more information on the mappers structure refer to https://api-docs.teselagen.com/#operation/AssaysPutAssayResults
                 assay_id (int) : Assay identifier.
                 file_id (int) : File identifier.
+                mapper_id (str) : Mapper identifier.
+                mapper (Union[List[dict], int]): This is a JSON mapper. This is used by the endpoint to
+                    understand each of the file columns. The JSON mapper should be a list of Python Dictionary
+                    representing each structured header with a 'name', 'class' and 'subClassId' key.
+                    For more information on the mappers structure refer to https://api-docs.teselagen.com/#operation/AssaysPutAssayResults
                 filepath (int) : Local location of the file.
                 assay_name (str) : Name of the assay into which insert the assay results.
                 experiment_id (number) : Experiment identifier. Only used when passed and 'assay_name' an no 'assay_id'.
@@ -570,10 +573,14 @@ class TESTClient():
         else:
             raise Exception(
                 f"Please provide a valid 'file_id' or an existant 'filepath'.")
-        body = {
+        body: Dict[str, Any] = {
             "fileId": file_id,
-            "mapper": mapper,
         }
+
+        if mapper_id:
+            body.update({"parserId": mapper_id})
+        else:
+            body.update({"mapper": mapper})
         try:
             response: Dict[str, Any] = post(
                 url=self.post_assay_results_import_url.format(assay_id),
@@ -914,7 +921,6 @@ class TESTClient():
         )
 
         results: List[Dict[str, Any]] = json.loads(response["content"])
-
 
         if file_id is not None:
             results = list(filter(lambda x: x['id'] == file_id, results))
