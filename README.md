@@ -152,24 +152,11 @@ python3 -m docformatter --recursive --wrap-summaries 119 --wrap-descriptions 119
 python3 -m autoflake --verbose --remove-all-unused-imports --ignore-init-module-imports --recursive --in-place .
 
 
-# sort imports
-python3 -m isort --jobs=8 --color .
-
-
-# run code formatter
-python3 -m yapf --in-place --recursive --parallel .
-
-
-# run tests
-python3 setup.py test
-
-
-# run coverage
-pytest --cov="teselagen" --cov-report term:skip-covered
-
-
-# run mypy
-mypy -p teselagen
+# fix exceptions
+python3 -m tryceratops \
+        --experimental \
+        --autofix \
+        .
 
 
 # autopep8
@@ -217,6 +204,26 @@ python3 -m fixit.cli.apply_fix \
                NoRedundantFStringRule \
                UseClsInClassmethodRule \
                UseFstringRule
+
+
+# sort imports
+python3 -m isort --jobs=8 --color .
+
+
+# run code formatter
+python3 -m yapf --in-place --recursive --parallel .
+
+
+# run tests
+python3 setup.py test
+
+
+# run coverage
+pytest --cov="teselagen" --cov-report term:skip-covered
+
+
+# run mypy
+mypy -p teselagen
 
 
 # run pyclean
