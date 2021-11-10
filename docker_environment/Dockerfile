@@ -1,11 +1,22 @@
 FROM ubuntu:18.04
 
+
+# Fix DL4006 (https://deepsource.io/gh/The-Judge/docker_archlinux-php-fpm/issue/DOK-DL4006/description/)
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+
 # Enable the non interactive frontend for automatic installs, which accepts all default answers to questions.
 ARG DEBIAN_FRONTEND=noninteractive
+
 
 # Enable terminal colors
 ENV TERM=xterm-color
 ENV COLORTERM=truecolor
+
+
+# Set the user as "root" during the building process
+USER root
+EXPOSE 8888
 
 
 # >>>>>> Configure Locale >>>>>>
@@ -26,11 +37,6 @@ ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 ENV LC_CTYPE=UTF-8
 # <<<<<< Configure Locale <<<<<<
-
-
-# Set the user as "root" during the building process
-USER root
-EXPOSE 8888
 
 
 # >>>>>> Install Python >>>>>>
@@ -62,7 +68,7 @@ RUN set -ex \
 
 RUN set -ex \
     && apt-get update \
-    && apt-get install -yq \
+    && apt-get install -y \
     # --no-install-recommends \
     apt-utils \
     python3.9-distutils \
@@ -76,11 +82,12 @@ RUN set -ex \
     rsync \
     # install utility packages
     htop nano wget \
-    # install misc packages
+    # install OS dependencies for notebook server (https://github.com/jupyter/docker-stacks/blob/425794a0c2ffb0553a8c21e8eb97fbe94680c0ee/base-notebook/Dockerfile#L20-L35)
     bzip2 \
+    sudo \
+    locales \
     fonts-liberation \
     run-one \
-    sudo \
     # sanity checks
     && pip --version \
     && pip3 --version \
@@ -92,8 +99,22 @@ RUN set -ex \
     && python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
     # && pip install --no-cache-dir --upgrade setuptools wheel \
     # sanity checks
-    && python -m pip list | grep -iE '^pip|^setuptools|^wheel'
+    && python -m pip list | grep -iE '^pip|^setuptools|^wheel' \
+    # Remove all items from the 'pip' cache
+    && pip cache purge
 # <<<<<< Install Python <<<<<<
+
+
+# >>>>>> Install Git >>>>>>
+RUN set -ex \
+    && apt-get update \
+    # Install Git
+    && apt-get install -y git \
+    # sanity checks
+    && git --version \
+    # ensure to remove package's state information (it can be recreated with 'apt-get update')
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# <<<<<< Install Git <<<<<<
 
 
 # >>>>>> Install Poetry >>>>>>
@@ -114,10 +135,13 @@ RUN set -ex \
 # Add poetry to the 'PATH' environment variable
 ENV PATH="/root/.poetry/bin:$PATH"
 
+# Set environment variable to tell poetry to install everything on system's python
+ENV POETRY_VIRTUALENVS_CREATE=false
+
 RUN set -ex \
     # sanity checks
     && poetry --version \
-    # tell poetry to install everything on system's python
+    # configurate poetry to install everything on system's python
     && poetry config virtualenvs.create false
 # <<<<<< Install Poetry <<<<<<
 
@@ -146,12 +170,18 @@ RUN set -ex \
     # sanity checks
     && python3 -c "import teselagen" \
     && python3 -c "import teselagen; print('teselagen version: ', teselagen.__version__)"
+#     && poetry cache clear --all $(poetry cache list)
 # >>>>>> Install teselagen Library >>>>>>
 
 
 # >>>>>> Generate Jupyter Config >>>>>>
 ENV PATH="~/.local/bin/jupyter-notebook:$PATH"
+
 RUN set -ex \
+    # sanity checks
+    && jupyter --version \
+    && jupyter notebook --version \
+    # jupyter should have already been installed by the `poetry install` command
     && jupyter notebook --generate-config
 # >>>>>> Generate Jupyter Config >>>>>>
 
@@ -168,8 +198,8 @@ RUN set -ex \
 ARG PATH_TO_EXAMPLES=lib/teselagen/examples/
 ARG PATH_TO_EXAMPLES_REQUIREMENTS=lib/teselagen/examples/requirements.txt
 
-# After the installation, we copy the examples folder to the home directory
 RUN set -ex \
+    # After the installation, we copy the examples folder to the home directory of the container.
     && rsync ${PATH_TO_EXAMPLES} /home/ \
     --human-readable \
     --progress \
@@ -188,13 +218,17 @@ RUN set -ex \
     # set on bash start script
     && echo source "/tmp/on_bash_start.sh" >> ~/.bashrc \
     # provide proper permissions
-    && chmod 775 /tmp/on_bash_start.sh
+    && chmod 775 /tmp/on_bash_start.sh \
+    # log permissions
+    && ls -lahG /tmp/on_bash_start.sh
 
 
 # >>>>>> Entrypoint & Command >>>>>>
 RUN set -ex \
     # provide proper permissions
-    && chmod +x on_start.sh
+    && chmod +x on_start.sh \
+    # log permissions
+    && ls -lahG /tmp/on_start.sh
 
 # Set the default working directory for the container
 WORKDIR /home/
