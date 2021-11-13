@@ -38,6 +38,9 @@ LICENSE.txt eol=crlf
 *.rtf -text
 
 # https://github.com/github/linguist
-**/*.json linguist-language=jsonc
+# https://github.com/github/linguist/blob/master/docs/overrides.md
 **/*.ipynb linguist-documentation
-**/poetry.lock linguist-generated=true
+**/*.json linguist-language=jsonc
+
+# https://docs.github.com/en/repositories/working-with-files/managing-files/customizing-how-changed-files-appear-on-github
+# **/poetry.lock linguist-generated=true

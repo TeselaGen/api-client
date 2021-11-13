@@ -9,6 +9,7 @@
         "ms-python.vscode-pylance",
         "ms-toolsai.jupyter-renderers",
         "njpwerner.autodocstring",
-        "sourcery.sourcery"
+        // "rogalmic.bash-debug",
+        "sourcery.sourcery",
     ]
 }
