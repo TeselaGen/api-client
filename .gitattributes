@@ -40,3 +40,4 @@ LICENSE.txt eol=crlf
 # https://github.com/github/linguist
 **/*.json linguist-language=jsonc
 **/*.ipynb linguist-documentation
+**/poetry.lock linguist-generated=true
