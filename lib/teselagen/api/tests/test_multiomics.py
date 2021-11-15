@@ -405,7 +405,7 @@ class TestTESTClientMultiomicsData():
             as_dataframe=True, 
             with_subject_data=False)
         assert len(results_without_subject_data[0]["data"])==9, "Wrong number of output rows"
-        assert len(results_without_subject_data[0]["data"].columns)==13, "Wrong number of output columns"
+        assert len(results_without_subject_data[0]["data"].columns)==12, "Wrong number of output columns"
 
         # Now we download data without subject data
         results_with_subject_data=client_with_lab.test.get_assay_results(
@@ -413,7 +413,7 @@ class TestTESTClientMultiomicsData():
             as_dataframe=True, 
             with_subject_data=True)
         assert len(results_with_subject_data[0]["data"])==9, "Wrong number of output rows"
-        assert len(results_with_subject_data[0]["data"].columns)==24, "Wrong number of output columns"
+        assert len(results_with_subject_data[0]["data"].columns)==23, "Wrong number of output columns"
 
     def test_download_file(self, optical_density_upload, client_with_lab, test_data):
         """Check files download"""

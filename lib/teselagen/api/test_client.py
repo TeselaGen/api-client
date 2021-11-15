@@ -52,6 +52,10 @@ class TESTClient():
         self.delete_assay_subject_url: str = join(api_url_base,
                                                   "assay-subjects") + "/{}"
         self.put_assay_subject_descriptors_url: str = f"{api_url_base}/assay-subjects/descriptors"
+        ## Two endpoints for posting and getting an import job (specially useful for long running imports)
+        self.post_assay_subjects_descriptors_import_url: str = f"{api_url_base}/assay-subjects/imports"
+        self.get_assay_subjects_descriptors_import_url: str = join(
+            api_url_base, "assay-subjects/imports") + "/{}"
 
         # Experiments
         self.get_experiments_url: str = f"{api_url_base}/experiments"
@@ -67,13 +71,13 @@ class TESTClient():
         self.create_assay_url: str = join(api_url_base,
                                           "experiments") + "/{}/assays"
         self.delete_assay_url: str = join(api_url_base, "assays") + "/{}"
-
-        self.post_assay_results_import_url: str = f"{api_url_base}/assays/results/import"
-        self.get_assay_results_import_url: str = join(
-            api_url_base, "assays") + "/results/import/{}"
-
         self.assay_results_url: str = join(api_url_base,
                                            "assays") + "/{}/results"
+        ## Two endpoints for posting and getting an import job (specially useful for long running imports)
+        self.post_assay_results_import_url: str = join(api_url_base,
+                                                       "assays") + "/{}/imports"
+        self.get_assay_results_import_url: str = join(api_url_base,
+                                                      "imports") + "/{}"
 
         # Files
         self.get_files_info_url: str = f"{api_url_base}/files"
@@ -231,9 +235,6 @@ class TESTClient():
         filepath: Optional[str] = None,
         createSubjectsFromFile: Optional[bool] = False,
     ):
-        #TODO: This is a temporary implementation while a better solution
-        # for long task is implemented.
-
         # Implements the ability to do the file upload behind the scenes.
         if (file_id is None):
             if filepath is not None and (Path(filepath).exists()):
@@ -247,7 +248,7 @@ class TESTClient():
             "createSubjectsFromFile": createSubjectsFromFile
         }
         response: Dict[str, Any] = post(
-            url=self.post_assay_results_import_url,
+            url=self.post_assay_subjects_descriptors_import_url,
             headers=self.headers,
             json=body,
         )
@@ -270,7 +271,8 @@ class TESTClient():
         '''
         try:
             response: Dict[str, Any] = get(
-                url=self.get_assay_results_import_url.format(importId),
+                url=self.get_assay_subjects_descriptors_import_url.format(
+                    importId),
                 headers=self.headers,
             )
         except Exception as e:
@@ -549,15 +551,16 @@ class TESTClient():
             Returns: a JSON object with a status and an import process ID. Which can be used to check the status of the import progress
                 by means of the 'get_assay_results_import_status' function.
         """
+        if assay_id is None and assay_name is None:
+            raise Exception(
+                f"Please provide a valid 'assay_id' or 'assay_name'.")
+
         if (assay_id is None and assay_name is not None):
             # Supports creating a new assay by providing an assay name and an experiment ID.
             assay_id = self.get_or_create_assay(
                 assay_name=assay_name,
                 experiment_id=str(experiment_id),
             )
-        else:
-            raise Exception(
-                f"Please provide a valid 'assay_id' or 'assay_name'.")
         # Implements the ability to do the file upload behind the scenes.
         if (file_id is None and filepath is not None):
             file_id = self.get_or_upload_file(
@@ -568,13 +571,12 @@ class TESTClient():
             raise Exception(
                 f"Please provide a valid 'file_id' or an existant 'filepath'.")
         body = {
-            "assayId": assay_id,
             "fileId": file_id,
             "mapper": mapper,
         }
         try:
             response: Dict[str, Any] = post(
-                url=self.post_assay_results_import_url,
+                url=self.post_assay_results_import_url.format(assay_id),
                 headers=self.headers,
                 json=body,
             )
@@ -621,6 +623,7 @@ class TESTClient():
         page_size: Optional[int] = None,
         as_dataframe: Optional[bool] = True,
         with_subject_data: Optional[bool] = True,
+        with_units: Optional[bool] = False,
     ) -> List[IAssayResults]:
         """
             Calls Teselagen TEST API endpoint: `GET /assays/:assayId/results`. It implements data pagination controllable via the
@@ -690,6 +693,7 @@ class TESTClient():
                     page_size=page_size,
                     as_dataframe=as_dataframe,
                     with_subject_data=with_subject_data,
+                    with_units=with_units,
                 )
                 final_assay_results.append(final_result)
 
@@ -707,6 +711,7 @@ class TESTClient():
         page_size: Optional[int] = None,
         as_dataframe: Optional[bool] = True,
         with_subject_data: Optional[bool] = True,
+        with_units: Optional[bool] = False,
     ) -> IAssayResults:
         """
             Calls Teselagen TEST API endpoint: `GET /assays/:assayId/results?fileId=file_id`. It implements data pagination controllable via the
@@ -746,12 +751,14 @@ class TESTClient():
                 )
 
             tabular_assay_results, assay_result_indexes = self._tabular_format_assay_result_data(
-                assay_results)
+                assay_results,
+                with_units,
+            )
 
             if as_dataframe:
                 final_results = pd.DataFrame(tabular_assay_results).set_index(
                     assay_result_indexes[0])
-                final_results.insert(0, "Assay", assay_name)
+                # final_results.insert(0, "Assay", assay_name) // This column is redundant
                 # If required, group by the assay results and assay subject indexes.
                 # Usually these indexes are going to be the assay subject id and any reference dimension found in the assay results.
                 final_results = final_results.groupby(
@@ -864,10 +871,11 @@ class TESTClient():
         self,
         experiment_id: Optional[str] = None,
         assay_id: Optional[str] = None,
+        file_id: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
-            Fetches all files from the selected Laboratory. You can also filter the results by experiment or by assay using the
-            'experiment_id' and 'assay_id' arguments.
+            Fetches all files from the selected Laboratory. You can also filter the results by experiment, by assay or by file, using the
+            'experiment_id', 'assay_id' and/or 'file_id' arguments.
 
             Returns :
                 () :
@@ -905,9 +913,13 @@ class TESTClient():
             params=params,
         )
 
-        response["content"] = json.loads(response["content"])
+        results: List[Dict[str, Any]] = json.loads(response["content"])
 
-        return response["content"]
+
+        if file_id is not None:
+            results = list(filter(lambda x: x['id'] == file_id, results))
+
+        return results
 
     def upload_file(
         self,
@@ -1157,7 +1169,11 @@ class TESTClient():
         indexes = ["Subject ID"]
         return tabular_assay_subjects, indexes
 
-    def _tabular_format_assay_result_data(self, assay_result_data: Any):
+    def _tabular_format_assay_result_data(
+        self,
+        assay_result_data: Any,
+        with_units: Optional[bool] = False,
+    ):
         tabular_assay_results = []
         assaySubjectColumnName = 'Subject ID'
         assaySubjectIds = set()
@@ -1174,17 +1190,26 @@ class TESTClient():
             # reference dimensions are important when formatting assay results, because a tabular form
             # would be indexed by these.
             if "reference" in result:
-                referenceDimension = f"{result['reference']['name']}_({result['reference']['unit']})"
+                referenceDimension = result['reference']['name']
                 referenceDimensions.add(referenceDimension)
                 tabular_row_assay_result_dict[referenceDimension] = result[
                     'reference']['value']
 
-            # These do not need specal index treatment for a tabular form.
-            # However these are still collected and returned in case of need.
-            measurementType = f"{result['result']['name']}_({result['result']['unit']})"
+                # Here if 'with_units' is True (False by default) unit columns will be returned.
+                if with_units:
+                    tabular_row_assay_result_dict[
+                        f"{referenceDimension} Metric"] = result['reference'][
+                            'unit']
+
+            measurementType = result['result']['name']
             measurementTypes.add(measurementType)
             tabular_row_assay_result_dict[measurementType] = result['result'][
                 'value']
+
+            # Here if 'with_units' is True (False by default) unit columns will be returned.
+            if with_units:
+                tabular_row_assay_result_dict[
+                    f"{measurementType} Metric"] = result['result']['unit']
 
             tabular_assay_results.append(tabular_row_assay_result_dict)
 
