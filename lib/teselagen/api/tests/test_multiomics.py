@@ -109,8 +109,10 @@ def metadata(client_with_lab: TeselaGenClient, test_data: Dict[str, Any],)->Dict
     # Here we list all the currently available reference dimensions in TEST
     # And see there's already a reference dimension called 'Elapsed Time', which we'll use later on.
     # pprint(client.test.get_metadata(metadataType="referenceDimension"))
+    elapsed_time_id = [x['id'] for x in client_with_lab.test.get_metadata(metadataType="referenceDimension") 
+                      if x['name']=="Elapsed Time"][0]
     # We are going to store this 'Elapsed Time' ID into a variable to use later.
-    _metadata['reference_dimension'] = {'Elapsed Time': '1'}
+    _metadata['reference_dimension'] = {'Elapsed Time': elapsed_time_id}
 
     # Units
     # First we are going to create this 'dummy' dimensionless unitDimension metadata record.
