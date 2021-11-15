@@ -250,7 +250,7 @@ class TestTESTClient():
         assay_id = assay["id"]
         response = client.delete_assay(assay_id=assay_id)
 
-        assert int(response["id"]) == assay_id, "Error deleting assay."
+        assert response["id"] == assay_id, "Error deleting assay."
 
     def test_get_experiments(
         self,
