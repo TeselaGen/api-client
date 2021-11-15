@@ -338,7 +338,7 @@ class TESTClient():
 
         return experiment[0]
 
-    def delete_experiment(self, experiment_id: int) -> None:
+    def delete_experiment(self, experiment_id: str) -> None:
         """ Deletes an experiment with ID=`experiment_id`. """
         response = delete(
             url=self.delete_experiment_url.format(experiment_id),

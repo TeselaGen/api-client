@@ -247,7 +247,7 @@ class TestTESTClient():
         assay: Dict[str, Any],
     ) -> None:
         client = logged_client.test
-        assay_id: int = int(assay["id"])
+        assay_id = assay["id"]
         response = client.delete_assay(assay_id=assay_id)
 
         assert int(response["id"]) == assay_id, "Error deleting assay."
