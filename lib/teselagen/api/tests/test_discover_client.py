@@ -28,6 +28,9 @@ class TestDISCOVERClient():
         logged_client.select_laboratory(lab_name="The Test Lab")
         return logged_client.discover
 
+    # TODO: Either `submitted_model_name`fixture ` should also remove the model afterwards, or we should remove them
+    #       all after runing tests (by creating another fixture or something). Otherwise, some tests may fail if an
+    #       older/deprecated/unsupported model is still there).
     @pytest.fixture
     def submitted_model_name(
         self,
@@ -36,6 +39,7 @@ class TestDISCOVERClient():
         # Define synthetic problem parameters
         params = {
             "name": f"Model X times Y {uuid.uuid1()}",
+            "description": "This is a model created by PyTest.",
             "data_input": [{
                 "X": str(el[0]),
                 "Y": str(el[1]),
@@ -104,6 +108,7 @@ class TestDISCOVERClient():
         self,
         discover_client: DISCOVERClient,
         model_type: Optional[str],
+        submitted_model_name: str, # pylint: disable=unused-argument # reason: requires a model to be created
     ):
         response = discover_client.get_models_by_type(model_type=model_type)
         assert isinstance(response, list)
@@ -205,10 +210,12 @@ class TestDISCOVERClient():
 
         assert len(new_model) == 1
         assert new_model[0]['status'] in {
-            'in-progress',
+            'created',
             'pending',
-            'completed-successfully',
+            'in-progress',
             'submitting',
+            'completed-successfully',
+
         }
 
         res_cancel = discover_client.cancel_model(new_model[0]['id'])
