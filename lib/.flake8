@@ -109,6 +109,25 @@ statistics = True
 #
 #       tryceratops [TC002, TC401]
 #       https://github.com/guilatrova/tryceratops
+#
+#       flake8-use-pathlib [PL100, PL124]
+#       https://gitlab.com/RoPP/flake8-use-pathlib
+#
+#       flake8-broken-line [N400]
+#       https://github.com/wemake-services/flake8-broken-line
+#
+#       flake8-debugger [T100]
+#       https://github.com/jbkahn/flake8-debugger
+#
+#       flake8-simplify [SIM101, SIM300]
+#       https://github.com/MartinThoma/flake8-simplify
+#           To enable it, run
+#               run 'pip install --upgrade flake8-simplify'
+#               add 'flake8-simplify' to 'enable-extensions'
+#               add 'SIM' error code prefix to 'select'
+#
+# TODO: Check AAA
+#       https://github.com/jamescooke/flake8-aaa
 
 # Enable plugins and extensions that are otherwise disabled by default
 #   G       = flake8-logging-format
@@ -116,15 +135,18 @@ statistics = True
 enable-extensions =
     flake8_implicit_str_concat,
     flake8-bandit,
+    flake8-broken-line,
     flake8-bugbear,
     flake8-commas,
     flake8-comprehensions,
     flake8-copyright,
+    flake8-debugger,
     flake8-docstrings,
     flake8-eradicate,
     flake8-executable,
     flake8-print,
     flake8-pytest-style,
+    flake8-use-pathlib,
     G,
     naming,
     pycodestyle,
@@ -134,9 +156,7 @@ enable-extensions =
 
 # # mccabe
 # McCabe complexity threshold
-max-complexity = 10
-# https://github.com/facebookresearch/mmf/blob/7fa7607d299a644158dc3104247e58a30e4b42ab/.flake8#L5
-# max-complexity = 18
+max-complexity = 18
 
 # # pyflakes
 # also check syntax of the doctests
@@ -159,9 +179,14 @@ ignore =
     # First line should end with a period, question mark, or exclamation point
     # D415,
     # No blank lines allowed after function docstring
-    # D202
+    # D202,
     # Unnecessary list comprehension - rewrite using list()
-    C416
+    C416,
+    # Line too long
+    #   NOTE: E501 is not flexible enough, we're using B950 instead, because it considers "max-line-length" but only
+    #         triggers when the value has been exceeded by more than 10%.
+    #           Reference: https://github.com/PyCQA/flake8-bugbear#how-to-enable-opinionated-warnings
+    E501
 
 per-file-ignores =
     # Ignore the following errors in the tests
@@ -180,7 +205,7 @@ per-file-ignores =
 # flake8-copyright does not support unicode. You should list the files that contain unicode in the `exclude` list.
 #   Reference: https://github.com/savoirfairelinux/flake8-copyright/issues/15
 copyright-check = True
-copyright-regexp=Copyright \(c\) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved
+copyright-regexp = Copyright \(c\) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved
 # C errors are not selected by default, so add them to your selection
 
 # Default select = E,F,W,C90
@@ -192,14 +217,16 @@ select =
     C90,
     # Custom
     B,
+    B9,
     C,
-    S,
     D,
-    T,
-    PT,
-    G,
-    N,
-    R,
     EXE,
+    G,
     ISC,
+    N,
+    PL
+    PT,
+    R,
+    S,
+    T,
     TC,

@@ -1,7 +1,8 @@
 {
     "recommendations": [
         "eamodio.gitlens",
-        "GitHub.remotehub",
+        "editorconfig.editorconfig",
+        "github.remotehub",
         "github.vscode-pull-request-github",
         "gruntfuggly.todo-tree",
         "ibm.output-colorizer",
@@ -11,5 +12,10 @@
         "njpwerner.autodocstring",
         // "rogalmic.bash-debug",
         "sourcery.sourcery",
+        // "davidanson.vscode-markdownlint",
+        // "joshbolduc.commitlint",
+        // "mutantdino.resourcemonitor",
+        // "rogalmic.bash-debug",
+        // "vivaxy.vscode-conventional-commits",
     ]
 }

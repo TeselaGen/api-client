@@ -32,7 +32,9 @@
     "explorer.compactFolders": false,
     "explorer.sortOrder": "type",
     "files.associations": {
+        ".bandit": "ini",
         ".coveragerc": "properties",
+        ".editorconfig": "ini",
         ".flake8": "ini",
         ".isort.cfg": "properties",
         ".pydocstyle": "properties",
@@ -52,6 +54,7 @@
         // "*.cfg": "properties",
         // "*.toml": "properties",
     },
+    "files.encoding": "utf8",
     "files.eol": "\n",
     "files.exclude": {
         "**/.git": true,
