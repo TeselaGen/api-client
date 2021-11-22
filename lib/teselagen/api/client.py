@@ -4,6 +4,7 @@
 import json
 import time
 from typing import Any, Dict, List, Optional
+from urllib.parse import urljoin
 
 from teselagen.api.design_client import DESIGNClient
 from teselagen.api.discover_client import DISCOVERClient
@@ -64,23 +65,26 @@ class TeselaGenClient():
         self._discover = None
         # NOTE: Do not add passwords to the class attributes. Delete all passwords once they've been used.
 
-        self.host_url: str = host_url
+        self.host_url: str = host_url.strip("/")
         self.api_token_name: str = api_token_name
 
         # Here we define a common Base URL. Using the DESIGN Module as the target server for these common endpoints.
         _module_name: str = module_name if module_name != "discover" else "evolve"
-        module_url: str = f"{self.host_url}/{_module_name}"
-        api_url_base: str = f"{module_url}/cli-api"
+        # module_url: str = urljoin(f"{self.host_url}/",_module_name)
+        # api_url_base: str = urljoin(self.host_url, f"{_module_name}/cli-api")
 
         # Here we define the client endpoints. Using the DESIGN Module as the target server for these common endpoints.
-        self.register_url: str = f"{module_url}/register"
-        self.login_url: str = f"{module_url}/login"
-        self.info_url: str = f"{api_url_base}/info"
-        self.status_url: str = f"{api_url_base}/public/status"
-        self.auth_url: str = f"{api_url_base}/public/auth"
+        self.register_url: str = urljoin(self.host_url, f"{_module_name}/register")
+        self.login_url: str = urljoin(self.host_url, f"{_module_name}/login")
+        self.info_url: str = urljoin(self.host_url, f"{_module_name}/cli-api/info")
+        self.status_url: str = urljoin(self.host_url,
+                                       f"{_module_name}/cli-api/public/status")  #f"{api_url_base}/public/status"
+        self.auth_url: str = urljoin(self.host_url,
+                                     f"{_module_name}/cli-api/public/auth")  #f"{api_url_base}/public/auth"
 
         # Laboratories
-        self.labs_url: str = f"{self.host_url}/test/cli-api/laboratories"
+        self.labs_url: str = urljoin(self.host_url,
+                                     "test/cli-api/laboratories")  #f"{self.host_url}/test/cli-api/laboratories"
 
         # NOTE : The authorization token will be updated with the "login" method.
         self.auth_token: Optional[str] = None
