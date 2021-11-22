@@ -351,6 +351,12 @@ class TestTESTClient():
 
         assert all(key in ["id", "importStatus", "name", "assay", "experiment"] for key in response)
 
+    # TODO: Check lab name is right! It is currently pointing to "Example Lab"
+    #           lab_name = [
+    #               lab["name"]
+    #               for lab in logged_client.get_laboratories()
+    #               if logged_client.headers["tg-active-lab-id"] == lab["id"]
+    #           ][0]
     # @pytest.mark.skip(reason="The files endpoints are under maintenance.")
     def test_download_file(
         self,
