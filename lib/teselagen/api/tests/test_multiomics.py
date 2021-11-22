@@ -255,7 +255,7 @@ def experiment_description_mapper(
 def experiment_description_upload(
     test_data,
     temp_dir,
-    client_with_lab,
+    client_with_lab: TeselaGenClient,
     experiment_description_mapper,
 ):
     """Uploads data from WT and BE experiments descriptions."""
@@ -293,7 +293,7 @@ def optical_density_upload(
     metadata,
     test_data,
     temp_dir,
-    client_with_lab,
+    client_with_lab: TeselaGenClient,
     wild_type_experiment,
 ):
     """Uploads data from OD experiments."""
@@ -422,7 +422,7 @@ def multiomics_mapper(metadata):
 def upload_external_metabolites(
     temp_dir,
     test_data,
-    client_with_lab,
+    client_with_lab: TeselaGenClient,
     wild_type_experiment,
     multiomics_mapper,
 ):
@@ -465,7 +465,7 @@ def upload_external_metabolites(
 def upload_transcriptomics(
     temp_dir,
     test_data,
-    client_with_lab,
+    client_with_lab: TeselaGenClient,
     wild_type_experiment,
     multiomics_mapper,
 ):
@@ -517,7 +517,7 @@ class TestTESTClientMultiomicsData():
     def test_optical_density_upload(
         self,
         optical_density_upload,
-        client_with_lab,
+        client_with_lab: TeselaGenClient,
     ):
         """Tests data upload methods works ok."""
         # Some assertions
@@ -532,7 +532,7 @@ class TestTESTClientMultiomicsData():
     def test_upload_external_metabolites(
         self,
         upload_external_metabolites,
-        client_with_lab,
+        client_with_lab: TeselaGenClient,
     ):
         """Tests data upload methods works ok."""
         # Some assertions
@@ -547,7 +547,7 @@ class TestTESTClientMultiomicsData():
     def test_upload_transcriptomics(
         self,
         upload_transcriptomics,
-        client_with_lab,
+        client_with_lab: TeselaGenClient,
     ):
         """Tests data upload methods works ok."""
         # Some assertions
@@ -562,7 +562,7 @@ class TestTESTClientMultiomicsData():
     def test_download_data(
         self,
         upload_transcriptomics,
-        client_with_lab,
+        client_with_lab: TeselaGenClient,
         test_data,
     ):
         """Check mapped data is downloaded ok."""
@@ -591,7 +591,7 @@ class TestTESTClientMultiomicsData():
     def test_download_file(
         self,
         optical_density_upload,
-        client_with_lab,
+        client_with_lab: TeselaGenClient,
         test_data,
     ):
         """Check files download."""
