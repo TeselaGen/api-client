@@ -2,7 +2,7 @@
 
 The _TeselaGen Python API Client_ runs on Python 3.
 
-**NOTE :** All the following commands are supposed to be run on the `base` directory, unless specified.
+**NOTE :** All the following commands are supposed to be run on the _base_ directory, unless specified.
 
 ## Library Installation
 This library contains the TeselaGen Python API Client.
@@ -19,7 +19,7 @@ To install it locally,
 
 To be able to run the `examples`, you need to (after installing the library)
 
-1. Clone or download `lib/examples`
+1. Clone or download `teselagen/examples`
 
 1. Open any notebook in the `examples` folder with Jupyter Notebook
 
@@ -29,7 +29,7 @@ You can use the provided docker environment that contains a ready to use install
 
 ### Linux/MacOS
 
-1. After clone/download, go to `docker_environment` and run the build script with `sh build.sh`
+1. After clone/download, run the build script with `sh build.sh`
 
 1. Run the container with `sh run.sh`
 
@@ -51,7 +51,7 @@ If lock file exists (the lock file contains fixed versions of dependencies), the
 
 #### Update dependencies
 
-Use this command if you made changes on the dependencies at the *toml* file:
+Use this command if you made changes on the dependencies at the `pyproject.toml` file:
 ```bash
 poetry update
 ```
@@ -62,7 +62,7 @@ It is the equivalent to make an install after deleting the `lock` file.
 
 1. Add your credentials
 
-    To run the tests, you must create a `.credentials` file containing the test _username_ and _password_, in the _root_ folder (`lib`).
+    To run the tests, you must create a `.credentials` file containing the test _username_ and _password_, in the _root_ folder.
 
     The content of `.credentials` file should look similar to the following:
 
@@ -87,13 +87,13 @@ It is the equivalent to make an install after deleting the `lock` file.
     }
     ```
 
-1. Run the tests (on `/lib` folder)
+1. Run the tests (on `/teselagen` folder)
 
     ```bash
     python3 setup.py test
     ```
 
-    You may use the docker environment for testing. For that, first build the environment with `sh build.sh` at the `docker_environment` folder. Then just run the container with `sh run_dev.sh`. Once inside (`docker exec -ti tgclient bash`), go to `home/development/lib` and you are ready to run the test command shown above.
+    You may use the docker environment for testing. For that, first build the environment with `sh build.sh`. Then just run the container with `sh run_dev.sh`. Once inside (`docker exec -ti tgclient bash`), go to `home/development/` and you are ready to run the test command shown above.
 
 ### Publishing
 
@@ -101,7 +101,7 @@ Publishing is limited to administrators. PyPi publishing is made by using [poetr
 
 To publish:
 
-1. Run `poetry build` from the project's root folder (same directory as *pyproject.toml*)
+1. Run `poetry build` from the project's root folder (same directory as `pyproject.toml`)
 
 1. Be sure you have set the credentials with the api token:
 
@@ -131,7 +131,7 @@ docker exec --tty --interactive tgclient bash
 
 
 # go to the lib folder
-cd /home/development/lib
+cd /home/development/
 
 
 # validates the structure of the pyproject.toml file
@@ -250,23 +250,23 @@ pytest --cov="teselagen" --cov-report term:skip-covered
 # run pyclean
 cd /home
 python3 -m pyclean --verbose --dry-run .
-cd /home/development/lib
+cd /home/development
 
 
 cd /home
 python3 -m pyclean --verbose .
-cd /home/development/lib
+cd /home/development
 
 
 # run cleanpy
 cd /home
 python3 -m cleanpy --include-builds --include-envs --include-testing --include-metadata --verbose --dry-run .
-cd /home/development/lib
+cd /home/development
 
 
 cd /home
 python3 -m cleanpy --include-builds --include-envs --include-testing --include-metadata --verbose .
-cd /home/development/lib
+cd /home/development
 
 
 -->
