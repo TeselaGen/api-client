@@ -4,7 +4,7 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 import pytest
-import requests_mock  # noqa: F401 # pylint: disable=unused-import
+import requests_mock  # noqa: F401 # pylint: disable=unused-import # reason: it is being used as tests argument
 
 from teselagen.api.client import get
 from teselagen.api.client import post

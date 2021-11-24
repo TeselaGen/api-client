@@ -67,7 +67,7 @@ class TestDISCOVERClient():
             ],
             "model_type": "predictive",
         }
-        result = discover_client.submit_model(**params)
+        result = discover_client.submit_model(**params)  # noqa: F841
         return params['name']
 
     def test_client_attributes(
@@ -105,10 +105,10 @@ class TestDISCOVERClient():
 
     @pytest.mark.parametrize("model_type", MODEL_TYPES_TO_BE_TESTED)
     def test_get_models_by_type(
-        self,
-        discover_client: DISCOVERClient,
-        model_type: Optional[str],
-        submitted_model_name: str, # pylint: disable=unused-argument # reason: requires a model to be created
+            self,
+            discover_client: DISCOVERClient,
+            model_type: Optional[str],
+            submitted_model_name: str,  # pylint: disable=unused-argument # reason: requires a model to be created
     ):
         response = discover_client.get_models_by_type(model_type=model_type)
         assert isinstance(response, list)
@@ -215,7 +215,6 @@ class TestDISCOVERClient():
             'in-progress',
             'submitting',
             'completed-successfully',
-
         }
 
         res_cancel = discover_client.cancel_model(new_model[0]['id'])
