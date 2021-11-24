@@ -22,17 +22,17 @@ docker version > /dev/null
 
 
 # >>>>>> Definitions >>>>>>
-DOCKER_IMAGE_NAME="${DOCKER_IMAGE_NAME:-teselagen/python/tgclient}"
-DOCKER_IMAGE_TAG="${DOCKER_IMAGE_TAG:-'v0.0.1'}"
+DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME:-teselagen/python/tgclient}
+DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG:-'v0.0.1'}
 # <<<<<< Definitions <<<<<<
 
 
 # >>>>>> Remove old docker image >>>>>>
-docker rmi -f "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_TAG}"
+docker rmi -f ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
 # <<<<<< Remove old docker image <<<<<<
 
 
 # >>>>>> Build and tag the Docker image >>>>>>
 #   Use the `--no-cache` flag of the `docker build` command if required.
-docker build --tag "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_NAME}" .
+docker build --tag ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} .
 # <<<<<< Build and tag the Docker image <<<<<<

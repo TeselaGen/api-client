@@ -22,12 +22,12 @@ docker version > /dev/null
 
 
 # >>>>>> Definitions >>>>>>
-DOCKER_IMAGE_NAME="${DOCKER_IMAGE_NAME:-'teselagen/python/tgclient'}"
-DOCKER_IMAGE_TAG="${DOCKER_IMAGE_TAG:-'v0.0.1'}"
-DOCKER_CONTAINER_NAME="${DOCKER_CONTAINER_NAME:-'tgclient'}"
-DOCKER_CONTAINER_IPC_MODE="${DOCKER_CONTAINER_IPC_MODE:-'host'}"
-HOST_JUPYTER_NOTEBOOK_PORT="${HOST_JUPYTER_NOTEBOOK_PORT:-'8888'}"
-CONTAINER_JUPYTER_NOTEBOOK_PORT="${CONTAINER_JUPYTER_NOTEBOOK_PORT:-'8888'}"
+DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME:-'teselagen/python/tgclient'}
+DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG:-'v0.0.1'}
+DOCKER_CONTAINER_NAME=${DOCKER_CONTAINER_NAME:-'tgclient'}
+DOCKER_CONTAINER_IPC_MODE=${DOCKER_CONTAINER_IPC_MODE:-'host'}
+HOST_JUPYTER_NOTEBOOK_PORT=${HOST_JUPYTER_NOTEBOOK_PORT:-'8888'}
+CONTAINER_JUPYTER_NOTEBOOK_PORT=${CONTAINER_JUPYTER_NOTEBOOK_PORT:-'8888'}
 # <<<<<< Definitions <<<<<<
 
 
@@ -39,10 +39,10 @@ CONTAINER_JUPYTER_NOTEBOOK_PORT="${CONTAINER_JUPYTER_NOTEBOOK_PORT:-'8888'}"
 #
 # For more info, run : docker run --help
 #   --init: Makes process PID=1 be docker-init backed by tini: https://docs.docker.com/engine/reference/run/#specify-an-init-process
-docker run --publish "${HOST_JUPYTER_NOTEBOOK_PORT}":"${CONTAINER_JUPYTER_NOTEBOOK_PORT}" \
-           --name "${DOCKER_CONTAINER_NAME}" \
+docker run --publish ${HOST_JUPYTER_NOTEBOOK_PORT}:${CONTAINER_JUPYTER_NOTEBOOK_PORT} \
+           --name ${DOCKER_CONTAINER_NAME} \
            --detach \
            --init \
-           --ipc="${DOCKER_CONTAINER_IPC_MODE}" \
-           "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_TAG}"
+           --ipc=${DOCKER_CONTAINER_IPC_MODE} \
+           ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
 # <<<<<< Run the Docker container <<<<<<

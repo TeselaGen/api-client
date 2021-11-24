@@ -22,19 +22,19 @@
 
 
 # >>>>>> Definitions >>>>>>
-JUPYTER_NOTEBOOK_IP="${JUPYTER_NOTEBOOK_IP:-'0.0.0.0'}"
-JUPYTER_NOTEBOOK_PORT="${JUPYTER_NOTEBOOK_PORT:-'8888'}"
-JUPYTER_NOTEBOOK_DIR="${JUPYTER_NOTEBOOK_DIR:-'/home/'}"
+JUPYTER_NOTEBOOK_IP=${JUPYTER_NOTEBOOK_IP:-'0.0.0.0'}
+JUPYTER_NOTEBOOK_PORT=${JUPYTER_NOTEBOOK_PORT:-'8888'}
+JUPYTER_NOTEBOOK_DIR=${JUPYTER_NOTEBOOK_DIR:-'/home/'}
 # <<<<<< Definitions <<<<<<
 
 
 # >>>>>> Start Jupyter Notebook >>>>>>
 # Start Jupyter Notebook and set an empty token so no login is required
-jupyter notebook --ip "${JUPYTER_NOTEBOOK_IP}" \
-                 --port "${JUPYTER_NOTEBOOK_PORT}" \
+jupyter notebook --ip ${JUPYTER_NOTEBOOK_IP} \
+                 --port ${JUPYTER_NOTEBOOK_PORT} \
                  --NotebookApp.allow_password_change=False \
-                 --NotebookApp.token="" \
-                 --notebook-dir="${JUPYTER_NOTEBOOK_DIR}" \
+                 --NotebookApp.token='' \
+                 --notebook-dir=${JUPYTER_NOTEBOOK_DIR} \
                  --allow-root
                 #  --no-browser
 # <<<<<< Start Jupyter Notebook <<<<<<
