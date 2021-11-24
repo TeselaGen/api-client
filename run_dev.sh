@@ -18,7 +18,7 @@
 set -o pipefail
 
 # Any subsequent(*) commands which fail will cause the shell script to exit immediately
-set -e
+set -ex
 
 
 # start with an error if Docker isn't working...
@@ -55,7 +55,8 @@ CONTAINER_JUPYTER_NOTEBOOK_PORT=${CONTAINER_JUPYTER_NOTEBOOK_PORT:-'8888'}
 # volumes
 #   shared directory
 HOST_DIRPATH_TO_SHARED_FOLDER=${HOST_DIRPATH_TO_SHARED_FOLDER:-"${CURRENT_DIR}"}
-CONTAINER_DIRPATH_TO_SHARED_FOLDER=${CONTAINER_DIRPATH_TO_SHARED_FOLDER:-'/home/development/'}
+CONTAINER_DIRPATH_TO_SHARED_FOLDER=${CONTAINER_DIRPATH_TO_SHARED_FOLDER:-'/home'}
+CONTAINER_PARENT_DIRPATH_OF_SETUP_PY=${CONTAINER_PARENT_DIRPATH_OF_SETUP_PY:-'/home/'}
 # <<<<<< Definitions <<<<<<
 
 
@@ -85,5 +86,5 @@ docker exec --tty --interactive "${DOCKER_CONTAINER_NAME}" bash -c 'mkdir -p /ro
 
 
 # >>>>>> Install `teselagen` library in "editable" mode in the container >>>>>>
-docker exec "${DOCKER_CONTAINER_NAME}" bash -c "cd development; python3 setup.py develop"
+docker exec "${DOCKER_CONTAINER_NAME}" bash -c "cd ${CONTAINER_PARENT_DIRPATH_OF_SETUP_PY}; python3 setup.py develop"
 # <<<<<< Install `teselagen` library in "editable" mode in the container <<<<<<

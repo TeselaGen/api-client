@@ -93,7 +93,7 @@ It is the equivalent to make an install after deleting the `lock` file.
     python3 setup.py test
     ```
 
-    You may use the docker environment for testing. For that, first build the environment with `sh build.sh`. Then just run the container with `sh run_dev.sh`. Once inside (`docker exec -ti tgclient bash`), go to `home/development/` and you are ready to run the test command shown above.
+    You may use the docker environment for testing. For that, first build the environment with `sh build.sh`. Then just run the container with `sh run_dev.sh`. Once inside (`docker exec -ti tgclient bash`), go to `home/` and you are ready to run the test command shown above.
 
 ### Publishing
 
@@ -131,7 +131,7 @@ docker exec --tty --interactive tgclient bash
 
 
 # go to the lib folder
-cd /home/development/
+cd /home
 
 
 # validates the structure of the pyproject.toml file
@@ -250,23 +250,23 @@ pytest --cov="teselagen" --cov-report term:skip-covered
 # run pyclean
 cd /home
 python3 -m pyclean --verbose --dry-run .
-cd /home/development
+cd /home
 
 
 cd /home
 python3 -m pyclean --verbose .
-cd /home/development
+cd /home
 
 
 # run cleanpy
 cd /home
 python3 -m cleanpy --include-builds --include-envs --include-testing --include-metadata --verbose --dry-run .
-cd /home/development
+cd /home
 
 
 cd /home
 python3 -m cleanpy --include-builds --include-envs --include-testing --include-metadata --verbose .
-cd /home/development
+cd /home
 
 
 -->

@@ -177,7 +177,7 @@ RUN set -ex \
     # here we can update the `poetry.lock` file by running the `poetry update` command, then we can get the updated
     # file by copying it back to the shared folder, once the container is running. This could be done by running the
     # following command on the host.
-    #   docker exec --tty --interactive tgclient bash -c 'mv -v /tmp/lib/poetry.lock /home/development/lib/poetry.lock'
+    #   docker exec --tty --interactive tgclient bash -c 'mv -v /tmp/poetry.lock /home/poetry.lock'
     #
     && POETRY_VIRTUALENVS_CREATE=false poetry update \
     #
