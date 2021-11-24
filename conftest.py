@@ -1,5 +1,7 @@
 #!/usr/local/bin/python3
 
+from typing import Dict
+import typing
 import warnings
 
 import pytest
@@ -10,7 +12,7 @@ from teselagen.utils import load_from_json
 
 
 @pytest.fixture(scope='session')
-def test_configuration():
+def test_configuration() -> Dict[str, str]:
     """Loads test configuration and updates with it the default conf.
 
     Default configuration is defined here (see source code below) and it will look for CLI endpoints at a local port.
@@ -39,7 +41,7 @@ def test_configuration():
     }
     ```
     """
-    DEFAULT_CONFIGURATION = {
+    DEFAULT_CONFIGURATION: Dict[str, str] = {
         "host_url": "http://host.docker.internal:3000",
         "api_token_name": "x-tg-cli-token",
     }
@@ -65,12 +67,12 @@ def test_configuration():
 
 
 @pytest.fixture(scope='session')
-def host_url(test_configuration) -> str:
+def host_url(test_configuration: Dict[str, str]) -> str:
     return test_configuration['host_url']
 
 
 @pytest.fixture(scope='session')
-def api_token_name(test_configuration) -> str:
+def api_token_name(test_configuration: Dict[str, str]) -> str:
     return test_configuration['api_token_name']
 
 
@@ -101,7 +103,7 @@ def client(
 def logged_client(
     client: TeselaGenClient,
     expiration_time: str,
-) -> TeselaGenClient:
+) -> typing.Generator[TeselaGenClient, None, None]:
     """A logged TEST client instance.
 
     Returns:
