@@ -187,7 +187,7 @@ RUN set -ex \
     # sanity checks
     && python3 -c "import teselagen" \
     && python3 -c "import teselagen; print('teselagen version: ', teselagen.__version__)" \
-    && poetry cache clear --all $(poetry cache list)
+    && poetry cache clear --no-interaction --all $(poetry cache list)
 # >>>>>> Install teselagen Library >>>>>>
 
 
