@@ -131,7 +131,7 @@ RUN set -ex \
     && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py -o install-poetry.py \
     # install poetry
     # # && python3 get-poetry.py --version 1.1.10 \
-    && python3 install-poetry.py --version 1.1.11 \
+    && python3 install-poetry.py --version 1.1.10 \
     # remove unnecessary files
     # # && rm -rf get-poetry.py \
     # && rm -rf install-poetry.py \
