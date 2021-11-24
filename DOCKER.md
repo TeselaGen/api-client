@@ -7,31 +7,21 @@ Here are some guidelines to _build_ and _run_ the docker container for the `Tese
 
 1. Build the docker image from the `Dockerfile`
 
-    Use the flag `--clear` to remove the dangling intermediate images created during the building.
-
     ```bash
-    bash build.sh --clear
+    sh build.sh
     ```
 
 1. Run the docker container from the (already built) docker image
 
     ```bash
-    bash run.sh
+    sh run.sh
     ```
 
 1.  Alternatively, build the docker image and run the docker container in one line
 
     ```bash
-    bash build.sh --clear && bash run.sh
+    sh build.sh && sh run.sh
     ```
-
-1. A different option would be to run the following script
-
-    ```bash
-    bash remove_build_run.sh
-    ```
-
-    It will attempt to remove the image and the container (if they exist). Then it will run the `build` and `run` scripts.
 
 1. Once the docker container is running, you can access jupyter notebooks from your browser at `localhost:8888`
 
@@ -141,7 +131,3 @@ Here we list some common commands.
     ```bash
     docker exec --tty --interactive containerName bash -c "jupyter notebook list"
     ```
-
----
-
-**NOTE** : Do not use underscores ( `_` ) for variable names in the `.sh` files.
