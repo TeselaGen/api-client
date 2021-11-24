@@ -121,19 +121,20 @@ RUN set -ex \
 # >>>>>> Install Poetry >>>>>>
 # TODO: Starting from poetry 1.2, 'get-poetry.py' installer is deprecated. We should migrate to 'install-poetry.py'.
 #       Also, check if the new script automatically configure the PATH (it seems no uses a 'POETRY_HOME' env variable).
+# curl -sSL https://install.python-poetry.org
 RUN set -ex \
     && apt-get update \
     && apt-get install -y \
     # install data transfer tool (and other required packages)
     ca-certificates curl gnupg2 \
     # download poetry installer
-    # # && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py \
-    && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py -o install-poetry.py \
+    && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py \
+    # && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py -o install-poetry.py \
     # install poetry
-    # # && python3 get-poetry.py --version 1.1.10 \
-    && python3 install-poetry.py --version 1.1.10 \
+    && python3 get-poetry.py --version 1.1.10 \
+    # && python3 install-poetry.py --version 1.2.0 \
     # remove unnecessary files
-    # # && rm -rf get-poetry.py \
+    && rm -rf get-poetry.py \
     # && rm -rf install-poetry.py \
     # ensure to remove package's state information (it can be recreated with 'apt-get update')
     && rm -rf /var/lib/apt/lists/*
@@ -178,7 +179,7 @@ RUN set -ex \
     # following command on the host.
     #   docker exec --tty --interactive tgclient bash -c 'mv -v /tmp/lib/poetry.lock /home/development/lib/poetry.lock'
     #
-    # && POETRY_VIRTUALENVS_CREATE=false poetry update \
+    && POETRY_VIRTUALENVS_CREATE=false poetry update \
     #
     # to avoid installing development packages, use 'poetry install --no-dev'
     && POETRY_VIRTUALENVS_CREATE=false poetry install \
