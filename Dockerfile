@@ -121,7 +121,7 @@ RUN set -ex \
 # >>>>>> Install Poetry >>>>>>
 # TODO: Starting from poetry 1.2, 'get-poetry.py' installer is deprecated. We should migrate to 'install-poetry.py'.
 #       Also, check if the new script automatically configure the PATH (it seems no uses a 'POETRY_HOME' env variable).
-# curl -sSL https://install.python-poetry.org
+#           curl -sSL https://install.python-poetry.org
 RUN set -ex \
     && apt-get update \
     && apt-get install -y \
