@@ -1,15 +1,14 @@
 {
     "include": [
-        "./lib/teselagen/",
-        "./lib/setup.py",
-        "./lib/conftest.py",
+        "./teselagen/",
+        "./setup.py",
+        "./conftest.py",
     ],
     "exclude": [
         "**/node_modules",
         "**/__pycache__",
         "typestubs",
         "typings",
-        "**/typings",
     ],
     "stubPath": "typings",
     "typeCheckingMode": "basic",

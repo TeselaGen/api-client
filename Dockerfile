@@ -54,6 +54,7 @@ RUN set -ex \
     # install Python3.9 (and pip3)
     python3.9 \
     python3-pip \
+    # && python3.9 -m ensurepip --default-pip --user \
     # create symbolic links:
     #   python -> python3
     #   pip -> pip3
@@ -118,17 +119,22 @@ RUN set -ex \
 
 
 # >>>>>> Install Poetry >>>>>>
+# TODO: Starting from poetry 1.2, 'get-poetry.py' installer is deprecated. We should migrate to 'install-poetry.py'.
+#       Also, check if the new script automatically configure the PATH (it seems no uses a 'POETRY_HOME' env variable).
 RUN set -ex \
     && apt-get update \
     && apt-get install -y \
     # install data transfer tool (and other required packages)
     ca-certificates curl gnupg2 \
     # download poetry installer
-    && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py \
+    # # && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py \
+    curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py -o install-poetry.py \
     # install poetry
-    && python3 get-poetry.py --version 1.1.10 \
+    # # && python3 get-poetry.py --version 1.1.10 \
+    && python3 install-poetry.py --version 1.1.11 \
     # remove unnecessary files
-    # && rm -rf get-poetry.py \
+    # # && rm -rf get-poetry.py \
+    # && rm -rf install-poetry.py \
     # ensure to remove package's state information (it can be recreated with 'apt-get update')
     && rm -rf /var/lib/apt/lists/*
 
@@ -149,14 +155,24 @@ RUN set -ex \
 # Set the current working directory
 WORKDIR /tmp
 
+
 # Copy files from the local folder to the working directory
 COPY . .
 
+# TODO: We should probably split the copy command more strategically.
+#       We should decide which other files should be included in the '.dockerignore' file.
+#       Otherwise meaningless file changes will invalidate the docker cache - hence, the build will be slower.
+#           1. copy the 'poetry.lock' file (or create the requirements file using a poetry plugin)
+#           2. install the requirements
+#           3. copy the rest of the files
+#       COPY poetry.lock .
+#       COPY pyproject.toml .
+#       COPY . .
 
 # >>>>>> Install teselagen Library >>>>>>
 RUN set -ex \
-    # poetry installations are not editable
-    && cd lib/ \
+    # poetry installations are not editable # NOTE(diegovalenzuelaiturra: 2021-11-23): this may not be true anymore
+    #
     # here we can update the `poetry.lock` file by running the `poetry update` command, then we can get the updated
     # file by copying it back to the shared folder, once the container is running. This could be done by running the
     # following command on the host.
@@ -169,8 +185,8 @@ RUN set -ex \
     && cd .. \
     # sanity checks
     && python3 -c "import teselagen" \
-    && python3 -c "import teselagen; print('teselagen version: ', teselagen.__version__)"
-#     && poetry cache clear --all $(poetry cache list)
+    && python3 -c "import teselagen; print('teselagen version: ', teselagen.__version__)" \
+    && poetry cache clear --all $(poetry cache list)
 # >>>>>> Install teselagen Library >>>>>>
 
 
@@ -195,12 +211,13 @@ RUN set -ex \
 
 
 # >>>>>> Clean Up >>>>>>
-ARG PATH_TO_EXAMPLES=lib/teselagen/examples/
-ARG PATH_TO_EXAMPLES_REQUIREMENTS=lib/teselagen/examples/requirements.txt
+ARG PATH_TO_EXAMPLES=teselagen/examples/
+ARG PATH_TO_EXAMPLES_REQUIREMENTS=teselagen/examples/requirements.txt
 
 RUN set -ex \
+    && mkdir -p /home/examples \
     # After the installation, we copy the examples folder to the home directory of the container.
-    && rsync ${PATH_TO_EXAMPLES} /home/ \
+    && rsync ${PATH_TO_EXAMPLES} /home/examples \
     --human-readable \
     --progress \
     --perms \

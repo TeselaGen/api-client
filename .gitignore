@@ -1,9 +1,12 @@
 # >>> CUSTOM <<<
 _*
-.DS_Store
 .test*
 *.credentials*
 *.test_configuration
+
+# Auto-generated Finder files on MacOS
+.DS_Store
+**/Thumbs.db
 
 # >>> DEFAULT <<<
 # Byte-compiled / optimized / DLL files
@@ -22,7 +25,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-# lib/  # NOTE: Do not include this! since points to our library and not system libs.
+lib/
 lib64/
 parts/
 sdist/

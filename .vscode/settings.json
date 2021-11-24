@@ -86,8 +86,18 @@
     // "python.analysis.logLevel": "Trace",
     "python.formatting.provider": "yapf",
     "python.languageServer": "Pylance",
+    "python.linting.banditArgs": [
+        "-ll",
+        // "-ii",
+        "--configfile=${workspaceFolder}/bandit.yml",
+        "--ini=${workspaceFolder}/.bandit",
+    ],
+    // flake8 runs bandit since we are using the flake8-bandit plugin
     "python.linting.banditEnabled": false,
     "python.linting.enabled": true,
+    "python.linting.flake8Args": [
+        "--config=${workspaceFolder}/.flake8"
+    ],
     "python.linting.flake8Enabled": true,
     "python.linting.ignorePatterns": [
         "**/site-packages/**/*.py",
@@ -98,23 +108,41 @@
     ],
     "python.linting.lintOnSave": true,
     "python.linting.mypyArgs": [
+        //
         "--config-file=${workspaceFolder}/mypy.ini",
+        //
+        // "--follow-imports=silent",
+        // "--ignore-missing-imports",
+        "--show-column-numbers",
+        "--no-pretty",
     ],
     "python.linting.mypyEnabled": true,
     "python.linting.prospectorEnabled": false,
     "python.linting.pycodestyleEnabled": false,
     "python.linting.pydocstyleEnabled": false,
     "python.linting.pylamaEnabled": false,
+    "python.linting.pylintArgs": [
+        "--rcfile=${workspaceFolder}/pylintrc",
+    ],
     "python.linting.pylintEnabled": true,
     // "python.pythonPath": "/usr/bin/python3",
     "python.sortImports.args": [
         "--jobs=8",
+        "--settings-path=${workspaceFolder}/.isort.cfg",
     ],
-    // "python.testing.pytestArgs": [
-    //     "--numprocesses=1"
-    // ],
+    "python.testing.pytestArgs": [
+        "-c=${workspaceFolder}/pytest.ini",
+        // "--numprocesses=1"
+    ],
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/*.code-search": true,
+        // custom
+        // "coverage": true,
+    },
     "todo-tree.filtering.excludeGlobs": [
         "**/node_modules",
         // custom
@@ -152,4 +180,62 @@
     "workbench.editor.wrapTabs": true,
     "workbench.fontAliasing": "auto",
     "workbench.list.smoothScrolling": true,
+    //
+    "[plaintext]": {
+        "files.insertFinalNewline": false
+    },
+    //
+    "[markdown]": {
+        "editor.wordWrap": "on",
+        "editor.quickSuggestions": false,
+        // https://github.com/microsoft/vscode/issues/1679
+        "files.trimTrailingWhitespace": false,
+    },
+    //
+    "[shellscript]": {
+        "files.eol": "\n",
+        "files.insertFinalNewline": false,
+    },
+    // workaround for errors not being displayed in the editor
+    //   See https://github.com/microsoft/vscode-python/issues/17989#issuecomment-972026138
+    //
+    "python.linting.pylintCategorySeverity.convention": "Hint",
+    "python.linting.pylintCategorySeverity.error": "Hint",
+    "python.linting.pylintCategorySeverity.fatal": "Hint",
+    "python.linting.pylintCategorySeverity.refactor": "Hint",
+    "python.linting.pylintCategorySeverity.warning": "Hint",
+    //
+    "python.linting.flake8CategorySeverity.A": "Hint",
+    "python.linting.flake8CategorySeverity.B": "Hint",
+    "python.linting.flake8CategorySeverity.C": "Hint",
+    "python.linting.flake8CategorySeverity.D": "Hint",
+    "python.linting.flake8CategorySeverity.E": "Hint",
+    "python.linting.flake8CategorySeverity.F": "Hint",
+    "python.linting.flake8CategorySeverity.G": "Hint",
+    "python.linting.flake8CategorySeverity.H": "Hint",
+    "python.linting.flake8CategorySeverity.I": "Hint",
+    "python.linting.flake8CategorySeverity.J": "Hint",
+    "python.linting.flake8CategorySeverity.K": "Hint",
+    "python.linting.flake8CategorySeverity.L": "Hint",
+    "python.linting.flake8CategorySeverity.M": "Hint",
+    "python.linting.flake8CategorySeverity.N": "Hint",
+    "python.linting.flake8CategorySeverity.O": "Hint",
+    "python.linting.flake8CategorySeverity.P": "Hint",
+    "python.linting.flake8CategorySeverity.Q": "Hint",
+    "python.linting.flake8CategorySeverity.R": "Hint",
+    "python.linting.flake8CategorySeverity.S": "Hint",
+    "python.linting.flake8CategorySeverity.T": "Hint",
+    "python.linting.flake8CategorySeverity.U": "Hint",
+    "python.linting.flake8CategorySeverity.V": "Hint",
+    "python.linting.flake8CategorySeverity.W": "Hint",
+    "python.linting.flake8CategorySeverity.X": "Hint",
+    "python.linting.flake8CategorySeverity.Y": "Hint",
+    "python.linting.flake8CategorySeverity.Z": "Hint",
+    //
+    "python.linting.mypyCategorySeverity.error": "Hint",
+    "python.linting.mypyCategorySeverity.note": "Hint",
+    //
+    "python.linting.pycodestyleCategorySeverity.E": "Hint",
+    "python.linting.pycodestyleCategorySeverity.W": "Hint",
+    //
 }
