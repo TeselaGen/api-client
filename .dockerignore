@@ -11,8 +11,9 @@
 **
 
 
-# Only allow this directories
+# Only allow this directories/files
 !teselagen
+!README.md
 
 # Add files required for the build
 !pyproject.toml
