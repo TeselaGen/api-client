@@ -128,7 +128,7 @@ RUN set -ex \
     ca-certificates curl gnupg2 \
     # download poetry installer
     # # && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py \
-    curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py -o install-poetry.py \
+    && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py -o install-poetry.py \
     # install poetry
     # # && python3 get-poetry.py --version 1.1.10 \
     && python3 install-poetry.py --version 1.1.11 \
