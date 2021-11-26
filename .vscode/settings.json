@@ -194,7 +194,6 @@
     //
     "[shellscript]": {
         "files.eol": "\n",
-        "files.insertFinalNewline": false,
     },
     // workaround for errors not being displayed in the editor
     //   See https://github.com/microsoft/vscode-python/issues/17989#issuecomment-972026138

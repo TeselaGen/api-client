@@ -10,12 +10,13 @@
         "ms-python.vscode-pylance",
         "ms-toolsai.jupyter-renderers",
         "njpwerner.autodocstring",
-        // "rogalmic.bash-debug",
         "sourcery.sourcery",
         // "davidanson.vscode-markdownlint",
         // "joshbolduc.commitlint",
         // "mutantdino.resourcemonitor",
         // "rogalmic.bash-debug",
+        // "rogalmic.bash-debug",
+        // "timonwong.shellcheck",
         // "vivaxy.vscode-conventional-commits",
     ]
 }
