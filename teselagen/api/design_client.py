@@ -711,7 +711,8 @@ class DESIGNClient():
             raise ValueError(
                 "Argument 'aa_sequence_ids' must either be of type int, List[int] or numpy array of int elements.")
 
-        # TODO: Optimize exporting multiple amino acid sequences by extending DESIGN API such that implements an endpoint supporting this.
+        # TODO: Optimize exporting multiple amino acid sequences by extending
+        # DESIGN API such that implements an endpoint supporting this.
 
         formatted_response = []
         for sequence_id in _sequence_ids:

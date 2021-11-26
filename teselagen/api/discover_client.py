@@ -261,8 +261,8 @@ class DISCOVERClient():
         batch_size: int,
         batch_number: int,
     ) -> Dict[str, Any]:
-        """This will return a JSON object with an array of datapoints filtered by the provided model ID and \ datapoint
-        type. This array will come in the data field in the response body. Each element of the array has a \ datapoint
+        """This will return a JSON object with an array of datapoints filtered by the provided model ID and datapoint
+        type. This array will come in the data field in the response body. Each element of the array has a datapoint
         field, this corresponds to a JSON object with the datapoint data.
 
         Args :

@@ -788,7 +788,8 @@ class TESTClient():
                 final_results = pd.DataFrame(tabular_assay_results).set_index(assay_result_indexes[0])
                 # final_results.insert(0, "Assay", assay_name) // This column is redundant
                 # If required, group by the assay results and assay subject indexes.
-                # Usually these indexes are going to be the assay subject id and any reference dimension found in the assay results.
+                # Usually these indexes are going to be the assay subject id and any
+                # reference dimension found in the assay results.
                 final_results = final_results.groupby(by=[*assay_result_indexes]).first().reset_index()
 
                 if with_subject_data:
@@ -1155,7 +1156,8 @@ class TESTClient():
             ))
 
         if len(assay_files) > 0:
-            # NOTE: When a file with the same name has already been uploaded into the Assay, do not upload the file again.
+            # NOTE: When a file with the same name has already been uploaded into the
+            # Assay, do not upload the file again.
             file_id = assay_files[0]['id']
 
         else:

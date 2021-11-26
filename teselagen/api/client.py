@@ -78,13 +78,13 @@ class TeselaGenClient():
         self.login_url: str = urljoin(self.host_url, f"{_module_name}/login")
         self.info_url: str = urljoin(self.host_url, f"{_module_name}/cli-api/info")
         self.status_url: str = urljoin(self.host_url,
-                                       f"{_module_name}/cli-api/public/status")  #f"{api_url_base}/public/status"
+                                       f"{_module_name}/cli-api/public/status")  # f"{api_url_base}/public/status"
         self.auth_url: str = urljoin(self.host_url,
-                                     f"{_module_name}/cli-api/public/auth")  #f"{api_url_base}/public/auth"
+                                     f"{_module_name}/cli-api/public/auth")  # f"{api_url_base}/public/auth"
 
         # Laboratories
         self.labs_url: str = urljoin(self.host_url,
-                                     "test/cli-api/laboratories")  #f"{self.host_url}/test/cli-api/laboratories"
+                                     "test/cli-api/laboratories")  # f"{self.host_url}/test/cli-api/laboratories"
 
         # NOTE : The authorization token will be updated with the "login" method.
         self.auth_token: Optional[str] = None

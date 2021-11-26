@@ -407,7 +407,8 @@ def multiomics_mapper(metadata):
             "name": "Units",
             "class": "unit",
         },
-        # All four multiomic files have a "time units" column. Which contains the unit for the Time reference dimension.
+        # All four multiomic files have a "time units" column. Which contains the
+        # unit for the Time reference dimension.
         {
             "name": "time units",
             "class": "d-unit",

@@ -156,8 +156,9 @@ class TestDESIGNClient():
         logged_client: TeselaGenClient,
     ):
         res = logged_client.design.rbs_calculator_status()
-
-        assert type(res['error']) is Exception
+        # TODO(diegovalenzuelaiturra): Check if this is the correct way to check for errors
+        #   assert type(res['error']) is Exception
+        assert isinstance(res['error'], Exception)
         # TODO: Maybe there's a better way of checking for the specific unauthorized error.
         assert 'access is unauthorized' in str(res['error'])
 
@@ -177,8 +178,8 @@ class TestDESIGNClient():
             'id_list',
             'success',
         ])
-        assert res['authenticated'] == True
-        assert res['success'] == True
+        assert res['authenticated'] is True
+        assert res['success'] is True
         assert sorted(res['id_list']) == sorted([
             JOB_ID_ONE,
             JOB_ID_TWO,
@@ -194,7 +195,7 @@ class TestDESIGNClient():
         res = get(url=mock_url, headers=logged_client.headers)
         res = json.loads(res["content"])
 
-        assert type(res) is list
+        assert isinstance(res, list)
         assert len(res) == 4
         assert sorted(list(res[0].keys())) == sorted([
             'accession',
