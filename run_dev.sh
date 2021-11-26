@@ -3,19 +3,19 @@
 # This script is recommended for runing the docker container (in DEVELOPMENT mode).
 
 # It can be executed without arguments.
-#       sh run.sh
+#       bash run.sh
 
 # Alternatively, default values can be overriden by passing their new values as follows:
 #       DOCKER_IMAGE_TAG=v0.0.1 \
-#       sh run.sh
+#       bash run.sh
 
 # Additionally, an extra argument can be provided with a route to be mounted.
 #   Example:
-#       sh run_dev.sh ~/Documents/GitHub/ai/Notebooks
+#       bash run_dev.sh ~/Documents/GitHub/ai/Notebooks
 
 
-# pipefail is necessary to propagate exit codes
-set -o pipefail
+# pipefail is necessary to propagate exit codes (but it may not be supported by your shell)
+bash | set -o pipefail > /dev/null 2>&1
 
 # Any subsequent(*) commands which fail will cause the shell script to exit immediately
 set -ex
@@ -23,6 +23,7 @@ set -ex
 
 # start with an error if Docker isn't working...
 docker version > /dev/null
+printf "Docker version: %s\n" "$(docker version --format '{{.Server.Version}}')"
 
 
 # >>>>>> Command line arguments >>>>>>

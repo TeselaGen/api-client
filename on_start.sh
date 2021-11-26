@@ -3,16 +3,16 @@
 # This script is executed inside the docker, by the ENTRYPOINT inside the Dockerfile.
 
 # It can be executed without arguments
-#       sh on_start.sh
+#       bash on_start.sh
 
 # Alternatively, default values can be overriden by passing their new values as follows:
 #       JUPYTER_NOTEBOOK_PORT=8888 \
-#       sh on_start.sh
+#       bash on_start.sh
 
 
 # # NOTE: We disable strict mode because we don't want to fail the container if the script fails.
-# # pipefail is necessary to propagate exit codes
-# # set -o pipefail
+# # pipefail is necessary to propagate exit codes (but it may not be supported by your shell)
+# # bash | set -o pipefail > /dev/null 2>&1
 # #
 # # Any subsequent(*) commands which fail will cause the shell script to exit immediately
 # # set -ex
