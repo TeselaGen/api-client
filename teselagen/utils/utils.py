@@ -24,7 +24,7 @@ DEFAULT_HOST_URL: str = "https://platform.teselagen.com"
 DEFAULT_API_TOKEN_NAME: str = "x-tg-cli-token"
 
 DEFAULT_MAX_DATAPOINTS: int = 100
-TimeUnit = Literal["miliseconds", "seconds", "minutes", "hours", "days"]
+TimeUnit = Literal["milliseconds", "seconds", "minutes", "hours", "days"]
 
 
 def downsample_data(
