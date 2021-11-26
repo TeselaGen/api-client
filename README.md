@@ -29,9 +29,9 @@ You can use the provided docker environment that contains a ready to use install
 
 ### Linux/MacOS
 
-1. After clone/download, run the build script with `sh build.sh`
+1. After clone/download, run the build script with `bash build.sh`
 
-1. Run the container with `sh run.sh`
+1. Run the container with `bash run.sh`
 
 1. Open your browser and set the address: `http://localhost:8888`. From there you can explore all example notebooks
 
@@ -39,9 +39,9 @@ You can use the provided docker environment that contains a ready to use install
 
 ### Docker environment
 
-1. Build the docker environment with command `sh build.sh`
+1. Build the docker environment with command `bash build.sh`
 
-2. Run the container as a developer with the command `sh run_dev.sh`. With this command the `teselagen` library will be installed in [editable](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs) mode.
+2. Run the container as a developer with the command `bash run_dev.sh`. With this command the `teselagen` library will be installed in [editable](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs) mode.
 
 ### Dependencies
 
@@ -93,7 +93,7 @@ It is the equivalent to make an install after deleting the `lock` file.
     python3 setup.py test
     ```
 
-    You may use the docker environment for testing. For that, first build the environment with `sh build.sh`. Then just run the container with `sh run_dev.sh`. Once inside (`docker exec -ti tgclient bash`), go to `home/` and you are ready to run the test command shown above.
+    You may use the docker environment for testing. For that, first build the environment with `bash build.sh`. Then just run the container with `bash run_dev.sh`. Once inside (`docker exec -ti tgclient bash`), go to `home/` and you are ready to run the test command shown above.
 
 ### Publishing
 
@@ -116,6 +116,37 @@ Ask for a token to administrators if needed
 ```bash
 poetry publish
 ```
+
+### Notes:
+
+Default shell in `Ubuntu` is `dash`, to which `/bin/sh` is symlinked. But `dash` doesn't have the `pipefail` option. Thats why some of our shell scripts have the following line:
+
+```bash
+# pipefail is necessary to propagate exit codes (but it may not be supported by your shell)
+bash | set -o pipefail > /dev/null 2>&1
+```
+
+For example, the following commands will list all options supported by `set` in each of the respective shells:
+
+```bash
+sh -c 'set -o'
+dash -c 'set -o'
+bash -c 'set -o'
+zsh -c 'set -o'
+```
+
+So, in `Ubuntu` it may be recommended to use `bash` instead of `sh`.
+
+```bash
+bash some_shell_script.sh
+```
+
+Or, as follows:
+
+```bash
+. some_shell_script.sh
+```
+
 
 ---
 
