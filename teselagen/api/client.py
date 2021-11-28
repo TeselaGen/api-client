@@ -134,7 +134,7 @@ class TeselaGenClient():
     ):
         """Registers a new user.
 
-        NB: Registering a new user might require ADMIN priviledges.
+        NB: Registering a new user might require ADMIN privileges.
         """
         body = {
             "email": username,
@@ -378,7 +378,7 @@ class TeselaGenClient():
 
         Args:
             lab_name (str): The name of the lab. If not set, the method will use the lab_id parameter. If both \
-                parameters are ommited, Lab is set to "Common".
+                parameters are omitted, Lab is set to "Common".
 
             lab_id (int): ID of the lab. If not set the method will use the lab_name parameter as lab identifier
         """

@@ -34,7 +34,7 @@ def plot_plasmid_features(
     Returns:
         Tuple[AxesSubplot, Tuple[Any, Any]]: Axes and a tuple with Graphic features data
     """
-    # Define random color pallete
+    # Define random color palette
     if palette is None:
         palette = Palette("material")
 

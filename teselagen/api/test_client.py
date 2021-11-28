@@ -494,7 +494,7 @@ class TESTClient():
                 metadata records found in the file.
 
         Returns: a JSON object with a success status, the number of results inserted, and whether new assay subjects \
-            and/or mesurement targets were created during the insert.
+            and/or measurement targets were created during the insert.
         """
         if assay_id is None and assay_name is not None:
             # Supports creating a new assay by providing an assay name and an experiment ID.
@@ -512,7 +512,7 @@ class TESTClient():
                 assay_id=str(assay_id),
             )
         else:
-            raise Exception("Please provide a valid 'file_id' or an existant 'filepath'.")
+            raise Exception("Please provide a valid 'file_id' or an existent 'filepath'.")
 
         body = {
             "assayId": assay_id,
@@ -588,7 +588,7 @@ class TESTClient():
                 assay_id=str(assay_id),
             )
         else:
-            raise Exception("Please provide a valid 'file_id' or an existant 'filepath'.")
+            raise Exception("Please provide a valid 'file_id' or an existent 'filepath'.")
 
         body = {
             "fileId": file_id,
@@ -965,7 +965,7 @@ class TESTClient():
             'file': (filepath.name, open(filepath, 'rb')),
         }
 
-        # We need a header file wihtout the 'Content-Type' key because this is a 'multipart/form-data' request
+        # We need a header file without the 'Content-Type' key because this is a 'multipart/form-data' request
         # unlike the others which have Content-Type = 'application/json'. Here, only the authorization token is needed.
         headers = self.headers.copy()
         del headers['Content-Type']

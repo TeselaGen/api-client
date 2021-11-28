@@ -5,7 +5,7 @@
 # It can be executed without arguments
 #       bash on_start.sh
 
-# Alternatively, default values can be overriden by passing their new values as follows:
+# Alternatively, default values can be overridden by passing their new values as follows:
 #       JUPYTER_NOTEBOOK_PORT=8888 \
 #       bash on_start.sh
 

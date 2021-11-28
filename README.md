@@ -119,7 +119,7 @@ poetry publish
 
 ### Notes:
 
-Default shell in `Ubuntu` is `dash`, to which `/bin/sh` is symlinked. But `dash` doesn't have the `pipefail` option. Thats why some of our shell scripts have the following line:
+Default shell in `Ubuntu` is `dash`, to which `/bin/sh` is symlinked. But `dash` doesn't have the `pipefail` option. That's why some of our shell scripts have the following line:
 
 ```bash
 # pipefail is necessary to propagate exit codes (but it may not be supported by your shell)

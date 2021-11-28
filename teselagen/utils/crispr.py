@@ -14,7 +14,7 @@ def show_crispr_grna_results(
     """Shows guide rnas results for CRISPR.
 
     Args:
-        sequence (str): A string containig the complete organism sequence
+        sequence (str): A string containing the complete organism sequence
 
         guides (dict): A table on 'records' format that contains guides info.\
             The required fields are `start` (int), `end` (ind), indicating the limits of the guide in sequence's index.

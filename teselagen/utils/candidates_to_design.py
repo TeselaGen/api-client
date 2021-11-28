@@ -190,8 +190,7 @@ def args_parser(args_in):
         required=True,
         type=str,
         nargs='+',
-        help=
-        'List containing the names of the bins to be read from data. These names should be column names at the input',
+        help='List of the names of the bins to be read from data. These names should be column names at the input',
     )
 
     parser.add_argument(

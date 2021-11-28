@@ -5,7 +5,7 @@
 # It can be executed without arguments.
 #       bash build.sh
 
-# Alternatively, default values can be overriden by passing their new values as follows:
+# Alternatively, default values can be overridden by passing their new values as follows:
 #       DOCKER_IMAGE_TAG=v0.0.1 \
 #       bash build.sh
 

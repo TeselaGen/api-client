@@ -204,7 +204,7 @@ class DESIGNClient():
         # Make request and process output
         response: Dict[str, Any] = get(url=self.get_designs_url, headers=self.headers, params=args)
         out = json.loads(response["content"])
-        # Remove unuseful key
+        # Remove useless key
         for el in out:
             el.pop("__typename")
         return out
@@ -407,8 +407,8 @@ class DESIGNClient():
                 CDS (str): Valid 'GATCU' coding sequence.
                 RBS_Constrains (str): Either an empty string or a valid degenerate nucleotide sequence ('GATCURYSWKMBDHVN').
                 initial_RBS_sequence (str): Either an empty string or a valid 'GATCU' RBS sequence.
-                    This is used to initialize ther RBS sequence exploration algorithm. If an empty string is provided,
-                    a random RBS sequence will be used as the initilizing sequence.
+                    This is used to initialize the RBS sequence exploration algorithm. If an empty string is provided,
+                    a random RBS sequence will be used as the initializing sequence.
                 library_size (int): Number of RBS sequences in your library.
                 maximum_consecutive_degeneracy (int): The maximum number of consecutive degeneracy nucleotides for the RBS library designs.
                 minimum_translation_initiation_rate (int): Lowest translation rate desired for your RBS library (proportional scale varies from 1 to 1,000,000).
@@ -426,8 +426,8 @@ class DESIGNClient():
                 RBS_Constrains (str): Either an empty string or a valid degenerate nucleotide sequence ('GATCURYSWKMBDHVN').
                 genomic_RBS_sequence (str): Genomic RBS sequence. Must be a valid 'GATCU' sequence.
                 initial_RBS_sequence (str): Either an empty string or a valid 'GATCU' RBS sequence.
-                    This is used to initialize ther RBS sequence exploration algorithm. If an empty string is provided,
-                    a random RBS sequence will be used as the initilizing sequence.
+                    This is used to initialize the RBS sequence exploration algorithm. If an empty string is provided,
+                    a random RBS sequence will be used as the initializing sequence.
                 library_size (int): Number of RBS sequences in your library.
                 maximum_consecutive_degeneracy (int): The maximum number of consecutive degeneracy nucleotides for the RBS library designs.
                 minimum_translation_initiation_rate (int): Lowest translation rate desired for your RBS library (proportional scale varies from 1 to 1,000,000).
@@ -437,11 +437,11 @@ class DESIGNClient():
 
 
         Args:
-            algorithm (str): This should be one for the three algorithm described above currently suppoprted by the TeselaGen/RBS Integration.
+            algorithm (str): This should be one for the three algorithm described above currently supported by the TeselaGen/RBS Integration.
             params (dict): These are the parameters required by the chosen algorithms according to the RBS Calculator API Swagger specifications mentioned above.
                         For more information on the parameters meaning refer to the https://salislab.net/software/ browser application.
 
-                        Examples for the tools parameter inputs are as folows:
+                        Examples for the tools parameter inputs are as follows:
 
                         'ReverseRBS' params:
                             {
@@ -508,7 +508,7 @@ class DESIGNClient():
             aa_sequences(Union[pd.DataFrame, List[Dict[str,str]], List[Tuple[str, str]]): Amino acid sequences data. The data can come in three different ways:
                 - as a pandas dataframe with 2 columns. Where the first column contains the sequence names and the second column contains the amino acid sequence string.
                 - as a list of python dictionaries, where each dictionary is of the form `{"AA_NAME": SEQUENCE_NAME, "AA_SEQUENCE": SEQUENCE_STRING}`.
-                - as a list of 2-element tuples, where the firt element is the sequence name and the second element the sequence string.
+                - as a list of 2-element tuples, where the first element is the sequence name and the second element the sequence string.
 
             tags(Optional[List[int]]): A list of integer tag IDs with which each amino acid sequence will be tagged with.
                 (NOTE: tags cannot be created on-the-fly through this function, it only accepts tag IDs that are already created in the DESIGN Module).
@@ -543,7 +543,7 @@ class DESIGNClient():
             else:
                 raise ValueError(
                     "All elements in list argument 'aa_sequences' must either be 2-element tuples or properly "
-                    "formatted dictionaries accroding to the function's Args description.")
+                    "formatted dictionaries according to the function's Args description.")
         else:
             raise ValueError(f"Type {type(aa_sequences)} for argument 'aa_sequences' is not supported.")
 

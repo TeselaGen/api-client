@@ -296,7 +296,7 @@ def optical_density_upload(
     client_with_lab: TeselaGenClient,
     wild_type_experiment,
 ):
-    """Uploads data from OD experiments."""
+    """Uploads data from Optical Density experiments."""
     # Prepare mapper
     wt_od_mapper = [
         {
@@ -371,8 +371,8 @@ def optical_density_upload(
 @pytest.fixture(scope="module")
 def multiomics_mapper(metadata):
     """Builds mapper for several multiomics datasets."""
-    # We need to construct the multiomic files' structured headers for the mapper JSON object.
-    # Here, since the measurement targets are going to be created from the files' "Measurement Type" column values,
+    # We need to construct the multiomic file's structured headers for the mapper JSON object.
+    # Here, since the measurement targets are going to be created from the file's "Measurement Type" column values,
     # ee do not specify a subClassId in the structured header of class=measurementTarget.
     return [
         # This first element of the array corresponds to the structured header of the files's "Line Name" column.

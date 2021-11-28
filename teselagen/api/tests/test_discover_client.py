@@ -29,7 +29,7 @@ class TestDISCOVERClient():
         return logged_client.discover
 
     # TODO: Either `submitted_model_name`fixture ` should also remove the model afterwards, or we should remove them
-    #       all after runing tests (by creating another fixture or something). Otherwise, some tests may fail if an
+    #       all after running tests (by creating another fixture or something). Otherwise, some tests may fail if an
     #       older/deprecated/unsupported model is still there).
     @pytest.fixture
     def submitted_model_name(

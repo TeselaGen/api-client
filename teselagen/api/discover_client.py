@@ -89,7 +89,7 @@ class DISCOVERClient():
         """
         if content_dict["message"] != "Submission success.":
             message = content_dict["message"]
-            raise IOError(f"A problem occured with query: {message}")
+            raise IOError(f"A problem occurred with query: {message}")
 
         if 'data' not in content_dict:
             raise IOError(f"Can`t found 'data' key in response: {content_dict}")
@@ -439,7 +439,7 @@ class DISCOVERClient():
         data_schema: List[Dict[str, Any]],
         model_id: Union[int, str],
     ) -> Dict[str, Any]:
-        """Submits a task used to run predictions on a ist of datapoints using a pre-trained Predictive Model.
+        """Submits a task used to run predictions on a list of datapoints using a pre-trained Predictive Model.
 
         Args:
             - data_input (List[Dict[str, Any]]): Datapoints in the same format described in the submit_model function.
@@ -486,7 +486,7 @@ class DISCOVERClient():
                 batch_number is used to tell which batch of batch_size datapoints to fetch. Defaults to the first batch (batch_number=0).
 
         Returns:
-            - Depending on the status of the submitted task, a task object with task metadata information including its task status wil be returned.
+            - Depending on the status of the submitted task, a task object with task metadata information including its task status will be returned.
                 If the task is complete, it will return the set of datapoints along with their predictions.
         """
         model_id = task['data']['modelId']
@@ -655,7 +655,7 @@ class DISCOVERClient():
 
         Args :
             model_id (int) :
-                The model id that wants to be cancelled.
+                The model id that wants to be canceled.
 
         Returns :
             () :
@@ -674,7 +674,7 @@ class DISCOVERClient():
         """Returns the status of a task based on the Task ID.
 
         Args:
-            task_id (int): The task id that wants to be cancelled.
+            task_id (int): The task id that wants to be canceled.
 
         Returns: A task object with task metadata including its ID and status.
         """
@@ -689,7 +689,7 @@ class DISCOVERClient():
         """Cancels the submission of a task matching the specified `task_id`.
 
         Args:
-            task_id (int): The task id that wants to be cancelled.
+            task_id (int): The task id that wants to be canceled.
 
         Returns:
             ():
@@ -809,7 +809,7 @@ class DISCOVERClient():
             aa_sequence_ids(Optional[List[int]]): List of amino acid sequence IDs. \
                 These IDs correspond to TeselaGen's DESIGN Module IDs. \
                 These IDs are returned by the 'DESIGNClient.import_aa_sequences(...)' function when importing new or \
-                existant aa sequences. But you can also obtain your amino acid sequence IDs via the DESIGN Module \
+                existent aa sequences. But you can also obtain your amino acid sequence IDs via the DESIGN Module \
                 Web Browser App from the 'Molecules > Amino Acid Sequences' Library viewer.
 
             model_name(Optional[str]): String as an optional name for your model. Default name is going to be: \
@@ -821,7 +821,7 @@ class DISCOVERClient():
                 training execution. Please refer to Teselagen's Data Science Team.
 
         Returns:
-            (dict) : A Python Dictionary with information about the model submission, inlcuding the task id used to \
+            (dict) : A Python Dictionary with information about the model submission, including the task id used to \
                 check the status of the training.
 
             ```json

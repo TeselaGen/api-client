@@ -36,7 +36,7 @@ class SingleTestCommand(Command):
         if self.file is None:
             raise Exception("Parameter --file is missing")
         elif not Path(self.file).is_file():
-            raise Exception("File does't exist")
+            raise Exception("File doesn't exist")
 
     def run(self):
         # addopts = '--addopts "--pyargs {}"'.format(self.file)

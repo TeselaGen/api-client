@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# This script is recommended for runing the docker container.
+# This script is recommended for running the docker container.
 
 # It can be executed without arguments.
 #       bash run.sh
 
-# Alternatively, default values can be overriden by passing their new values as follows:
+# Alternatively, default values can be overridden by passing their new values as follows:
 #       DOCKER_IMAGE_TAG=v0.0.1 \
 #       bash run.sh
 
@@ -34,9 +34,9 @@ CONTAINER_JUPYTER_NOTEBOOK_PORT=${CONTAINER_JUPYTER_NOTEBOOK_PORT:-'8888'}
 
 # >>>>>> Run the Docker container >>>>>>
 #   ports
-#       sintax: --publish HOST:CONTAINER
+#       syntax: --publish HOST:CONTAINER
 #   volumes
-#       sintax: --volume HOST:CONTAINER
+#       syntax: --volume HOST:CONTAINER
 #
 # For more info, run : docker run --help
 #   --init: Makes process PID=1 be docker-init backed by tini: https://docs.docker.com/engine/reference/run/#specify-an-init-process
