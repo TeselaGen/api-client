@@ -3,17 +3,27 @@
     // Version of the setting file.  Always 0.2
     "version": "0.2",
     // language - current active spelling language
-    "language": "en,en-GB,python",
+    "language": "es,en,en-GB,python",
     // words - list of words to be always considered correct
     "words": [
         "cleanpy",
+        "crispr",
+        "DBTL",
+        "deauthorize",
+        "deauthorized",
         "diegovalenzuelaiturra",
         "dropna",
         "fixit",
         "Fstring",
+        "grna",
+        "grnas",
         "inplace",
+        "ipython",
         "isort",
+        "multiomic",
+        "multiomics",
         "mypy",
+        "ndarray",
         "noqa",
         "nproc",
         "numpy",
@@ -23,9 +33,12 @@
         "pypi",
         "pyproject",
         "pytest",
+        "pytested",
         "sourcery",
         "teselagen",
         "tgclient",
+        "tolist",
+        "tqdm",
         "trunc",
         "tryceratops",
         "yapf"
@@ -37,9 +50,12 @@
     "ignorePaths": [
         "**/node_modules",
         ".git",
-        "**/*.yaml",
-        "**/*.yml",
+        // custom
+        "**/*.csv",
+        "**/*.json",
         "**/*.toml",
-        "**/*.json"
+        "**/*.txt",
+        "**/*.yaml",
+        "**/*.yml"
     ]
 }
