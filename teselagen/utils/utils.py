@@ -73,14 +73,14 @@ def downsample_data(
     timespan = (cast(datetime, _df["DateTime"].max()) - cast(datetime, _df["DateTime"].min())).total_seconds()
 
     # number of sample points in input dataframe.
-    numer_of_datapoints = _df.shape[0]
+    number_of_datapoints = _df.shape[0]
 
     # If no sampling period is provided use 'max_samples' to determine the sampling period.
     if sampling_period is None:
 
         # If the actual number of datapoints in the dataframe or the dataframe's timespan is 'leq' than the max number
         # of datapoints no downsampling is needed.
-        is_down_sampling_needed = (numer_of_datapoints > max_samples) or (timespan > max_samples)
+        is_down_sampling_needed = (number_of_datapoints > max_samples) or (timespan > max_samples)
 
         if is_down_sampling_needed:
             # Compute the sampling period automatically based on the number of datapoints wanted
@@ -187,7 +187,7 @@ def get_credentials(
         (Tuple[str, str]) : It returns the credentials as a tuple of strings, containing the username and password. \
             (user, password)
     """
-    # Check if crentials are defined on a file
+    # Check if credentials are defined on a file
     file_credentials = load_credentials_from_file()
     username = file_credentials[0] if username is None else username
     password = file_credentials[1] if password is None else password
@@ -297,7 +297,7 @@ def parser(func):
 
         response: requests.Response = func(**kwargs)
 
-        # TODO : Should we get/return JSON Serializables values ?
+        # TODO: Should we get/return JSON Serializable values ?
         # status 204 has no content.
         if response.status_code == 204:
             print("Deletion successful.")
