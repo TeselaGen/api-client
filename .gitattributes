@@ -1,4 +1,24 @@
 # To apply end-of-line normalization, run the following command and then commit the changes: git add --renormalize .
+* text=auto
+
+# LF files
+*.sh eol=lf
+
+# CRLF files
+*.bat text eol=crlf
+LICENSE.txt eol=crlf
+
+# Text files that should not be subject to eol conversion
+*.rtf -text
+
+# https://github.com/github/linguist
+# https://github.com/github/linguist/blob/master/docs/overrides.md
+**/*.ipynb linguist-documentation
+**/*.json linguist-language=jsonc
+
+# https://docs.github.com/en/repositories/working-with-files/managing-files/customizing-how-changed-files-appear-on-github
+# **/poetry.lock linguist-generated=true
+
 # Binary data types
 *.7z binary
 *.aif binary
@@ -24,23 +44,3 @@
 *.wav binary
 *.whl binary
 *.zip binary
-
-* text=auto
-
-# LF files
-*.sh eol=lf
-
-# CRLF files
-*.bat text eol=crlf
-LICENSE.txt eol=crlf
-
-# Text files that should not be subject to eol conversion
-*.rtf -text
-
-# https://github.com/github/linguist
-# https://github.com/github/linguist/blob/master/docs/overrides.md
-**/*.ipynb linguist-documentation
-**/*.json linguist-language=jsonc
-
-# https://docs.github.com/en/repositories/working-with-files/managing-files/customizing-how-changed-files-appear-on-github
-# **/poetry.lock linguist-generated=true

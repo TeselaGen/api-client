@@ -11,12 +11,21 @@
         "ms-toolsai.jupyter-renderers",
         "njpwerner.autodocstring",
         "sourcery.sourcery",
+        //
+        // MARKDOWN
         // "davidanson.vscode-markdownlint",
-        // "joshbolduc.commitlint",
-        // "mutantdino.resourcemonitor",
-        // "rogalmic.bash-debug",
-        // "rogalmic.bash-debug",
+        //
+        // SHELL
+        //      brew install shellcheck
         // "timonwong.shellcheck",
+        // "foxundermoon.shell-format",
+        // "rogalmic.bash-debug",
+        //
+        // COMMITS
+        // "joshbolduc.commitlint",
         // "vivaxy.vscode-conventional-commits",
+        //
+        // MONITOR
+        // "mutantdino.resourcemonitor",
     ]
 }

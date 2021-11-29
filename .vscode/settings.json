@@ -9,6 +9,7 @@
     "editor.codeActionsOnSave": {
         "source.sortImports": true,
         "source.organizeImports": true,
+        // "source.fixAll.shellcheck": true,
     },
     // "editor.hover.delay": 300,
     // "editor.quickSuggestionsDelay": 10,
@@ -33,6 +34,8 @@
     "explorer.sortOrder": "type",
     "files.associations": {
         ".bandit": "ini",
+        ".codespellignore": "plaintext",
+        ".codespellrc": "properties",
         ".coveragerc": "properties",
         ".editorconfig": "ini",
         ".flake8": "ini",
@@ -40,12 +43,12 @@
         ".pydocstyle": "properties",
         ".style.yapf": "properties",
         "mypy.ini": "ini",
+        "poetry.lock": "properties",
         "pylintrc": "properties",
+        "pyproject.toml": "properties",
         "pytest.ini": "ini",
         "radon.cfg": "properties",
         "setup.cfg": "properties",
-        "pyproject.toml": "properties",
-        "poetry.lock": "properties",
         // custom file types
         ".credentials": "json",
         ".test_configuration": "json",
@@ -80,6 +83,7 @@
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
     "git.ignoreLimitWarning": true,
+    "notebook.lineNumbers": "on",
     // default is "off",  choices are "off", "basic", "strict"
     "python.analysis.typeCheckingMode": "basic",
     // default is "Error" choices are "Error", "Information", "Trace", "Warning"
@@ -143,6 +147,42 @@
         // custom
         // "coverage": true,
     },
+    "shellcheck.ignorePatterns": {
+        "**/*.xonshrc": true,
+        "**/*.xsh": true,
+        "**/*.zsh": true,
+        "**/*.zshrc": true,
+        "**/zshrc": true,
+        "**/*.zprofile": true,
+        "**/zprofile": true,
+        "**/*.zlogin": true,
+        "**/zlogin": true,
+        "**/*.zlogout": true,
+        "**/zlogout": true,
+        "**/*.zshenv": true,
+        "**/zshenv": true,
+        "**/*.zsh-theme": true,
+        // custom
+        "**/.bandit": true,
+        // "**/*.cfg": true,
+    },
+    "shellformat.useEditorConfig": true,
+    "shellformat.effectLanguages": [
+        "shellscript",
+        "dockerfile",
+        "dotenv",
+        "hosts",
+        "jvmoptions",
+        "ignore",
+        "gitignore",
+        // "properties",
+        // "spring-boot-properties",
+        "azcli",
+        "bats"
+    ],
+    // default is null (-s: simplify the code)
+    // "shellformat.flag": null,
+    // "shellformat.flag": "-s",
     "todo-tree.filtering.excludeGlobs": [
         "**/node_modules",
         // custom
@@ -190,11 +230,55 @@
         "editor.quickSuggestions": false,
         // https://github.com/microsoft/vscode/issues/1679
         "files.trimTrailingWhitespace": false,
+        // "editor.rulers": [
+        //     80
+        // ],
     },
-    //
     "[shellscript]": {
         "files.eol": "\n",
     },
+    "[dockerfile]": {
+        "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+        // "editor.defaultFormatter": "foxundermoon.shell-format",
+    },
+    "[json]": {
+        "editor.quickSuggestions": {
+            "strings": true
+        },
+        "editor.suggest.insertMode": "replace",
+        "gitlens.codeLens.scopes": [
+            "document"
+        ],
+        // custom
+        "editor.defaultFormatter": "vscode.json-language-features",
+    },
+    "[jsonc]": {
+        "editor.quickSuggestions": {
+            "strings": true
+        },
+        "editor.suggest.insertMode": "replace",
+        "gitlens.codeLens.scopes": [
+            "document"
+        ],
+        // custom
+        "editor.defaultFormatter": "vscode.json-language-features",
+    },
+    "[yaml]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2,
+        "editor.autoIndent": "keep",
+        "gitlens.codeLens.scopes": [
+            "document"
+        ],
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": true
+        },
+        // custom
+        "editor.defaultFormatter": "redhat.vscode-yaml",
+    },
+    //
     // workaround for errors not being displayed in the editor
     //   See https://github.com/microsoft/vscode-python/issues/17989#issuecomment-972026138
     //
