@@ -1,6 +1,7 @@
 #!/usr/local/bin/python3
 # Copyright (C) 2018 TeselaGen Biotechnology, Inc.
 # License: MIT
+
 import json
 import time
 from typing import Any, Dict, List, Optional
@@ -393,7 +394,7 @@ class TeselaGenClient():
         lab = list(filter(lambda x: x[search_field] == identifier, labs))
         if len(lab) == 0:
             raise IOError(f"Can't find {search_field} {identifier}. Available labs are {labs}")
-        # Finally store labid in headers
+        # Finally store lab id in headers
         self.headers.update({
             "tg-active-lab-id": str(lab[0]['id']),
         })

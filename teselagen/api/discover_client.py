@@ -480,7 +480,7 @@ class DISCOVERClient():
         task finished it will return the list of datapoints with their prediction.
 
         Args:
-            - task (Any): The task object obtaine from submitting a prediction task.
+            - task (Any): The task object obtained from submitting a prediction task.
             - batch_size (int): Number of datapoints to be fetched.
             - batch_number (int): When providing a batch_size, the full set of datapoints is divided by batches of size batch_size.
                 batch_number is used to tell which batch of batch_size datapoints to fetch. Defaults to the first batch (batch_number=0).

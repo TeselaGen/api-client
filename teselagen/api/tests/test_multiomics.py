@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import os
 from pathlib import Path
 from typing import Any, Dict
@@ -16,8 +17,8 @@ def delete_file(
 ):
     # Get file id
     files = client_with_lab.test.get_files_info()
-    fileterd_files = [file_i for file_i in files if file_i["name"] == file_name]
-    client_with_lab.test.delete_file(file_id=fileterd_files[-1]["id"])
+    filtered_files = [file_i for file_i in files if file_i["name"] == file_name]
+    client_with_lab.test.delete_file(file_id=filtered_files[-1]["id"])
 
 
 @pytest.fixture(scope="module")
@@ -104,7 +105,7 @@ def metadata(
 
     # Descriptor types
     # Here we are going to create the necessary Descriptor Types
-    # that are going to be used to map the different Strains' charactetristics described in
+    # that are going to be used to map the different Strains' characteristics described in
     # the experiment description files.
     # The first column name is omitted, since it's the 'Line Name' which is not a descriptor but the Strain itself.
     descriptorTypeNames = test_data["EDD_experiment_description_file_WT"].columns.values.tolist()[1:]
@@ -139,7 +140,7 @@ def metadata(
         result[0]['name']: result[0]['id'],
     }
 
-    # Assay subbject class
+    # Assay subject class
     # We simply construct a JSON with the 'name' key as below.
     assaySubjectClass = {"name": "Strain"}
     result = client_with_lab.test.create_metadata(
@@ -598,8 +599,8 @@ class TestTESTClientMultiomicsData():
         """Check files download."""
         file_name = "TEST_OD_WT.csv"
         files = client_with_lab.test.get_files_info()
-        fileterd_files = [file_i for file_i in files if file_i["name"] == file_name]
-        # assert len(fileterd_files)==1, "Expecting just one file for this assertion"
+        filtered_files = [file_i for file_i in files if file_i["name"] == file_name]
+        # assert len(filtered_files)==1, "Expecting just one file for this assertion"
 
-        downloaded = pd.read_csv(client_with_lab.test.download_file(file_id=fileterd_files[0]["id"]))
+        downloaded = pd.read_csv(client_with_lab.test.download_file(file_id=filtered_files[0]["id"]))
         assert downloaded.shape == (10, 5), "Wrong shape"

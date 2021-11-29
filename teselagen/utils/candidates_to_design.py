@@ -168,7 +168,7 @@ def args_parser(args_in):
             Script for generating a design json from a set of evolution's candidates.
 
             Example usage:
-                Download output data from evoultion result "Teselagen Example Evolutive Model".
+                Download output data from evolution result "Teselagen Example Evolutive Model".
                 Store this file in this same folder with the name "evolve_exported_results.csv".
                 The next line will create a file with the default name "EVOLVE_candidates.json"
                 with a design containing valid candidates.

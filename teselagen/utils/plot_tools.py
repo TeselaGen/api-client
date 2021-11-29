@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import json
 from typing import Any, Dict, List, Optional, Tuple, Union
 import uuid
@@ -22,7 +23,7 @@ def plot_plasmid_features(
     """Plots features in a circular dna sequence.
 
     Args:
-        plasmid_length (int): Number of nucleotid bases of the plasmid sequence
+        plasmid_length (int): Number of nucleotide bases of the plasmid sequence
 
         features (List[Dict[str, Any]]): Features as obtained from TeselaGen DNA Sequence object
 

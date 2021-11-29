@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 from typing import Any, Dict, List
 from unittest.mock import patch
 
@@ -42,7 +43,7 @@ class TestTeselaGenClient:
         host_url: str,
         api_token_name: str,
     ) -> TeselaGenClient:
-        """A TesleaGenClient client instance.
+        """A TeslelaGenClient client instance.
 
         Returns:
             (TESTClient) : An instance of the TEST client.

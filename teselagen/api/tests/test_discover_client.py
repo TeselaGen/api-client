@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 from itertools import product
 from typing import List, Optional
 import uuid
