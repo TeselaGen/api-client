@@ -347,7 +347,7 @@ class TESTClient():
         experiment_id: int,
     ) -> None:
         """Deletes an experiment with ID=`experiment_id`."""
-        response = delete(
+        response = delete(  # noqa: F841
             url=self.delete_experiment_url.format(experiment_id),
             headers=self.headers,
         )
@@ -1101,7 +1101,7 @@ class TESTClient():
         metadataType: str,
         metadataId: int,
     ):
-        response = delete(
+        response = delete(  # noqa: F841
             url=self.delete_metadata_url.format(
                 metadataType,
                 metadataId,
