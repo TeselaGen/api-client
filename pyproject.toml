@@ -135,3 +135,15 @@ pre-commit = "^2.15.0"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.vulture]
+# exclude = ["file*.py", "dir/"]
+# ignore_decorators = ["@app.route", "@require_*"]
+# ignore_names = ["visit_*", "do_*"]
+# make_whitelist = true
+# min_confidence = 100
+# min_confidence = 80
+min_confidence = 60
+sort_by_size = true
+verbose = false
+paths = ["conftest.py", "setup.py", "teselagen"]

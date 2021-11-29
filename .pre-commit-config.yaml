@@ -53,10 +53,9 @@ repos:
 
       - id: trailing-whitespace
         name: "  [fix]: trim trailing whitespace"
-        args: [
-            # preserve Markdown hard line breaks
-            --markdown-linebreak-ext=md,
-          ]
+        args:
+          # preserve Markdown hard line breaks
+          - --markdown-linebreak-ext=md
 
       - id: check-docstring-first
         name: "[check]: docstring must be first in a module (Python)"
@@ -92,25 +91,22 @@ repos:
 
       - id: fix-encoding-pragma
         name: "  [fix]: encoding pragma (Python)"
-        args: [
-            # use '--remove' in a python3-only codebase
-            --remove,
-          ]
+        args:
+          # use '--remove' in a python3-only codebase
+          - --remove
 
       - id: mixed-line-ending
         name: "  [fix]: mixed line endings"
-        args: [
-            # Forces to replace line ending by LF.
-            --fix=lf,
-          ]
+        args:
+          # Forces to replace line ending by LF.
+          - --fix=lf
         # stages: [manual]
 
       - id: name-tests-test
         name: "[check]: test files should be named test*.py"
-        args: [
-            # use '--django' to match 'test*.py' instead of '*_test.py'
-            --django,
-          ]
+        args:
+          # use '--django' to match 'test*.py' instead of '*_test.py'
+          - --django
 
       - id: detect-private-key
         name: "[check]: detect private key"
@@ -120,13 +116,10 @@ repos:
 
       - id: no-commit-to-branch
         name: "[check]: no commit to branch"
-        args: [
-            # Protect specific branches from direct checkins
-            --branch,
-            master,
-            --branch,
-            main,
-          ]
+        args:
+          # Protect specific branches from direct checkins
+          - --branch=master
+          - --branch=main
 
       - id: forbid-new-submodules
         name: "[check]: forbid new submodules"
@@ -165,17 +158,18 @@ repos:
       - id: codespell
         alias: check-misspellings
         name: "[check]: spell check [codespell]"
-        # args: [--config=.codespellrc, --ignore-words=.codespellignore]
-        # stages: [manual]
+        # args:
+        #   - --config=.codespellrc
+        #   - --ignore-words=.codespellignore
+        stages: [manual]
 
       - id: codespell
         alias: fix-misspellings
         name: "  [fix]: spell check [codespell]"
-        args: [
-            # --config=.codespellrc,
-            # --ignore-words=.codespellignore,
-            --write-changes,
-          ]
+        args:
+          # - --config=.codespellrc
+          # - --ignore-words=.codespellignore
+          - --write-changes
         stages: [manual]
 
   - repo: https://github.com/myint/autoflake
@@ -184,29 +178,25 @@ repos:
       - id: autoflake
         alias: check-unused-imports
         name: "[check]: unused imports (Python) [autoflake]"
-        args: [
-            # --expand-star-imports,
-            # --remove-duplicate-keys,
-            # --remove-unused-variables,
-            --ignore-init-module-imports,
-            --remove-all-unused-imports,
-            # --verbose,
-            --check,
-          ]
+        args:
+          - --check
+          - --remove-all-unused-imports
+          - --ignore-init-module-imports
+          # - --expand-star-imports
+          # - --remove-duplicate-keys
+          # - --remove-unused-variables
         stages: [manual]
 
       - id: autoflake
         alias: remove-unused-imports
         name: "  [fix]: remove unused imports (Python) [autoflake]"
-        args: [
-            # --expand-star-imports,
-            # --remove-duplicate-keys,
-            # --remove-unused-variables,
-            --ignore-init-module-imports,
-            --remove-all-unused-imports,
-            # --verbose,
-            --in-place,
-          ]
+        args:
+          - --in-place
+          - --remove-all-unused-imports
+          - --ignore-init-module-imports
+          # - --expand-star-imports
+          # - --remove-duplicate-keys
+          # - --remove-unused-variables
         # stages: [manual]
 
   - repo: https://github.com/pre-commit/mirrors-autopep8
@@ -215,34 +205,32 @@ repos:
       - id: autopep8
         alias: check-pep8
         name: "[check]: PEP 8 (Python) [autopep8]"
-        args: [
-            # "--select=E26,E265,E266,E731",
-            # --jobs=8,
-            --jobs=0,
-            --aggressive,
-            --aggressive,
-            --aggressive,
-            --experimental,
-            --max-line-length=119,
-            --diff,
-            --exit-code,
-          ]
+        args:
+          # - --select=E26,E265,E266,E731
+          # - --jobs=8
+          - --jobs=0
+          - --aggressive
+          - --aggressive
+          - --aggressive
+          - --experimental
+          - --max-line-length=119
+          - --diff
+          - --exit-code
         # stages: [manual]
 
       - id: autopep8
         alias: fix-pep8
         name: "  [fix]: PEP 8 (Python) [autopep8]"
-        args: [
-            # "--select=E26,E265,E266,E731",
-            # --jobs=8,
-            --jobs=0,
-            --aggressive,
-            --aggressive,
-            --aggressive,
-            --experimental,
-            --max-line-length=119,
-            --in-place,
-          ]
+        args:
+          # - "--select=E26,E265,E266,E731"
+          # - --jobs=8
+          - --jobs=0
+          - --aggressive
+          - --aggressive
+          - --aggressive
+          - --experimental
+          - --max-line-length=119
+          - --in-place
         stages: [manual]
 
   - repo: https://github.com/myint/docformatter
@@ -251,13 +239,19 @@ repos:
       - id: docformatter
         alias: check-docstrings
         name: "[check]: docstring PEP 257 (Python) [docformatter]"
-        args: [--wrap-summaries=119, --wrap-descriptions=119, --check]
+        args:
+          - --wrap-summaries=119
+          - --wrap-descriptions=119
+          - --check
         stages: [manual]
 
       - id: docformatter
         alias: fix-docstrings
         name: "  [fix]: docstring PEP 257 (Python) [docformatter]"
-        args: [--wrap-summaries=119, --wrap-descriptions=119, --in-place]
+        args:
+          - --wrap-summaries=119
+          - --wrap-descriptions=119
+          - --in-place
         # stages: [manual]
 
   # - repo: https://github.com/pre-commit/mirrors-isort
@@ -268,13 +262,18 @@ repos:
       - id: isort
         alias: check-imports-order
         name: "[check]: imports order (Python) [isort]"
-        args: [--jobs=8, --check]
+        args:
+          - --check
+          - --jobs=8
+          - --filter-files
         stages: [manual]
 
       - id: isort
         alias: fix-imports-order
         name: "  [fix]: imports order (Python) [isort]"
-        args: [--jobs=8]
+        args:
+          - --jobs=8
+          - --filter-files
         # stages: [manual]
 
   # additional_dependencies: [toml]
@@ -289,7 +288,8 @@ repos:
     hooks:
       - id: add-trailing-comma
         name: "  [fix]: trailing commas (Python) [add-trailing-comma]"
-        args: [--py36-plus]
+        args:
+          - --py36-plus
         stages: [manual]
 
   # NOTE: Probably pair with https://github.com/snok/pep585-upgrade
@@ -298,7 +298,9 @@ repos:
     hooks:
       - id: pyupgrade
         name: "  [fix]: upgrade syntax (Python) [pyupgrade]"
-        args: [--py36-plus, --py37-plus]
+        args:
+          - --py36-plus
+          - --py37-plus
         # stages: [manual]
 
   - repo: https://github.com/PyCQA/bandit
@@ -306,36 +308,40 @@ repos:
     hooks:
       - id: bandit
         name: "[check]: security (Python) [bandit]"
-        args: [
-            # exit with 0, even with results found
-            # --exit-zero
-            # only show output in the case of an error
-            "--silent",
-            # report only issues of a given confidence level or higher (-i for LOW, -ii for MEDIUM, -iii for HIGH)
-            # "-ii",
-            # report only issues of a given severity level or higher  (-l for LOW, -ll for MEDIUM, -lll for HIGH)
-            "-ll",
-            # optional config file to use for selecting plugins and overriding defaults
-            "--configfile=bandit.yml",
-            # path to a .bandit file that supplies command line arguments
-            "--ini=.bandit",
-          ]
+        args:
+          # exit with 0, even with results found
+          # - --exit-zero
+          # only show output in the case of an error
+          - --silent
+          # report only issues of a given confidence level or higher (-i for LOW, -ii for MEDIUM, -iii for HIGH)
+          # - -ii
+          # report only issues of a given severity level or higher  (-l for LOW, -ll for MEDIUM, -lll for HIGH)
+          - -ll
+          # optional config file to use for selecting plugins and overriding defaults
+          - --configfile=bandit.yml
+          # path to a .bandit file that supplies command line arguments
+          - --ini=.bandit
 
+  # NOTE: It may be convenient to define it as local pre-commit hook
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.910-1
     hooks:
       - id: mypy
         name: "[check]: type check (Python) [mypy]"
-        # args: [--config-file=mypy.ini]
-        additional_dependencies: [
-            # tokenize-rt,
-            # types-pkg_resources,
-            # types-toml,
-            # types-PyYAML>="6.0.1",
-            # types-requests>="2.26.0",
-            # types-setuptools>="57.4.3",
-            types-all>="1.0.0",
-          ]
+        args:
+          - --pretty
+          - --show-absolute-path
+          - --color-output
+          # - --config-file=mypy.ini
+        additional_dependencies:
+          # - tokenize-rt
+          # - types-pkg_resources
+          # - types-toml
+          # - types-PyYAML>="6.0.1"
+          # - types-requests>="2.26.0"
+          # - types-setuptools>="57.4.3"
+          - types-all>="1.0.0"
+        types: [python]
         stages: [manual]
 
   - repo: https://github.com/PyCQA/flake8
@@ -345,61 +351,82 @@ repos:
         alias: check-flake8-strict
         name: "[check]: PEP 8 (Python) [flake8]"
         args:
-          ["--format=%(path)s:%(row)d:%(col)d, %(code).1s, %(code)s:%(text)s"]
-        additional_dependencies: [
+          - --format=%(path)s:%(row)d:%(col)d, %(code).1s, %(code)s:%(text)s
+        additional_dependencies:
+          #
+          - bandit>="1.7.1"
+          - cohesion>="1.0.0"
+          - pep8>="1.7.1"
+          - pycodestyle>="2.8.0"
+          - pydocstyle>="6.1.1"
+          - radon>="5.1.0"
+          - tryceratops>="1.0.0"
+          - mccabe>="0.6.1"
             #
-            bandit>=1.7.1,
-            cohesion>=1.0.0,
-            pep8>=1.7.1,
-            pycodestyle>=2.8.0,
-            pydocstyle>=6.1.1,
-            radon>=5.1.0,
-            tryceratops>=1.0.0,
-            mccabe>=0.6.1,
+          - pep8-naming>="0.12.1"
             #
-            pep8-naming>=0.12.1,
-            #
-            flake8-bandit>=2.1.2,
-            flake8-broken-line>=0.4.0,
-            flake8-bugbear>=21.11.28,
-            flake8-commas>=2.1.0,
-            flake8-comprehensions>=3.7.0,
-            flake8-copyright>=0.2.2,
-            flake8-debugger>=4.0.0,
-            flake8-docstrings>=1.6.0,
-            flake8-eradicate>=1.2.0,
-            flake8-executable>=2.1.1,
-            flake8-implicit-str-concat>=0.2.0,
-            flake8-logging-format>=0.6.0,
-            flake8-polyfill>=1.0.2,
-            flake8-print>=4.0.0,
-            flake8-pytest-style>=1.5.1,
-            flake8-use-pathlib>=0.2.1,
-          ]
+          - flake8-bandit>="2.1.2"
+          - flake8-broken-line>="0.4.0"
+          - flake8-bugbear>="21.11.28"
+          - flake8-commas>="2.1.0"
+          - flake8-comprehensions>="3.7.0"
+          - flake8-copyright>="0.2.2"
+          - flake8-debugger>="4.0.0"
+          - flake8-docstrings>="1.6.0"
+          - flake8-eradicate>="1.2.0"
+          - flake8-executable>="2.1.1"
+          - flake8-implicit-str-concat>="0.2.0"
+          - flake8-logging-format>="0.6.0"
+          - flake8-polyfill>="1.0.2"
+          - flake8-print>="4.0.0"
+          - flake8-pytest-style>="1.5.1"
+          - flake8-use-pathlib>="0.2.1"
         stages: [manual]
 
+  # NOTE: It may be convenient to define it as local pre-commit hook
+  - repo: https://github.com/PyCQA/pylint
+    rev: v2.12.1
+    hooks:
+      - id: pylint
+        name: "[check]: static code analysis (Python) [pylint]"
+        args:
+          - --output-format=colorized
+        additional_dependencies:
+          - dna_features_viewer>="3.0.3"
+          - fastaparser>="1.1"
+          - ipython
+          - matplotlib
+          - numpy>="1.18.1"
+          - pandas>="1.1.5"
+          - pytest>="6.2.5"
+          - requests_mock>="1.9.3"
+          - requests>="2.26.0"
+          - SecretColors>="1.2.4"
+          - single_version>="1.5.1"
+          - tenacity>="8.0.1"
+        stages: [manual]
+
+  # sudo apt-get install shellcheck
   - repo: https://github.com/koalaman/shellcheck-precommit
-    # sudo apt-get install shellcheck
     rev: v0.8.0
     hooks:
       - id: shellcheck
         name: "[check]: static analysis (shell) [shellcheck]"
-        args: [
-            # Optionally only show errors and warnings
-            # "--severity=warning", # error, warning, info, style
-            "--color=always",
-            #  Format output.
-            #       tty (Plain text, human readable output. This is the default.)
-            #       gcc ( GCC compatible output. Useful for editors that support compiling and showing syntax errors.)
-            #       checkstyle
-            #       diff (Auto-fixes in unified diff format.
-            #             Can be piped to 'git apply' or 'patch -p1' to automatically apply fixes.)
-            #       json1
-            #       json
-            #       quiet
-            # "--format=gcc",
-            "--format=tty",
-          ]
+        args:
+          # Optionally only show errors and warnings (error, warning, info, style)
+          # - --severity=warning
+          - --color=always
+          #  Format output.
+          #       tty (Plain text, human readable output. This is the default.)
+          #       gcc ( GCC compatible output. Useful for editors that support compiling and showing syntax errors.)
+          #       checkstyle
+          #       diff (Auto-fixes in unified diff format.
+          #             Can be piped to 'git apply' or 'patch -p1' to automatically apply fixes.)
+          #       json1
+          #       json
+          #       quiet
+          # - --format=gcc
+          - --format=tty
         stages: [manual]
 
   - repo: https://github.com/econchick/interrogate
@@ -408,21 +435,20 @@ repos:
       - id: interrogate
         alias: check-code-docstrings-coverage
         name: "[check]: (code) docstring coverage (Python) [interrogate]"
-        args: [
-            # Do not print output
-            # --quiet,
-            # Toggle color output on/off when printing to stdout.
-            --color,
-            # Omit reporting files that have 100% documentation coverage.
-            --omit-covered-files,
-            # Ignore `__init__.py` modules.
-            --ignore-init-module,
-            # Fail when coverage % is less than a given amount.
-            --fail-under=100,
-            # --fail-under=95,
-            # --fail-under=50,
-            -vv,
-          ]
+        args:
+          # Do not print output
+          # - --quiet
+          # Toggle color output on/off when printing to stdout.
+          - --color
+          # Omit reporting files that have 100% documentation coverage.
+          - --omit-covered-files
+          # Ignore `__init__.py` modules.
+          - --ignore-init-module
+          # Fail when coverage % is less than a given amount.
+          - --fail-under=100
+          # - --fail-under=95
+          # - --fail-under=50
+          - -vv
         # files: ^teselagen/
         # excluding files also exclude them from the docstring coverage calculation
         #   NOTE: mark regex as verbose ( https://github.com/psf/black/issues/395#issuecomment-499630129 )
@@ -437,21 +463,20 @@ repos:
       - id: interrogate
         alias: check-tests-docstrings-coverage
         name: "[check]: (tests) docstring coverage (Python) [interrogate]"
-        args: [
-            # Do not print output
-            # --quiet,
-            # Toggle color output on/off when printing to stdout.
-            --color,
-            # Omit reporting files that have 100% documentation coverage.
-            --omit-covered-files,
-            # Ignore `__init__.py` modules.
-            --ignore-init-module,
-            # Fail when coverage % is less than a given amount.
-            --fail-under=100,
-            # --fail-under=95,
-            # --fail-under=50,
-            -vv,
-          ]
+        args:
+          # Do not print output
+          # - --quiet
+          # Toggle color output on/off when printing to stdout.
+          - --color
+          # Omit reporting files that have 100% documentation coverage.
+          - --omit-covered-files
+          # Ignore `__init__.py` modules.
+          - --ignore-init-module
+          # Fail when coverage % is less than a given amount.
+          - --fail-under=100
+          # - --fail-under=95
+          # - --fail-under=50
+          - -vv
         files: .*/tests/
         # excluding files also exclude them from the docstring coverage calculation
         #   NOTE: mark regex as verbose ( https://github.com/psf/black/issues/395#issuecomment-499630129 )
@@ -464,21 +489,20 @@ repos:
       - id: interrogate
         alias: check-docstrings-coverage
         name: "[check]: docstring coverage (Python) [interrogate]"
-        args: [
-            # Do not print output
-            # --quiet,
-            # Toggle color output on/off when printing to stdout.
-            --color,
-            # Omit reporting files that have 100% documentation coverage.
-            --omit-covered-files,
-            # Ignore `__init__.py` modules.
-            --ignore-init-module,
-            # Fail when coverage % is less than a given amount.
-            --fail-under=100,
-            # --fail-under=95,
-            # --fail-under=50,
-            -vv,
-          ]
+        args:
+          # Do not print output
+          # - --quiet
+          # Toggle color output on/off when printing to stdout.
+          - --color
+          # Omit reporting files that have 100% documentation coverage.
+          - --omit-covered-files
+          # Ignore `__init__.py` modules.
+          - --ignore-init-module
+          # Fail when coverage % is less than a given amount.
+          - --fail-under=100
+          # - --fail-under=95
+          # - --fail-under=50
+          - -vv
         files: .*
         # excluding files also exclude them from the docstring coverage calculation
         #   NOTE: mark regex as verbose ( https://github.com/psf/black/issues/395#issuecomment-499630129 )
@@ -495,10 +519,9 @@ repos:
       - id: markdownlint
         alias: check-markdown-style
         name: "[check]: check markdown style issues [markdownlint]"
-        args: [
-            # --verbose,
-            --warnings,
-          ]
+        # args:
+        #   # - --verbose
+        #   - --warnings
         # stages: [manual]
 
   - repo: https://github.com/asottile/yesqa
@@ -507,7 +530,7 @@ repos:
       - id: yesqa
         alias: remove-unncessary-noqa-comments
         name: "[fix]: remove unnecessary noqa comments [yesqa]"
-        stages: [manual]
+        # stages: [manual]
 
   # NOTE: Probably pair with https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
   - repo: https://github.com/adrienverge/yamllint
@@ -516,6 +539,9 @@ repos:
       - id: yamllint
         alias: check-yaml-style
         name: "[check]: check yaml style issues [yamllint]"
+        args:
+          - --strict
+          - --format=parsable
         # stages: [manual]
 
   - repo: https://github.com/asottile/dead
@@ -523,70 +549,99 @@ repos:
     hooks:
       - id: dead
         alias: check-dead-code
-        name: "[check]: detect dead code [dead]"
-        args: [--tests=(tests/|test_utils\.py)]
+        name: "[check]: dead code [dead]"
+        args:
+          - --tests=(tests/|test_utils\.py)
+        stages: [manual]
+
+  # NOTE: Vulture required configuration is part of 'pyproject.toml' file.
+  - repo: https://github.com/jendrikseipp/vulture
+    rev: v2.3
+    hooks:
+      - id: vulture
+        alias: check-unused-code
+        name: "[check]: unused code [vulture]"
+        # args:
+        #   # Sort unused functions and classes by their lines of code
+        #   - --sort-by-size
+        #   # Minimum confidence (between 0 and 100) for code to be reported as unused
+        #   # - --min-confidence=100
+        #   # - --min-confidence=80
+        #   - --min-confidence=60
         stages: [manual]
 
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.2.2
     hooks:
-      # - id: nbqa-black
+      # NOTE: nbqa is broken in rev 1.2.2
+      - id: nbqa
+        name: "[check]: check code style issues (Notebooks) [nbqa]"
+        stages: [manual]
+
+      # NOTE: We use yapf formater instead of black formatter
+      - id: nbqa-black
+        name: "[fix]: format code (Notebooks) [nbqa-black]"
+        stages: [manual]
 
       - id: nbqa-check-ast
-        name: "[check]: cells parse as valid python (Notebooks) [nbqa-check-as]"
+        name: "[check]: cells parse as valid python (Notebooks) [nbqa-check-ast]"
 
       - id: nbqa-flake8
         alias: nbqa-flake8-strict
         name: "[check]: check code style issues (Notebooks) [nbqa-flake8]"
-        additional_dependencies: [
+        additional_dependencies:
+          #
+          - bandit>="1.7.1"
+          - cohesion>="1.0.0"
+          - pep8>="1.7.1"
+          - pycodestyle>="2.8.0"
+          - pydocstyle>="6.1.1"
+          - radon>="5.1.0"
+          - tryceratops>="1.0.0"
+          - mccabe>="0.6.1"
             #
-            bandit>=1.7.1,
-            cohesion>=1.0.0,
-            pep8>=1.7.1,
-            pycodestyle>=2.8.0,
-            pydocstyle>=6.1.1,
-            radon>=5.1.0,
-            tryceratops>=1.0.0,
-            mccabe>=0.6.1,
+          - pep8-naming>="0.12.1"
             #
-            pep8-naming>=0.12.1,
-            #
-            flake8-bandit>=2.1.2,
-            flake8-broken-line>=0.4.0,
-            flake8-bugbear>=21.11.28,
-            flake8-commas>=2.1.0,
-            flake8-comprehensions>=3.7.0,
-            flake8-copyright>=0.2.2,
-            flake8-debugger>=4.0.0,
-            flake8-docstrings>=1.6.0,
-            flake8-eradicate>=1.2.0,
-            flake8-executable>=2.1.1,
-            flake8-implicit-str-concat>=0.2.0,
-            flake8-logging-format>=0.6.0,
-            flake8-polyfill>=1.0.2,
-            flake8-print>=4.0.0,
-            flake8-pytest-style>=1.5.1,
-            flake8-use-pathlib>=0.2.1,
-          ]
+          - flake8-bandit>="2.1.2"
+          - flake8-broken-line>="0.4.0"
+          - flake8-bugbear>="21.11.28"
+          - flake8-commas>="2.1.0"
+          - flake8-comprehensions>="3.7.0"
+          - flake8-copyright>="0.2.2"
+          - flake8-debugger>="4.0.0"
+          - flake8-docstrings>="1.6.0"
+          - flake8-eradicate>="1.2.0"
+          - flake8-executable>="2.1.1"
+          - flake8-implicit-str-concat>="0.2.0"
+          - flake8-logging-format>="0.6.0"
+          - flake8-polyfill>="1.0.2"
+          - flake8-print>="4.0.0"
+          - flake8-pytest-style>="1.5.1"
+          - flake8-use-pathlib>="0.2.1"
         stages: [manual]
 
       - id: nbqa-isort
         name: "  [fix]: sort imports (Notebooks) [nbqa-isort]"
-        args: [--jobs=8]
+        args:
+          - --jobs=8
 
+      # TODO(diegovalenzuelaiturra): Check if nbqa-mypy is working properly
       - id: nbqa-mypy
         name: "[check]: type check (Notebooks) [nbqa-mypy]"
-        # args: [--config-file=mypy.ini]
-        additional_dependencies: [
-            # tokenize-rt,
-            # types-pkg_resources,
-            # types-toml,
-            # types-PyYAML>="6.0.1",
-            # types-requests>="2.26.0",
-            # types-setuptools>="57.4.3",
-            types-all>="1.0.0",
-          ]
-        stages: [manual]
+        # args:
+        #   - --pretty
+        #   - --show-absolute-path
+        #   - --color-output
+        #   # - --config-file=mypy.ini
+        additional_dependencies:
+          # - tokenize-rt
+          # - types-pkg_resources
+          # - types-toml
+          # - types-PyYAML>="6.0.1"
+          # - types-requests>="2.26.0"
+          # - types-setuptools>="57.4.3"
+          - types-all>="1.0.0"
+        # stages: [manual]
 
       - id: nbqa-pylint
         name: "[check]: static code analysis (Notebooks) [nbqa-pylint]"
@@ -594,41 +649,62 @@ repos:
 
       - id: nbqa-pyupgrade
         name: "  [fix]: upgrade syntax (Notebooks) [nbqa-pyupgrade]"
-        args: [--py37-plus, --py36-plus]
+        args:
+          - --py37-plus
+          - --py36-plus
         # stages: [manual]
 
       - id: nbqa-autopep8
         name: "  [fix]: PEP 8 (Notebooks) [nbqa-autopep8]"
-        args: [
-            # "--select=E26,E265,E266,E731",
-            # --jobs=8,
-            --jobs=0,
-            --aggressive,
-            --aggressive,
-            --aggressive,
-            --experimental,
-            --max-line-length=119,
-            --in-place,
-          ]
+        args:
+          # - --select=E26,E265,E266,E731
+          # - --jobs=8
+          - --jobs=0
+          - --aggressive
+          - --aggressive
+          - --aggressive
+          - --experimental
+          - --max-line-length=119
+          - --in-place
 
       - id: nbqa-yapf
         name: "  [fix]: format code (Notebooks) [nbqa-yapf]"
 
-      # - id: nbqa-pydocstyle
+      # NOTE: nbqa-pydocstyle is broken in rev 1.2.2 (__main__.py: error: no such option: -i)
+      - id: nbqa-pydocstyle
+        name: "[check]: docstring style (Notebooks) [nbqa-pydocstyle]"
+        stages: [manual]
 
   # - repo: https://github.com/mwouts/jupytext
   #   rev: v1.13.1.2
   #   hooks:
   #     - id: jupytext
   #       description: Jupyter Notebooks as Markdown Documents, Julia, Python or R scripts
-  #       args: [--sync]
+  #       args:
+  #         - --sync
 
   # - repo: https://github.com/terrencepreilly/darglint
   #   rev: v1.8.1
   #   hooks:
   #     - id: darglint
 
+  # NOTE: yamlfmt is not properly configured yet
+  - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+    rev: 0.1.0
+    hooks:
+      - id: yamlfmt
+        name: "[fix]: format yaml files [yamlfmt]"
+        args:
+          - --colons
+          - --mapping=6
+          - --sequence=4
+          - --offset=2
+          - --width=119
+        stages: [manual]
+
   - repo: meta
     hooks:
       - id: check-hooks-apply
+        name: "[check]: check that all hooks are applied [check-hooks-apply]"
       - id: check-useless-excludes
+        name: "[check]: check that no useless excludes are used [check-useless-excludes]"
