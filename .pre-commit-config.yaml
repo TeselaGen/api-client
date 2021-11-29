@@ -2,14 +2,25 @@
 # Install pre-commit
 #   python3 -m pip install --upgrade --no-cache-dir --no-warn-script-location --trusted-host pypi.python.org pre-commit
 
-# Install the pre-commit hooks below with
-#   pre-commit install --install-hooks
-
-# Auto-update the version of the hooks with
+# Auto-update the version of the hooks
 #   pre-commit autoupdate
+
+# Install the pre-commit hooks
+#   pre-commit install
+#   pre-commit install-hooks
 
 # Run the hooks on all files with
 #   pre-commit run --all-files
+
+# Hard cleanup
+#   pre-commit uninstall
+#   pre-commit clean
+#   pre-commit gc
+#   pre-commit autoupdate
+#   pre-commit install
+#   pre-commit install-hooks
+#   pre-commit run --all-files
+#   pre-commit gc
 
 # References:
 #   https://pre-commit.com/#usage-in-continuous-integration
@@ -22,21 +33,15 @@
 #   https://github.com/nbQA-dev/nbQA/blob/master/.pre-commit-config.yaml
 #   https://github.com/google/pre-commit-tool-hooks/blob/trunk/.pre-commit-config.yaml
 
-# pre-commit autoupdate
-# pre-commit gc && pre-commit install --install-hooks && pre-commit gc
-#
-# pre-commit run --all-files
-#
-# pre-commit run --all-files --show-diff-on-failure
-#
-# pre-commit run mypy --all-files
-
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
-# default_language_version:
-#   # force all unspecified python hooks to run python3
-#   python: python3.9
+minimum_pre_commit_version: "2.15.0"
+
+default_language_version:
+  # force all unspecified python hooks to run python3
+  python: python3
+  # python: python3.9
 
 # whether to fail on first error or continue
 fail_fast: false
@@ -67,7 +72,14 @@ repos:
         # does not support comments (JSONC)
         # does not support trailing commas
         name: "[check]: files are valid JSON"
-        exclude: (cSpell.json|.devcontainer/|.vscode/)
+        # NOTE: mark regex as verbose ( https://github.com/psf/black/issues/395#issuecomment-499630129 )
+        exclude: |
+          (?x)(
+              cSpell\.json|
+              .devcontainer/|
+              .vscode/
+          )
+        # exclude: (cSpell.json|.devcontainer/|.vscode/)
 
       - id: check-toml
         name: "[check]: files are valid TOML"
@@ -87,7 +99,8 @@ repos:
 
       - id: end-of-file-fixer
         name: "  [fix]: fix missing newline at end of file"
-        exclude: (.*\.csv|.*\.txt)
+        # exclude: (.*\.csv|.*\.txt)
+        exclude: '.*\.(txt|csv)'
 
       - id: fix-encoding-pragma
         name: "  [fix]: encoding pragma (Python)"
@@ -194,9 +207,9 @@ repos:
           - --in-place
           - --remove-all-unused-imports
           - --ignore-init-module-imports
-          # - --expand-star-imports
-          # - --remove-duplicate-keys
-          # - --remove-unused-variables
+        #   - --expand-star-imports
+        #   - --remove-duplicate-keys
+        #   - --remove-unused-variables
         # stages: [manual]
 
   - repo: https://github.com/pre-commit/mirrors-autopep8
@@ -207,8 +220,8 @@ repos:
         name: "[check]: PEP 8 (Python) [autopep8]"
         args:
           # - --select=E26,E265,E266,E731
-          # - --jobs=8
-          - --jobs=0
+          # - --jobs=0
+          - --jobs=8
           - --aggressive
           - --aggressive
           - --aggressive
@@ -223,8 +236,8 @@ repos:
         name: "  [fix]: PEP 8 (Python) [autopep8]"
         args:
           # - "--select=E26,E265,E266,E731"
-          # - --jobs=8
-          - --jobs=0
+          # - --jobs=0
+          - --jobs=8
           - --aggressive
           - --aggressive
           - --aggressive
@@ -351,7 +364,7 @@ repos:
         alias: check-flake8-strict
         name: "[check]: PEP 8 (Python) [flake8]"
         args:
-          - --format=%(path)s:%(row)d:%(col)d, %(code).1s, %(code)s:%(text)s
+          - "--format=%(path)s:%(row)d:%(col)d, %(code).1s, %(code)s:%(text)s"
         additional_dependencies:
           #
           - bandit>="1.7.1"
@@ -551,7 +564,7 @@ repos:
         alias: check-dead-code
         name: "[check]: dead code [dead]"
         args:
-          - --tests=(tests/|test_utils\.py)
+          - '--tests=(tests/|test_utils\.py)'
         stages: [manual]
 
   # NOTE: Vulture required configuration is part of 'pyproject.toml' file.
@@ -573,15 +586,15 @@ repos:
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.2.2
     hooks:
-      # NOTE: nbqa is broken in rev 1.2.2
-      - id: nbqa
-        name: "[check]: check code style issues (Notebooks) [nbqa]"
-        stages: [manual]
+      # # NOTE: nbqa is broken in rev 1.2.2
+      # - id: nbqa
+      #   name: "[check]: check code style issues (Notebooks) [nbqa]"
+      #   stages: [manual]
 
-      # NOTE: We use yapf formater instead of black formatter
-      - id: nbqa-black
-        name: "[fix]: format code (Notebooks) [nbqa-black]"
-        stages: [manual]
+      # # NOTE: We use yapf formater instead of black formatter
+      # - id: nbqa-black
+      #   name: "[fix]: format code (Notebooks) [nbqa-black]"
+      #   stages: [manual]
 
       - id: nbqa-check-ast
         name: "[check]: cells parse as valid python (Notebooks) [nbqa-check-ast]"
@@ -625,23 +638,23 @@ repos:
         args:
           - --jobs=8
 
-      # TODO(diegovalenzuelaiturra): Check if nbqa-mypy is working properly
-      - id: nbqa-mypy
-        name: "[check]: type check (Notebooks) [nbqa-mypy]"
-        # args:
-        #   - --pretty
-        #   - --show-absolute-path
-        #   - --color-output
-        #   # - --config-file=mypy.ini
-        additional_dependencies:
-          # - tokenize-rt
-          # - types-pkg_resources
-          # - types-toml
-          # - types-PyYAML>="6.0.1"
-          # - types-requests>="2.26.0"
-          # - types-setuptools>="57.4.3"
-          - types-all>="1.0.0"
-        # stages: [manual]
+      # # TODO(diegovalenzuelaiturra): Check if nbqa-mypy is working properly
+      # - id: nbqa-mypy
+      #   name: "[check]: type check (Notebooks) [nbqa-mypy]"
+      #   # args:
+      #   #   - --pretty
+      #   #   - --show-absolute-path
+      #   #   - --color-output
+      #   #   # - --config-file=mypy.ini
+      #   additional_dependencies:
+      #     # - tokenize-rt
+      #     # - types-pkg_resources
+      #     # - types-toml
+      #     # - types-PyYAML>="6.0.1"
+      #     # - types-requests>="2.26.0"
+      #     # - types-setuptools>="57.4.3"
+      #     - types-all>="1.0.0"
+      #   # stages: [manual]
 
       - id: nbqa-pylint
         name: "[check]: static code analysis (Notebooks) [nbqa-pylint]"
@@ -658,8 +671,8 @@ repos:
         name: "  [fix]: PEP 8 (Notebooks) [nbqa-autopep8]"
         args:
           # - --select=E26,E265,E266,E731
-          # - --jobs=8
-          - --jobs=0
+          # - --jobs=0
+          - --jobs=8
           - --aggressive
           - --aggressive
           - --aggressive
@@ -670,10 +683,10 @@ repos:
       - id: nbqa-yapf
         name: "  [fix]: format code (Notebooks) [nbqa-yapf]"
 
-      # NOTE: nbqa-pydocstyle is broken in rev 1.2.2 (__main__.py: error: no such option: -i)
-      - id: nbqa-pydocstyle
-        name: "[check]: docstring style (Notebooks) [nbqa-pydocstyle]"
-        stages: [manual]
+      # # NOTE: nbqa-pydocstyle is broken in rev 1.2.2 (__main__.py: error: no such option: -i)
+      # - id: nbqa-pydocstyle
+      #   name: "[check]: docstring style (Notebooks) [nbqa-pydocstyle]"
+      #   stages: [manual]
 
   # - repo: https://github.com/mwouts/jupytext
   #   rev: v1.13.1.2
@@ -688,19 +701,19 @@ repos:
   #   hooks:
   #     - id: darglint
 
-  # NOTE: yamlfmt is not properly configured yet
-  - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
-    rev: 0.1.0
-    hooks:
-      - id: yamlfmt
-        name: "[fix]: format yaml files [yamlfmt]"
-        args:
-          - --colons
-          - --mapping=6
-          - --sequence=4
-          - --offset=2
-          - --width=119
-        stages: [manual]
+  # # NOTE: yamlfmt is not properly configured yet
+  # - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+  #   rev: 0.1.0
+  #   hooks:
+  #     - id: yamlfmt
+  #       name: "[fix]: format yaml files [yamlfmt]"
+  #       args:
+  #         - --colons
+  #         - --mapping=6
+  #         - --sequence=4
+  #         - --offset=2
+  #         - --width=119
+  #       stages: [manual]
 
   - repo: meta
     hooks:
