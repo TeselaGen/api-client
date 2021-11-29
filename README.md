@@ -26,7 +26,8 @@ To be able to run the `examples`, you need to (after installing the library)
 
 ## Use the provided environment
 
-You can use the provided docker environment that contains a ready to use installation of all required packages to run the notebooks. Here are the instructions according to your OS
+You can use the provided docker environment that contains a ready to use installation of all required packages to run
+the notebooks. Here are the instructions according to your OS
 
 ### Linux/MacOS
 
@@ -42,13 +43,17 @@ You can use the provided docker environment that contains a ready to use install
 
 1. Build the docker environment with command `bash build.sh`
 
-1. Run the container as a developer with the command `bash run_dev.sh`. With this command the `teselagen` library will be installed in [editable](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs) mode.
+1. Run the container as a developer with the command `bash run_dev.sh`.
+  With this command the `teselagen` library will be installed in
+  [editable](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs) mode.
 
 ### Dependencies
 
 #### Install dependencies
 
-If lock file exists (the lock file contains fixed versions of dependencies), the `poetry install` command will install all dependencies according to the lock file (lock file **must** be added to the repo). If the file does not exist, it will generate the lock file again.
+If lock file exists (the lock file contains fixed versions of dependencies), the `poetry install` command will install
+all dependencies according to the lock file (lock file **must** be added to the repo). If the file does not exist, it
+will generate the lock file again.
 
 #### Update dependencies
 
@@ -64,7 +69,8 @@ It is the equivalent to make an install after deleting the `lock` file.
 
 1. Add your credentials
 
-    To run the tests, you must create a `.credentials` file containing the test _username_ and _password_, in the _root_ folder.
+    To run the tests, you must create a `.credentials` file containing the test _username_ and _password_, in the
+    _root_ folder.
 
     The content of `.credentials` file should look similar to the following:
 
@@ -81,7 +87,9 @@ It is the equivalent to make an install after deleting the `lock` file.
 
 1. Modify configuration
 
-    You may modify some test configuration parameters by creating a `.test_configuration` file. This is a `json` formatted file, where you can edit the server name used for tests. This file must be stored next to `.credentials` file. Here is an example
+    You may modify some test configuration parameters by creating a `.test_configuration` file.
+    This is a `json` formatted file, where you can edit the server name used for tests.
+    This file must be stored next to `.credentials` file. Here is an example
 
     ```JSON
     {
@@ -95,7 +103,9 @@ It is the equivalent to make an install after deleting the `lock` file.
     python3 setup.py test
     ```
 
-    You may use the docker environment for testing. For that, first build the environment with `bash build.sh`. Then just run the container with `bash run_dev.sh`. Once inside (`docker exec -ti tgclient bash`), go to `home/` and you are ready to run the test command shown above.
+    You may use the docker environment for testing. For that, first build the environment with `bash build.sh`.
+    Then just run the container with `bash run_dev.sh`.
+    Once inside (`docker exec -ti tgclient bash`), go to `home/` and you are ready to run the test command shown above.
 
 ### Publishing
 
@@ -121,7 +131,8 @@ poetry publish
 
 ### Notes
 
-Default shell in `Ubuntu` is `dash`, to which `/bin/sh` is symlinked. But `dash` doesn't have the `pipefail` option. That's why some of our shell scripts have the following line:
+Default shell in `Ubuntu` is `dash`, to which `/bin/sh` is symlinked. But `dash` doesn't have the `pipefail` option.
+That's why some of our shell scripts have the following line:
 
 ```bash
 # pipefail is necessary to propagate exit codes (but it may not be supported by your shell)

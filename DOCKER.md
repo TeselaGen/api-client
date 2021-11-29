@@ -1,4 +1,3 @@
-
 # Docker environment for API
 
 ## Build and Run
@@ -25,9 +24,11 @@ Here are some guidelines to _build_ and _run_ the docker container for the `Tese
 
 1. Once the docker container is running, you can access jupyter notebooks from your browser at `localhost:8888`
 
-1. You can create your own run command to mount folders from your computer into the container. Alternatively, you may  use the `sh run_dev.sh <path/to/local/folder>` command (instead of `run.sh`) to mount a directory into `/home/development/Notebooks`.
+1. You can create your own run command to mount folders from your computer into the container.
+  Alternatively, you may use the `sh run_dev.sh <path/to/local/folder>` command (instead of `run.sh`) to mount a
+  directory into `/home/development/Notebooks`.
 
-# Others
+## Others
 
 Here we list some common commands.
 
@@ -125,7 +126,8 @@ Here we list some common commands.
 
     Replace `containerName`
 
-    Calling `bash` with the `-c` option allows to append a string with the specific commands that are going to be run directly inside the container.
+    Calling `bash` with the `-c` option allows to append a string with the specific commands that are going to be run
+    directly inside the container.
 
     Here is an example to run the command `jupyter notebook list` inside the container, to get the notebook token.
 
