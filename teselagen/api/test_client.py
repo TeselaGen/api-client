@@ -1073,8 +1073,9 @@ class TESTClient():
         metadataType: str,
         metadataRecord: Union[List[dict], dict],
     ):
-        """Calls Teselagen TEST API endpoint: `POST /metadata`. More information at https://api-
-        docs.teselagen.com/#operation/MetadataCreateMetadata.
+        """Calls Teselagen TEST API endpoint: `POST /metadata`.
+
+        More information at https://api-docs.teselagen.com/#operation/MetadataCreateMetadata.
 
         Args:
             metadataType (str): Name of the metadata type/class.
