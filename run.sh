@@ -9,18 +9,15 @@
 #       DOCKER_IMAGE_TAG=v0.0.1 \
 #       bash run.sh
 
-
 # pipefail is necessary to propagate exit codes (but it may not be supported by your shell)
-bash | set -o pipefail > /dev/null 2>&1
+bash | set -o pipefail >/dev/null 2>&1
 
 # Any subsequent(*) commands which fail will cause the shell script to exit immediately
 set -ex
 
-
 # start with an error if Docker isn't working...
-docker version > /dev/null
+docker version >/dev/null
 printf "Docker version: %s\n" "$(docker version --format '{{.Server.Version}}')"
-
 
 # >>>>>> Definitions >>>>>>
 DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME:-'teselagen/python/tgclient'}
@@ -31,7 +28,6 @@ HOST_JUPYTER_NOTEBOOK_PORT=${HOST_JUPYTER_NOTEBOOK_PORT:-'8888'}
 CONTAINER_JUPYTER_NOTEBOOK_PORT=${CONTAINER_JUPYTER_NOTEBOOK_PORT:-'8888'}
 # <<<<<< Definitions <<<<<<
 
-
 # >>>>>> Run the Docker container >>>>>>
 #   ports
 #       syntax: --publish HOST:CONTAINER
@@ -41,9 +37,9 @@ CONTAINER_JUPYTER_NOTEBOOK_PORT=${CONTAINER_JUPYTER_NOTEBOOK_PORT:-'8888'}
 # For more info, run : docker run --help
 #   --init: Makes process PID=1 be docker-init backed by tini: https://docs.docker.com/engine/reference/run/#specify-an-init-process
 docker run --publish ${HOST_JUPYTER_NOTEBOOK_PORT}:${CONTAINER_JUPYTER_NOTEBOOK_PORT} \
-           --name ${DOCKER_CONTAINER_NAME} \
-           --detach \
-           --init \
-           --ipc=${DOCKER_CONTAINER_IPC_MODE} \
-           ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+    --name ${DOCKER_CONTAINER_NAME} \
+    --detach \
+    --init \
+    --ipc=${DOCKER_CONTAINER_IPC_MODE} \
+    ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
 # <<<<<< Run the Docker container <<<<<<
