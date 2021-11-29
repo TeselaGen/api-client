@@ -327,10 +327,53 @@ repos:
         name: "[check]: type check (Python) [mypy]"
         # args: [--config-file=mypy.ini]
         additional_dependencies: [
+            # tokenize-rt,
+            # types-pkg_resources,
+            # types-toml,
             # types-PyYAML>="6.0.1",
             # types-requests>="2.26.0",
             # types-setuptools>="57.4.3",
             types-all>="1.0.0",
+          ]
+        stages: [manual]
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 4.0.1
+    hooks:
+      - id: flake8
+        alias: check-flake8-strict
+        name: "[check]: PEP 8 (Python) [flake8]"
+        args:
+          ["--format=%(path)s:%(row)d:%(col)d, %(code).1s, %(code)s:%(text)s"]
+        additional_dependencies: [
+            #
+            bandit>=1.7.1,
+            cohesion>=1.0.0,
+            pep8>=1.7.1,
+            pycodestyle>=2.8.0,
+            pydocstyle>=6.1.1,
+            radon>=5.1.0,
+            tryceratops>=1.0.0,
+            mccabe>=0.6.1,
+            #
+            pep8-naming>=0.12.1,
+            #
+            flake8-bandit>=2.1.2,
+            flake8-broken-line>=0.4.0,
+            flake8-bugbear>=21.11.28,
+            flake8-commas>=2.1.0,
+            flake8-comprehensions>=3.7.0,
+            flake8-copyright>=0.2.2,
+            flake8-debugger>=4.0.0,
+            flake8-docstrings>=1.6.0,
+            flake8-eradicate>=1.2.0,
+            flake8-executable>=2.1.1,
+            flake8-implicit-str-concat>=0.2.0,
+            flake8-logging-format>=0.6.0,
+            flake8-polyfill>=1.0.2,
+            flake8-print>=4.0.0,
+            flake8-pytest-style>=1.5.1,
+            flake8-use-pathlib>=0.2.1,
           ]
         stages: [manual]
 
@@ -465,6 +508,7 @@ repos:
         name: "[fix]: remove unnecessary noqa comments [yesqa]"
         stages: [manual]
 
+  # NOTE: Probably pair with https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.26.3
     hooks:
@@ -472,6 +516,79 @@ repos:
         alias: check-yaml-style
         name: "[check]: check yaml style issues [yamllint]"
         # stages: [manual]
+
+  - repo: https://github.com/asottile/dead
+    rev: v1.4.0
+    hooks:
+      - id: dead
+        alias: check-dead-code
+        name: "[check]: check dead code [dead]"
+        args: [--tests=(tests/|test_utils\.py)]
+        stages: [manual]
+
+  # - repo: https://github.com/nbQA-dev/nbQA
+  #   rev: 1.2.2
+  #   hooks:
+  #     - id: nbqa
+
+  #     # - id: nbqa-black
+
+  #     - id: nbqa-check-ast
+
+  #     - id: nbqa-flake8
+  #       stages: [manual]
+
+  #     - id: nbqa-isort
+  #       args: [--jobs=8]
+
+  #     - id: nbqa-mypy
+  #       # args: [--config-file=mypy.ini]
+  #       additional_dependencies: [
+  #           # tokenize-rt,
+  #           # types-pkg_resources,
+  #           # types-toml,
+  #           # types-PyYAML>="6.0.1",
+  #           # types-requests>="2.26.0",
+  #           # types-setuptools>="57.4.3",
+  #           types-all>="1.0.0",
+  #         ]
+  #       stages: [manual]
+
+  #     - id: nbqa-pylint
+  #       stages: [manual]
+
+  #     - id: nbqa-pyupgrade
+  #       args: [--py36-plus]
+  #       stages: [manual]
+
+  #     - id: nbqa-autopep8
+  #       args: [
+  #           # "--select=E26,E265,E266,E731",
+  #           # --jobs=8,
+  #           --jobs=0,
+  #           --aggressive,
+  #           --aggressive,
+  #           --aggressive,
+  #           --experimental,
+  #           --max-line-length=119,
+  #           --in-place,
+  #         ]
+
+  #     - id: nbqa-yapf
+
+  #     # - id: nbqa-pydocstyle
+
+  # - repo: https://github.com/mwouts/jupytext
+  #   rev: v1.13.1.2
+  #   hooks:
+  #     - id: jupytext
+  #       description: Jupyter Notebooks as Markdown Documents, Julia, Python or R scripts
+  #       args: [--sync]
+
+  # - repo: https://github.com/terrencepreilly/darglint
+  #   rev: v1.8.1
+  #   hooks:
+  #     - id: darglint
 
   - repo: meta
     hooks:
