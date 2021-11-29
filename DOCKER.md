@@ -2,8 +2,8 @@
 # Docker environment for API
 
 ## Build and Run
-Here are some guidelines to _build_ and _run_ the docker container for the `TeselaGen Python Client`.
 
+Here are some guidelines to _build_ and _run_ the docker container for the `TeselaGen Python Client`.
 
 1. Build the docker image from the `Dockerfile`
 
@@ -17,7 +17,7 @@ Here are some guidelines to _build_ and _run_ the docker container for the `Tese
     sh run.sh
     ```
 
-1.  Alternatively, build the docker image and run the docker container in one line
+1. Alternatively, build the docker image and run the docker container in one line.
 
     ```bash
     sh build.sh && sh run.sh
@@ -30,7 +30,6 @@ Here are some guidelines to _build_ and _run_ the docker container for the `Tese
 # Others
 
 Here we list some common commands.
-
 
 1. To list _runing_ containers
 
@@ -95,6 +94,7 @@ Here we list some common commands.
     ```
 
 1. To pretty print the list of containers using a `Go` template
+
     ```bash
     docker ps --all --format 'table {{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}\t{{.ID}}\t{{.Mounts}}' --no-trunc
     ```
@@ -110,6 +110,7 @@ Here we list some common commands.
 1. Verify the library is installed
 
     * From inside the container
+
         ```bash
         pip freeze | grep --ignore-case teselagen
         ```

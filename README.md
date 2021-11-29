@@ -1,10 +1,11 @@
-# TeselaGen Python API Client.
+# TeselaGen Python API Client
 
 The _TeselaGen Python API Client_ runs on Python 3.
 
 **NOTE :** All the following commands are supposed to be run on the _base_ directory, unless specified.
 
 ## Library Installation
+
 This library contains the TeselaGen Python API Client.
 
 To install it locally,
@@ -41,7 +42,7 @@ You can use the provided docker environment that contains a ready to use install
 
 1. Build the docker environment with command `bash build.sh`
 
-2. Run the container as a developer with the command `bash run_dev.sh`. With this command the `teselagen` library will be installed in [editable](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs) mode.
+1. Run the container as a developer with the command `bash run_dev.sh`. With this command the `teselagen` library will be installed in [editable](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs) mode.
 
 ### Dependencies
 
@@ -52,6 +53,7 @@ If lock file exists (the lock file contains fixed versions of dependencies), the
 #### Update dependencies
 
 Use this command if you made changes on the dependencies at the `pyproject.toml` file:
+
 ```bash
 poetry update
 ```
@@ -83,7 +85,7 @@ It is the equivalent to make an install after deleting the `lock` file.
 
     ```JSON
     {
-	    "host_url" : "https://platform.teselagen.com"
+      "host_url" : "https://platform.teselagen.com"
     }
     ```
 
@@ -117,7 +119,7 @@ Ask for a token to administrators if needed
 poetry publish
 ```
 
-### Notes:
+### Notes
 
 Default shell in `Ubuntu` is `dash`, to which `/bin/sh` is symlinked. But `dash` doesn't have the `pipefail` option. That's why some of our shell scripts have the following line:
 
@@ -147,27 +149,21 @@ Or, as follows:
 . some_shell_script.sh
 ```
 
-
 ---
 
 <!--
 
-
 # apply end-of-line normalization
 git add --renormalize .
-
 
 # attach to the container
 docker exec --tty --interactive tgclient bash
 
-
 # go to the lib folder
 cd /home
 
-
 # validates the structure of the pyproject.toml file
 poetry check
-
 
 # list all available packages in the container
 poetry show
@@ -175,18 +171,14 @@ poetry show
 # poetry show --outdated
 # poetry show --latest
 
-
 # run docstrings formatter
 python3 -m docformatter --recursive --wrap-summaries 119 --wrap-descriptions 119 --in-place .
-
 
 # remove unused imports
 python3 -m autoflake --verbose --remove-all-unused-imports --ignore-init-module-imports --recursive --in-place .
 
-
 # fix exceptions
 # python3 -m tryceratops --experimental --autofix .
-
 
 # autopep8
 python3 -m autopep8 \
@@ -203,7 +195,6 @@ python3 -m autopep8 \
          --recursive \
          .
 
-
 python3 -m autopep8 \
          --jobs=$(nproc) \
          --in-place \
@@ -217,7 +208,6 @@ python3 -m autopep8 \
          --select=E26,E265,E266,E731,E711 \
          --recursive \
          .
-
 
 # fixit
 python3 -m fixit.cli.run_rules \
@@ -249,55 +239,43 @@ python3 -m fixit.cli.apply_fix \
                UseClsInClassmethodRule \
                UseFstringRule
 
-
 # sort imports
 python3 -m isort --jobs=8 --color .
-
 
 # run code formatter
 python3 -m yapf --in-place --recursive --parallel .
 
-
 # run flake8
 flake8
-
 
 # run mypy
 mypy -p teselagen
 
-
 # run radon
 radon cc teselagen
-
 
 # run tests
 python3 setup.py test
 
-
 # run coverage
 pytest --cov="teselagen" --cov-report term:skip-covered
-
 
 # run pyclean
 cd /home
 python3 -m pyclean --verbose --dry-run .
 cd /home
 
-
 cd /home
 python3 -m pyclean --verbose .
 cd /home
-
 
 # run cleanpy
 cd /home
 python3 -m cleanpy --include-builds --include-envs --include-testing --include-metadata --verbose --dry-run .
 cd /home
 
-
 cd /home
 python3 -m cleanpy --include-builds --include-envs --include-testing --include-metadata --verbose .
 cd /home
-
 
 -->
