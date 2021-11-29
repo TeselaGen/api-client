@@ -1,14 +1,15 @@
+---
 # Install pre-commit
-#     python3 -m pip install --upgrade --no-cache-dir --no-warn-script-location --trusted-host pypi.python.org pre-commit
+#   python3 -m pip install --upgrade --no-cache-dir --no-warn-script-location --trusted-host pypi.python.org pre-commit
 
 # Install the pre-commit hooks below with
-#     pre-commit install --install-hooks
+#   pre-commit install --install-hooks
 
 # Auto-update the version of the hooks with
-#     pre-commit autoupdate
+#   pre-commit autoupdate
 
 # Run the hooks on all files with
-#     pre-commit run --all-files
+#   pre-commit run --all-files
 
 # References:
 #   https://pre-commit.com/#usage-in-continuous-integration
@@ -347,7 +348,8 @@ repos:
             #       tty (Plain text, human readable output. This is the default.)
             #       gcc ( GCC compatible output. Useful for editors that support compiling and showing syntax errors.)
             #       checkstyle
-            #       diff (Auto-fixes in unified diff format. Can be piped to 'git apply' or 'patch -p1' to automatically apply fixes.)
+            #       diff (Auto-fixes in unified diff format.
+            #             Can be piped to 'git apply' or 'patch -p1' to automatically apply fixes.)
             #       json1
             #       json
             #       quiet
@@ -442,12 +444,7 @@ repos:
           )
         stages: [manual]
 
-  # - repo: https://github.com/jumanjihouse/pre-commit-hooks
-  #   rev: 2.1.4
-  #   hooks:
-  #     - id: markdownlint
-  #       args: ["-r", "~MD002,~MD013,~MD024,~MD029,~MD033,~MD034,~MD036", "-t", "allow_different_nesting"]
-
+  # Alterantive: https://github.com/igorshubovych/markdownlint-cli
   - repo: https://github.com/markdownlint/markdownlint
     rev: v0.11.0
     hooks:
@@ -458,6 +455,22 @@ repos:
             # --verbose,
             --warnings,
           ]
+        # stages: [manual]
+
+  - repo: https://github.com/asottile/yesqa
+    rev: v1.3.0
+    hooks:
+      - id: yesqa
+        alias: remove-unncessary-noqa-comments
+        name: "[fix]: remove unnecessary noqa comments [yesqa]"
+        stages: [manual]
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.26.3
+    hooks:
+      - id: yamllint
+        alias: check-yaml-style
+        name: "[check]: check yaml style issues [yamllint]"
         # stages: [manual]
 
   - repo: meta

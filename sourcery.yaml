@@ -1,6 +1,8 @@
+---
 # https://docs.sourcery.ai/Configuration/
 ignore:
-  - "*/dist-packages/*" # Note that any strings beginning with * must be quoted
+  # Note that any strings beginning with * must be quoted
+  - "*/dist-packages/*"
 
 refactor:
   skip: []

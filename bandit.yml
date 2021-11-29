@@ -1,7 +1,8 @@
+---
 ### Bandit config file generated from:
 # '/usr/local/bin/bandit-config-generator --out bandit.2.yml'
 
-# Manually updated 'assert_used' to avoid false positives in the following files:
+# Manually updated 'assert_used' to avoid false positives in tests
 # assert_used:
 #   skips: ["*/test_*.py", "*/conftest.py"]
 
