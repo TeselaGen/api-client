@@ -34,7 +34,8 @@ class TestUtils:
             validate=validation_method,
             fixed_wait_time=fixed_wait_time,
             timeout=5,  # timeout >= (fixed_wait_time + request_time) * count_limit = (0.2 + 0.2) * 5 = 2.0
-            count_limit=counter_limit)
+            count_limit=counter_limit,
+        )
         assert result == "OK"
 
         # Timeout fail (timeout argument is reduced)

@@ -34,6 +34,7 @@
         "pyproject",
         "pytest",
         "pytested",
+        "seqs",
         "sourcery",
         "teselagen",
         "tgclient",

@@ -88,7 +88,7 @@ def build_design_from_candidates(
             "type": "grand-design",
             "layoutType": "list",
             "numRows": len(data),
-        }
+        },
     }
 
     # Create elements

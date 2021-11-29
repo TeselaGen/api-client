@@ -342,7 +342,8 @@ class DESIGNClient():
         try:
             result: Dict[str, Any] = get(
                 url=self.rbs_calculator_job_url.format(job_id) if job_id is not None else self.rbs_calculator_jobs_url,
-                headers=self.headers)
+                headers=self.headers,
+            )
         except Exception as e:
             return {
                 "error": e,
@@ -363,8 +364,10 @@ class DESIGNClient():
             List[Dict[str, str]]: A list of all the available organisms/hosts with their names and NCBI Accession IDs.
         """
         try:
-            result: Union[pd.DataFrame, Dict[str, Any]] = get(url=self.rbs_calculator_organisms_url,
-                                                              headers=self.headers)
+            result: Union[pd.DataFrame, Dict[str, Any]] = get(
+                url=self.rbs_calculator_organisms_url,
+                headers=self.headers,
+            )
         except Exception as e:
             return {
                 "error": e,
@@ -483,7 +486,7 @@ class DESIGNClient():
             **params,
             **{
                 "algorithm": algorithm,
-            }
+            },
         })
 
         try:
@@ -566,12 +569,14 @@ class DESIGNClient():
             formatted_response[created_aa_seqs_key] = list(
                 map(lambda x: {
                     "id": x['id'],
-                    "name": x["name"]
+                    "name": x["name"],
                 }, parsed_api_result[created_aa_seqs_key]))
 
         if (updated_aa_seqs_key in parsed_api_result.keys() and len(parsed_api_result[updated_aa_seqs_key]) > 0):
             formatted_response[updated_aa_seqs_key] = list(
-                map(lambda x: {"id": x['id']}, parsed_api_result[updated_aa_seqs_key]))
+                map(lambda x: {
+                    "id": x['id'],
+                }, parsed_api_result[updated_aa_seqs_key]))
 
         return formatted_response
 
@@ -645,7 +650,7 @@ class DESIGNClient():
                     list(
                         map(lambda x: {
                             'id': x['tag']['id'],
-                            'name': x['tag']['name']
+                            'name': x['tag']['name'],
                         }, parsed_response['taggedItems'])),
                 'createdAt':
                     parsed_response['createdAt'],

@@ -31,22 +31,32 @@ def show_crispr_grna_results(
     # instruction.
     if indexes is not None:
         targeting_seq_feat = [
-            GraphicFeature(start=indexes[0], end=indexes[1], color="#cffccc", label="Sequence", strand=+1)
+            GraphicFeature(
+                start=indexes[0],
+                end=indexes[1],
+                color="#cffccc",
+                label="Sequence",
+                strand=+1,
+            ),
         ]
     else:
-        # TODO: We could probably use a generator instead of a list to avoid memory consumption.
-        # indexes = [min(x['start'] for x in guides), max(x['end'] for x in guides)]
-        indexes = [min([x['start'] for x in guides]), max([x['end'] for x in guides])]
+        # TODO(diegovalenzuelaiturra): Check behavior is the same when using generators instead of lists.
+        # indexes = [min([x['start'] for x in guides]), max([x['end'] for x in guides])]
+        indexes = [min(x['start'] for x in guides), max(x['end'] for x in guides)]
 
     # Plot records
-    record = GraphicRecord(sequence=sequence,
-                           features=targeting_seq_feat + [
-                               GraphicFeature(start=x['start'],
-                                              end=x['end'] + 1,
-                                              color="#ffcccc",
-                                              label=f"{scoreField}: {x[scoreField]}",
-                                              strand=+1 if x['forward'] else -1) for x in guides
-                           ])
+    record = GraphicRecord(
+        sequence=sequence,
+        features=targeting_seq_feat + [
+            GraphicFeature(
+                start=x['start'],
+                end=x['end'] + 1,
+                color="#ffcccc",
+                label=f"{scoreField}: {x[scoreField]}",
+                strand=+1 if x['forward'] else -1,
+            ) for x in guides
+        ],
+    )
 
     # Limit plot range
     record = record.crop((indexes[0] - 10, indexes[1] + 11))  # crop

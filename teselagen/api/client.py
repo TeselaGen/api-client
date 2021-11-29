@@ -78,14 +78,20 @@ class TeselaGenClient():
         self.register_url: str = urljoin(self.host_url, f"{_module_name}/register")
         self.login_url: str = urljoin(self.host_url, f"{_module_name}/login")
         self.info_url: str = urljoin(self.host_url, f"{_module_name}/cli-api/info")
-        self.status_url: str = urljoin(self.host_url,
-                                       f"{_module_name}/cli-api/public/status")  # f"{api_url_base}/public/status"
-        self.auth_url: str = urljoin(self.host_url,
-                                     f"{_module_name}/cli-api/public/auth")  # f"{api_url_base}/public/auth"
+        self.status_url: str = urljoin(
+            self.host_url,
+            f"{_module_name}/cli-api/public/status",
+        )  # f"{api_url_base}/public/status"
+        self.auth_url: str = urljoin(
+            self.host_url,
+            f"{_module_name}/cli-api/public/auth",
+        )  # f"{api_url_base}/public/auth"
 
         # Laboratories
-        self.labs_url: str = urljoin(self.host_url,
-                                     "test/cli-api/laboratories")  # f"{self.host_url}/test/cli-api/laboratories"
+        self.labs_url: str = urljoin(
+            self.host_url,
+            "test/cli-api/laboratories",
+        )  # f"{self.host_url}/test/cli-api/laboratories"
 
         # NOTE : The authorization token will be updated with the "login" method.
         self.auth_token: Optional[str] = None
@@ -142,7 +148,7 @@ class TeselaGenClient():
             "firstName": "test",
             "lastName": "user",
             "password": password,
-            "passwordConfirm": password
+            "passwordConfirm": password,
         }
         response: Dict[str, Any] = post(url=self.register_url, json=body)
         response["content"] = json.loads(response["content"])
@@ -393,7 +399,7 @@ class TeselaGenClient():
         labs = self.get_laboratories()
         lab = list(filter(lambda x: x[search_field] == identifier, labs))
         if len(lab) == 0:
-            raise IOError(f"Can't find {search_field} {identifier}. Available labs are {labs}")
+            raise OSError(f"Can't find {search_field} {identifier}. Available labs are {labs}")
         # Finally store lab id in headers
         self.headers.update({
             "tg-active-lab-id": str(lab[0]['id']),

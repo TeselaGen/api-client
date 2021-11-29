@@ -43,11 +43,13 @@ def plot_plasmid_features(
 
     # Create feat objects
     plot_feats = [
-        GraphicFeature(start=feat['start'],
-                       end=feat['end'],
-                       strand=1 * feat['forward'],
-                       label=feat['name'],
-                       color=colors[i]) for i, feat in enumerate(features)
+        GraphicFeature(
+            start=feat['start'],
+            end=feat['end'],
+            strand=1 * feat['forward'],
+            label=feat['name'],
+            color=colors[i],
+        ) for i, feat in enumerate(features)
     ]
 
     # Make graphic record and plot

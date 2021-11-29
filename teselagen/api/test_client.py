@@ -172,7 +172,7 @@ class TESTClient():
             params["ids[]"] = [assay_subject_ids]
         else:
             raise TypeError(
-                f"Argument 'assay_subject_ids' must of type int or List[int]. Not type: {type(assay_subject_ids)}")
+                f"Argument 'assay_subject_ids' must of type int or List[int]. Not type: {type(assay_subject_ids)}",)
 
         response = delete(
             url=self.delete_assay_subject_url.format(""),
@@ -338,7 +338,7 @@ class TESTClient():
             ))
 
         if len(experiment) == 0:
-            raise IOError(f"Error while looking for new id {exp_response['id']}")
+            raise OSError(f"Error while looking for new id {exp_response['id']}")
 
         return experiment[0]
 
@@ -429,7 +429,7 @@ class TESTClient():
         ))
 
         if len(assay) == 0:
-            raise IOError(f"Can't find new id {assay_res['id']}")
+            raise OSError(f"Can't find new id {assay_res['id']}")
 
         return assay[0]
 
@@ -704,7 +704,7 @@ class TESTClient():
                     file_ids = list(map(
                         lambda x: x["id"],
                         assay_imported_files,
-                    ))
+                    ),)
                 else:
                     raise Exception(f"Assay with ID={assay_id} has none successfully imported data files.")
 
@@ -825,17 +825,17 @@ class TESTClient():
 
                 final_results = [{
                     **{
-                        "Assay": assay_name
+                        "Assay": assay_name,
                     },
                     **assay_subject,
-                    **assay_result
+                    **assay_result,
                 } for (assay_subject, assay_result) in zip(tabular_assay_subjects, tabular_assay_results)]
             else:
                 final_results = [{
                     **{
                         "Assay": assay_name,
                     },
-                    **assay_result
+                    **assay_result,
                 } for assay_result in tabular_assay_results]
 
             assayResults: IAssayResults = {
@@ -982,7 +982,7 @@ class TESTClient():
         res_files_info = json.loads(response["content"])
 
         if not isinstance(res_files_info, dict):
-            raise IOError(f"There was a problem with upload (maybe check assay_id): response: {response}")
+            raise OSError(f"There was a problem with upload (maybe check assay_id): response: {response}")
 
         # Build our object to be returned (new file_info). Get the file info with the right id.
         files_info = list(filter(
@@ -991,7 +991,7 @@ class TESTClient():
         ))
 
         if len(files_info) == 0:
-            raise IOError(f"Name {multipart_form_data['file'][0]} not found in uploaded files")
+            raise OSError(f"Name {multipart_form_data['file'][0]} not found in uploaded files")
 
         return files_info[0]
 

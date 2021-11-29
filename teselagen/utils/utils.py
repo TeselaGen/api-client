@@ -196,11 +196,11 @@ def get_credentials(
     try:
         username = input("Enter username: ") if username is None else username
         password = getpass.getpass(prompt=f"Password for {username}: ") if password is None else password
-    except IOError as e:
+    except OSError as e:
         msg = ("""There was an error with user input. If you are making parallel
                tests, make sure you are avoiding 'input' by adding CREDENTIALS
                file.""")
-        raise IOError(msg)
+        raise OSError(msg)
 
     # End
     return username, password
@@ -427,11 +427,13 @@ def download_file(
     return local_filename
 
 
-def wait_for_status(method: Callable,
-                    validate: Optional[Callable] = None,
-                    fixed_wait_time: int = 5,
-                    timeout: int = 300,
-                    **method_kwargs) -> Any:
+def wait_for_status(
+    method: Callable,
+    validate: Optional[Callable] = None,
+    fixed_wait_time: int = 5,
+    timeout: int = 300,
+    **method_kwargs,
+) -> Any:
     """Tries to run *method* (and run also a validation of its output) until no AssertionError is raised.
 
     Arguments are described below. More keyword arguments can be given for `method`.
@@ -453,9 +455,11 @@ def wait_for_status(method: Callable,
         [Any]: The method's output
     """
 
-    @retry(wait=wait_fixed(fixed_wait_time),
-           stop=stop_after_delay(timeout),
-           retry=retry_if_exception_type(AssertionError))
+    @retry(
+        wait=wait_fixed(fixed_wait_time),
+        stop=stop_after_delay(timeout),
+        retry=retry_if_exception_type(AssertionError),
+    )
     def _wait_for_status(method: Callable, validate: Optional[Callable] = None, **method_kwargs) -> Any:
         """Runs the method and apply validation."""
         try:
