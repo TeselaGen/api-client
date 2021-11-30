@@ -526,6 +526,9 @@ repos:
         stages: [manual]
 
   # Alterantive: https://github.com/igorshubovych/markdownlint-cli
+  # NOTE: markdownlint requires ruby>=2.6 (Alternatively, ruby==2.5 paired with chef-utils==16.6.14 also may work)
+  #       In Ubuntu 18.04
+  #         apt-get update && apt-get install -y --no-install-recommends rubygems && gem install chef-utils -v 16.6.14
   - repo: https://github.com/markdownlint/markdownlint
     rev: v0.11.0
     hooks:
