@@ -118,6 +118,18 @@ RUN set -ex \
 # <<<<<< Install Git <<<<<<
 
 
+# >>>>>> Install pre-commit dependencies >>>>>>
+# markdownlint requires ruby>=2.6 (Alternatively, ruby==2.5 paired with chef-utils==16.6.14 also may work)
+RUN set -ex \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+    rubygems \
+    && gem install chef-utils -v 16.6.14 \
+    # ensure to remove package's state information (it can be recreated with 'apt-get update')
+    && rm -rf /var/lib/apt/lists/*
+# <<<<<< Install pre-commit dependencies <<<<<<
+
+
 # >>>>>> Install Poetry >>>>>>
 # TODO: Starting from poetry 1.2, 'get-poetry.py' installer is deprecated. We should migrate to 'install-poetry.py'.
 #       Also, check if the new script automatically configure the PATH (it seems no uses a 'POETRY_HOME' env variable).
