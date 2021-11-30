@@ -10,7 +10,7 @@
 #       bash run.sh
 
 # pipefail is necessary to propagate exit codes (but it may not be supported by your shell)
-bash | set -o pipefail >/dev/null 2>&1
+set -o pipefail >/dev/null 2>&1
 
 # Any subsequent(*) commands which fail will cause the shell script to exit immediately
 set -ex
@@ -36,10 +36,10 @@ CONTAINER_JUPYTER_NOTEBOOK_PORT=${CONTAINER_JUPYTER_NOTEBOOK_PORT:-'8888'}
 #
 # For more info, run : docker run --help
 #   --init: Makes process PID=1 be docker-init backed by tini: https://docs.docker.com/engine/reference/run/#specify-an-init-process
-docker run --publish ${HOST_JUPYTER_NOTEBOOK_PORT}:${CONTAINER_JUPYTER_NOTEBOOK_PORT} \
-    --name ${DOCKER_CONTAINER_NAME} \
+docker run --publish "${HOST_JUPYTER_NOTEBOOK_PORT}":"${CONTAINER_JUPYTER_NOTEBOOK_PORT}" \
+    --name "${DOCKER_CONTAINER_NAME}" \
     --detach \
     --init \
-    --ipc=${DOCKER_CONTAINER_IPC_MODE} \
-    ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+    --ipc="${DOCKER_CONTAINER_IPC_MODE}" \
+    "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_TAG}"
 # <<<<<< Run the Docker container <<<<<<

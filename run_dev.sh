@@ -14,7 +14,7 @@
 #       bash run_dev.sh ~/Documents/GitHub/ai/Notebooks
 
 # pipefail is necessary to propagate exit codes (but it may not be supported by your shell)
-bash | set -o pipefail >/dev/null 2>&1
+set -o pipefail >/dev/null 2>&1
 
 # Any subsequent(*) commands which fail will cause the shell script to exit immediately
 set -ex
@@ -32,7 +32,7 @@ then
     ADDITIONAL_VOLUME=""
 else
     ADDITIONAL_VOLUME="--volume $1:/home/development/Notebooks"
-    echo "Additional volume: " ${ADDITIONAL_VOLUME}
+    echo "Additional volume: " "${ADDITIONAL_VOLUME}"
 fi
 # >>>>>> Command line arguments >>>>>>
 
@@ -65,14 +65,14 @@ CONTAINER_PARENT_DIRPATH_OF_SETUP_PY=${CONTAINER_PARENT_DIRPATH_OF_SETUP_PY:-'/h
 #
 # For more info, run : docker run --help
 #   --init: Makes process PID=1 be docker-init backed by tini: https://docs.docker.com/engine/reference/run/#specify-an-init-process
-docker run --publish ${HOST_JUPYTER_NOTEBOOK_PORT}:${CONTAINER_JUPYTER_NOTEBOOK_PORT} \
-    --volume ${HOST_DIRPATH_TO_SHARED_FOLDER}:${CONTAINER_DIRPATH_TO_SHARED_FOLDER} \
+docker run --publish "${HOST_JUPYTER_NOTEBOOK_PORT}":"${CONTAINER_JUPYTER_NOTEBOOK_PORT}" \
+    --volume "${HOST_DIRPATH_TO_SHARED_FOLDER}":"${CONTAINER_DIRPATH_TO_SHARED_FOLDER}" \
     ${ADDITIONAL_VOLUME} \
-    --name ${DOCKER_CONTAINER_NAME} \
+    --name "${DOCKER_CONTAINER_NAME}" \
     --detach \
     --init \
-    --ipc=${DOCKER_CONTAINER_IPC_MODE} \
-    ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+    --ipc="${DOCKER_CONTAINER_IPC_MODE}" \
+    "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_TAG}"
 # <<<<<< Run the Docker container <<<<<<
 
 # >>>>>> Opt out from `vscode` experiments >>>>>>

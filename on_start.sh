@@ -27,11 +27,11 @@ JUPYTER_NOTEBOOK_DIR=${JUPYTER_NOTEBOOK_DIR:-'/home/'}
 
 # >>>>>> Start Jupyter Notebook >>>>>>
 # Start Jupyter Notebook and set an empty token so no login is required
-jupyter notebook --ip ${JUPYTER_NOTEBOOK_IP} \
-    --port ${JUPYTER_NOTEBOOK_PORT} \
+jupyter notebook --ip "${JUPYTER_NOTEBOOK_IP}" \
+    --port "${JUPYTER_NOTEBOOK_PORT}" \
     --NotebookApp.allow_password_change=False \
     --NotebookApp.token='' \
-    --notebook-dir=${JUPYTER_NOTEBOOK_DIR} \
+    --notebook-dir="${JUPYTER_NOTEBOOK_DIR}" \
     --allow-root
 #  --no-browser
 # <<<<<< Start Jupyter Notebook <<<<<<
