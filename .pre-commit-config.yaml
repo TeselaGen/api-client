@@ -380,7 +380,7 @@ repos:
             #
           - flake8-bandit>="2.1.2"
           - flake8-broken-line>="0.4.0"
-          - flake8-bugbear>="21.11.28"
+          - flake8-bugbear>="21.11.29"
           - flake8-commas>="2.1.0"
           - flake8-comprehensions>="3.7.0"
           - flake8-copyright>="0.2.2"
@@ -589,7 +589,7 @@ repos:
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.2.2
     hooks:
-      # # NOTE: nbqa is broken in rev 1.2.2
+      # # NOTE: nbqa may be broken in rev 1.2.2 or it may be used differently
       # - id: nbqa
       #   name: "[check]: check code style issues (Notebooks) [nbqa]"
       #   stages: [manual]
@@ -620,7 +620,7 @@ repos:
             #
           - flake8-bandit>="2.1.2"
           - flake8-broken-line>="0.4.0"
-          - flake8-bugbear>="21.11.28"
+          - flake8-bugbear>="21.11.29"
           - flake8-commas>="2.1.0"
           - flake8-comprehensions>="3.7.0"
           - flake8-copyright>="0.2.2"
