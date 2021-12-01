@@ -69,6 +69,7 @@ docker run --publish "${HOST_JUPYTER_NOTEBOOK_PORT}":"${CONTAINER_JUPYTER_NOTEBO
     --volume "${HOST_DIRPATH_TO_SHARED_FOLDER}":"${CONTAINER_DIRPATH_TO_SHARED_FOLDER}" \
     ${ADDITIONAL_VOLUME} \
     --name "${DOCKER_CONTAINER_NAME}" \
+    --rm \
     --detach \
     --init \
     --ipc="${DOCKER_CONTAINER_IPC_MODE}" \
@@ -83,3 +84,7 @@ docker exec --tty --interactive "${DOCKER_CONTAINER_NAME}" bash -c 'mkdir -p /ro
 # >>>>>> Install `teselagen` library in "editable" mode in the container >>>>>>
 docker exec "${DOCKER_CONTAINER_NAME}" bash -c "cd ${CONTAINER_PARENT_DIRPATH_OF_SETUP_PY}; python3 setup.py develop"
 # <<<<<< Install `teselagen` library in "editable" mode in the container <<<<<<
+
+# >>>>>> Run 'teselagen' Library Tests >>>>>>
+# docker exec --tty --interactive --workdir="${CONTAINER_PARENT_DIRPATH_OF_SETUP_PY}" "${DOCKER_CONTAINER_NAME}" bash -c pytest --maxfail=100 --cov="teselagen" --cov-report term:skip-covered
+# <<<<<< Run 'teselagen' Library Tests <<<<<<

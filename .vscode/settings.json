@@ -241,8 +241,7 @@
         "editor.quickSuggestions": {
             "strings": true
         },
-        // "editor.defaultFormatter": "ms-azuretools.vscode-docker",
-        // "editor.defaultFormatter": "foxundermoon.shell-format",
+        "editor.defaultFormatter": "ms-azuretools.vscode-docker",
     },
     "[json]": {
         "editor.quickSuggestions": {

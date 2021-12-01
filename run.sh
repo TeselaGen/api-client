@@ -20,10 +20,14 @@ docker version >/dev/null
 printf "Docker version: %s\n" "$(docker version --format '{{.Server.Version}}')"
 
 # >>>>>> Definitions >>>>>>
+# image
 DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME:-'teselagen/python/tgclient'}
 DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG:-'v0.0.1'}
+# container
 DOCKER_CONTAINER_NAME=${DOCKER_CONTAINER_NAME:-'tgclient'}
 DOCKER_CONTAINER_IPC_MODE=${DOCKER_CONTAINER_IPC_MODE:-'host'}
+# ports
+#   jupyter notebook
 HOST_JUPYTER_NOTEBOOK_PORT=${HOST_JUPYTER_NOTEBOOK_PORT:-'8888'}
 CONTAINER_JUPYTER_NOTEBOOK_PORT=${CONTAINER_JUPYTER_NOTEBOOK_PORT:-'8888'}
 # <<<<<< Definitions <<<<<<
