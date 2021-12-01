@@ -81,6 +81,8 @@ It is the equivalent to make an install after deleting the `lock` file.
         }
     ````
 
+    - **NOTE**: It should be a valid `JSON`  file. `JSON with Comments` (`JSONC` ) format is not supported.
+
     ```diff
     - DO NOT COMMIT THIS FILE : .credentials
     ```
@@ -88,7 +90,7 @@ It is the equivalent to make an install after deleting the `lock` file.
 1. Modify configuration
 
     You may modify some test configuration parameters by creating a `.test_configuration` file.
-    This is a `json` formatted file, where you can edit the server name used for tests.
+    This is a `JSON` formatted file, where you can edit the server name used for tests.
     This file must be stored next to `.credentials` file. Here is an example
 
     ```JSON
@@ -97,10 +99,12 @@ It is the equivalent to make an install after deleting the `lock` file.
     }
     ```
 
-1. Run the tests (on `/teselagen` folder)
+    - **NOTE**: It should be a valid `JSON`  file. `JSON with Comments` (`JSONC` ) format is not supported.
+
+1. Run the tests
 
     ```bash
-    python3 setup.py test
+    cd /home && python3 setup.py test
     ```
 
     You may use the docker environment for testing. For that, first build the environment with `bash build.sh`.
