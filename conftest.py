@@ -53,10 +53,11 @@ def test_configuration() -> Dict[str, str]:
     if configuration_filepath.is_file():
         # Load file
         file_conf: dict = load_from_json(filepath=configuration_filepath.absolute())
+        assert isinstance(file_conf, dict)
 
         # Check keys are ok
-        assert all(key in configuration.keys()
-                   for key in file_conf.keys()), f"One or more of these keys are wrong: {file_conf.keys()}"
+        assert all(
+            key in configuration for key in file_conf), f"One or more of these keys are wrong: {file_conf.keys()}"
 
         # Update values
         configuration.update(file_conf)
