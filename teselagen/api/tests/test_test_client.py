@@ -358,13 +358,21 @@ class TestTESTClient():
     #               for lab in logged_client.get_laboratories()
     #               if logged_client.headers["tg-active-lab-id"] == lab["id"]
     #           ][0]
-    # @pytest.mark.skip(reason="The files endpoints are under maintenance.")
+    @pytest.mark.skip(reason=("These endpoints are under maintenance on the platform. "
+                              "This should be solved in the following updates. "
+                              "Please, contact the TeselaGen team for more information. "))
     def test_download_file(
         self,
         logged_client: TeselaGenClient,
         host_url: str,
         select_laboratory,
     ):
+        # if "platform.teselagen.com" in host_url:
+        #     # NOTE: No other code is executed after the pytest.xfail() call, differently from the pytest.mark.xfail()
+        #     pytest.xfail(reason=("These endpoints are under maintenance on the platform. "
+        #                          "This should be solved in the following updates. "
+        #                          "Please, contact the TeselaGen team for more information. "))
+
         client = logged_client.test
         response = client.get_files_info()
         file_id: str = response[0]['id']

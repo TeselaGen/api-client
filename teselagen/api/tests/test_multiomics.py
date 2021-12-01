@@ -2,7 +2,8 @@
 
 import os
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, cast, Dict
+import typing
 
 import pandas as pd
 import pytest
@@ -12,8 +13,8 @@ from teselagen.utils.utils import wait_for_status
 
 
 def delete_file(
-    file_name,
-    client_with_lab,
+    file_name: str,
+    client_with_lab: TeselaGenClient,
 ):
     # Get file id
     files = client_with_lab.test.get_files_info()
@@ -24,16 +25,17 @@ def delete_file(
 @pytest.fixture(scope="module")
 def temp_dir(tmp_path_factory) -> Path:
     """This works similar to pytest's testdir but with "module" scope."""
-    return tmp_path_factory.mktemp("data")
+    return cast(Path, tmp_path_factory.mktemp("data"))
 
 
 @pytest.fixture(scope="module")
 def client_with_lab(
-    api_token_name,
-    host_url,
-    expiration_time,
-) -> TeselaGenClient:
+    api_token_name: str,
+    host_url: str,
+    expiration_time: str,
+) -> typing.Generator[TeselaGenClient, None, None]:
     """Defines a login and lab selection workflow with a "module" scope."""
+    # set up
     client = TeselaGenClient(
         api_token_name=api_token_name,
         host_url=host_url,
@@ -41,29 +43,38 @@ def client_with_lab(
     )
     client.login(expiration_time=expiration_time)
     client.select_laboratory(lab_name="The Test Lab")
-    return client
+
+    # yield
+    yield client
+
+    # tear down
+    client.logout()
 
 
 @pytest.fixture(scope="module")
-def wild_type_experiment(client_with_lab: TeselaGenClient) -> Dict[str, Any]:
+def wild_type_experiment(client_with_lab: TeselaGenClient) -> typing.Generator[Dict[str, Any], None, None]:
     """Creates an experiment for "Wild Type" data and destroys it when finished."""
     # set-up
     experiment_name = "Test multiomics data for WT Strain"
     experiment = client_with_lab.test.create_experiment(experiment_name=experiment_name)
+
     # yield
     yield experiment
+
     # tear-down
     client_with_lab.test.delete_experiment(experiment['id'])
 
 
 @pytest.fixture(scope="module")
-def bio_engineered_experiment(client_with_lab: TeselaGenClient) -> Dict[str, Any]:
+def bio_engineered_experiment(client_with_lab: TeselaGenClient) -> typing.Generator[Dict[str, Any], None, None]:
     """Creates an experiment for "Bio Engineered" data and destroys it when finished."""
     # set-up
     experiment_name = "Test multiomics data for BE Strain"
     experiment = client_with_lab.test.create_experiment(experiment_name=experiment_name)
+
     # yield
     yield experiment
+
     # tear-down
     client_with_lab.test.delete_experiment(experiment['id'])
 
@@ -89,14 +100,14 @@ def test_data() -> Dict[str, pd.DataFrame]:
 @pytest.fixture(scope="module")
 def metadata(
     client_with_lab: TeselaGenClient,
-    test_data: Dict[str, Any],
+    test_data: Dict[str, pd.DataFrame],
 ) -> Dict[str, Any]:
     """Builds metadata.
 
     Args:
         client_with_lab (TeselaGenClient): Logged client with a laboratory selected
 
-        test_data (Dict[str, Any]): Test data from files
+        test_data (Dict[str, pd.DataFrame]): Test data from files
 
     Returns:
         Dict[str, Any]: Metadata maps from name to ID
@@ -225,13 +236,13 @@ def metadata(
 
 @pytest.fixture(scope="module")
 def experiment_description_mapper(
-    test_data,
+    test_data: Dict[str, pd.DataFrame],
     metadata,
 ):
     """Builds a mapper for experiment descriptions."""
     # This will be our mapper JSON that we are going to construct in a way that we map the file columns accordingly.
     # The mapper JSON is an array of objects. These objects are "structured" header JSON objects.
-    # These structured headers include the column's 'name', plus 2 other properties: "class" and "subClass" information.
+    # These structured headers include the column's 'name', and 2 other properties: "class" and "subClass" information.
     # The 'class' property indicates which is the column's metadata class/type, while the "subClass" or "subClassId"
     # indicates the metadata record ID of such "class".
     _experiment_description_mapper = []
@@ -254,7 +265,7 @@ def experiment_description_mapper(
 
 @pytest.fixture(scope="module")
 def experiment_description_upload(
-    test_data,
+    test_data: Dict[str, pd.DataFrame],
     temp_dir,
     client_with_lab: TeselaGenClient,
     experiment_description_mapper,
@@ -292,7 +303,7 @@ def experiment_description_upload(
 @pytest.fixture(scope="module")
 def optical_density_upload(
     metadata,
-    test_data,
+    test_data: Dict[str, pd.DataFrame],
     temp_dir,
     client_with_lab: TeselaGenClient,
     wild_type_experiment,
@@ -423,7 +434,7 @@ def multiomics_mapper(metadata):
 @pytest.fixture(scope="module")
 def upload_external_metabolites(
     temp_dir,
-    test_data,
+    test_data: Dict[str, pd.DataFrame],
     client_with_lab: TeselaGenClient,
     wild_type_experiment,
     multiomics_mapper,
@@ -466,7 +477,7 @@ def upload_external_metabolites(
 @pytest.fixture(scope="module")
 def upload_transcriptomics(
     temp_dir,
-    test_data,
+    test_data: Dict[str, pd.DataFrame],
     client_with_lab: TeselaGenClient,
     wild_type_experiment,
     multiomics_mapper,
@@ -565,7 +576,7 @@ class TestTESTClientMultiomicsData():
         self,
         upload_transcriptomics,
         client_with_lab: TeselaGenClient,
-        test_data,
+        test_data: Dict[str, pd.DataFrame],
     ):
         """Check mapped data is downloaded ok."""
         filtered_assays = [
@@ -590,17 +601,28 @@ class TestTESTClientMultiomicsData():
         assert len(results_with_subject_data[0]["data"]) == 9, "Wrong number of output rows"
         assert len(results_with_subject_data[0]["data"].columns) == 23, "Wrong number of output columns"
 
+    @pytest.mark.skip(reason=("These endpoints are under maintenance on the platform. "
+                              "This should be solved in the following updates. "
+                              "Please, contact the TeselaGen team for more information. "))
     def test_download_file(
         self,
         optical_density_upload,
         client_with_lab: TeselaGenClient,
-        test_data,
+        test_data: Dict[str, pd.DataFrame],
+        host_url: str,
     ):
         """Check files download."""
+
+        # if "platform.teselagen.com" in host_url:
+        #     # NOTE: No other code is executed after the pytest.xfail() call, differently from the pytest.mark.xfail()
+        #     pytest.xfail(reason=("These endpoints are under maintenance on the platform. "
+        #                          "This should be solved in the following updates. "
+        #                          "Please, contact the TeselaGen team for more information. "))
+
         file_name = "TEST_OD_WT.csv"
         files = client_with_lab.test.get_files_info()
         filtered_files = [file_i for file_i in files if file_i["name"] == file_name]
-        # assert len(filtered_files)==1, "Expecting just one file for this assertion"
+        # assert len(filtered_files) == 1, "Expecting just one file for this assertion"
 
         downloaded = pd.read_csv(client_with_lab.test.download_file(file_id=filtered_files[0]["id"]))
         assert downloaded.shape == (10, 5), "Wrong shape"
