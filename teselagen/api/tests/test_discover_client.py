@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 from itertools import product
-from typing import List, Optional
+from typing import cast, List, Optional
+import typing
 import uuid
 
 import fastaparser
+from fastaparser.fastasequence import FastaSequence
 import pytest
-import requests_mock  # noqa: F401 # pylint: disable=unused-import
+import requests_mock  # noqa: F401 # pylint: disable=unused-import # reason: it is being used as tests argument
 
 from teselagen.api import DISCOVERClient
 from teselagen.api import TeselaGenClient
@@ -25,18 +27,25 @@ class TestDISCOVERClient():
     def discover_client(
         self,
         logged_client: TeselaGenClient,
-    ) -> DISCOVERClient:
+    ) -> typing.Generator[DISCOVERClient, None, None]:
+        # set up
         logged_client.select_laboratory(lab_name="The Test Lab")
-        return logged_client.discover
 
-    # TODO: Either `submitted_model_name`fixture ` should also remove the model afterwards, or we should remove them
+        # yield
+        yield logged_client.discover
+
+        # tear down
+        logged_client.logout()
+
+    # TODO: Either `submitted_model_name` fixture should also remove the model afterwards, or we should remove them
     #       all after running tests (by creating another fixture or something). Otherwise, some tests may fail if an
     #       older/deprecated/unsupported model is still there).
     @pytest.fixture
     def submitted_model_name(
         self,
         discover_client: DISCOVERClient,
-    ):
+    ) -> typing.Generator[str, None, None]:
+        # set up
         # Define synthetic problem parameters
         params = {
             "name": f"Model X times Y {uuid.uuid1()}",
@@ -68,8 +77,27 @@ class TestDISCOVERClient():
             ],
             "model_type": "predictive",
         }
-        result = discover_client.submit_model(**params)  # noqa: F841
-        return params['name']
+
+        result = discover_client.submit_model(**params)
+
+        # store model ID for tear down
+        model_id: int = result["id"]
+
+        # yield
+        yield str(params["name"])
+
+        # tear down
+        # NOTE: This is a partial tear down. We remove the model only if it was created by this test.
+        #       If the model was created by another test, we leave it there.
+        try:
+            # attempt to delete the model
+            _ = discover_client.delete_model(model_id=model_id)
+        except OSError as exc:
+            # if it fails, for now, we asume that the model was deleted by the test
+            pass
+        finally:
+            # otherwise we ignore it and we leave it there
+            pass
 
     def test_client_attributes(
         self,
@@ -104,12 +132,13 @@ class TestDISCOVERClient():
         assert api_token_name in client.headers.keys()
         assert isinstance(client.headers[api_token_name], str)
 
+    # TODO: `test_get_models_by_type` test fails for evolutive models
     @pytest.mark.parametrize("model_type", MODEL_TYPES_TO_BE_TESTED)
     def test_get_models_by_type(
             self,
             discover_client: DISCOVERClient,
             model_type: Optional[str],
-            submitted_model_name: str,  # pylint: disable=unused-argument # reason: requires a model to be created
+            submitted_model_name: str,  # pylint: disable=unused-argument # reason: fixture required to create a model
     ):
         response = discover_client.get_models_by_type(model_type=model_type)
         assert isinstance(response, list)
@@ -156,7 +185,7 @@ class TestDISCOVERClient():
         with open(seq_filepath) as fasta_file:
             parser = fastaparser.Reader(fasta_file)
             for seq in parser:
-                fasta_seq = seq.sequence_as_string()
+                fasta_seq = cast(FastaSequence, seq).sequence_as_string()
                 break
 
         # Call method to be tested
@@ -201,7 +230,7 @@ class TestDISCOVERClient():
     def test_get_model_submit_get_cancel_delete(
         self,
         discover_client: DISCOVERClient,
-        submitted_model_name,
+        submitted_model_name: str,
     ):
         for _ in range(3):
             res = discover_client.get_models_by_type(model_type="predictive")
@@ -215,6 +244,7 @@ class TestDISCOVERClient():
             'pending',
             'in-progress',
             'submitting',
+            'completing',
             'completed-successfully',
         }
 
