@@ -153,7 +153,7 @@ def load_from_json(filepath: Path) -> Any:
 
 
 def get_project_root() -> Path:
-    """Returns project's root folder <absolute/path/to>/lib."""
+    """Returns project's root folder `<absolute/path/to/project>`."""
     return Path(cast(list, teselagen.__path__)[0]).parent.resolve()
 
 
@@ -163,7 +163,7 @@ def get_credentials_path() -> Path:
 
 
 def get_test_configuration_path() -> Path:
-    """Returns path to where .test_configuration file should be."""
+    """Returns path to where test configuration file should be."""
     return get_project_root() / '.test_configuration'
 
 
@@ -196,11 +196,11 @@ def get_credentials(
     try:
         username = input("Enter username: ") if username is None else username
         password = getpass.getpass(prompt=f"Password for {username}: ") if password is None else password
-    except OSError as e:
+    except OSError as e:  # noqa: F841 # pylint: disable=unused-variable
         msg = ("""There was an error with user input. If you are making parallel
                tests, make sure you are avoiding 'input' by adding CREDENTIALS
                file.""")
-        raise OSError(msg)
+        raise OSError(msg) from None
 
     # End
     return username, password
