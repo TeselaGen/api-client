@@ -69,7 +69,6 @@ docker run --publish "${HOST_JUPYTER_NOTEBOOK_PORT}":"${CONTAINER_JUPYTER_NOTEBO
     --volume "${HOST_DIRPATH_TO_SHARED_FOLDER}":"${CONTAINER_DIRPATH_TO_SHARED_FOLDER}" \
     ${ADDITIONAL_VOLUME} \
     --name "${DOCKER_CONTAINER_NAME}" \
-    --rm \
     --detach \
     --init \
     --ipc="${DOCKER_CONTAINER_IPC_MODE}" \
