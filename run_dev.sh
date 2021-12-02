@@ -65,12 +65,14 @@ CONTAINER_PARENT_DIRPATH_OF_SETUP_PY=${CONTAINER_PARENT_DIRPATH_OF_SETUP_PY:-'/h
 #
 # For more info, run : docker run --help
 #   --init: Makes process PID=1 be docker-init backed by tini: https://docs.docker.com/engine/reference/run/#specify-an-init-process
+#   --security-opt seccomp=unconfined : https://docs.docker.com/engine/reference/run/#seccomp-profile
 docker run --publish "${HOST_JUPYTER_NOTEBOOK_PORT}":"${CONTAINER_JUPYTER_NOTEBOOK_PORT}" \
     --volume "${HOST_DIRPATH_TO_SHARED_FOLDER}":"${CONTAINER_DIRPATH_TO_SHARED_FOLDER}" \
     ${ADDITIONAL_VOLUME} \
     --name "${DOCKER_CONTAINER_NAME}" \
     --detach \
     --init \
+    --security-opt=seccomp=unconfined \
     --ipc="${DOCKER_CONTAINER_IPC_MODE}" \
     "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_TAG}"
 # <<<<<< Run the Docker container <<<<<<
@@ -85,5 +87,5 @@ docker exec "${DOCKER_CONTAINER_NAME}" bash -c "cd ${CONTAINER_PARENT_DIRPATH_OF
 # <<<<<< Install `teselagen` library in "editable" mode in the container <<<<<<
 
 # >>>>>> Run 'teselagen' Library Tests >>>>>>
-# docker exec --tty --interactive --workdir="${CONTAINER_PARENT_DIRPATH_OF_SETUP_PY}" "${DOCKER_CONTAINER_NAME}" bash -c pytest --maxfail=100 --cov="teselagen" --cov-report term:skip-covered
+# docker exec --tty --interactive --workdir="${CONTAINER_PARENT_DIRPATH_OF_SETUP_PY}" "${DOCKER_CONTAINER_NAME}" /bin/bash -c 'pytest --maxfail=100 --cov="teselagen" --cov-report term:skip-covered'
 # <<<<<< Run 'teselagen' Library Tests <<<<<<

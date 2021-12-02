@@ -19,10 +19,11 @@ RUN set -ex && \
     # fixes error "unable to initialize frontend: Dialog"
     # https://github.com/moby/moby/issues/27988#issuecomment-462809153
     echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
-    # set locale
-    apt-get update --fix-missing && \
+    apt-get update -y --no-allow-insecure-repositories && \
+    apt-get install -y --no-install-recommends \
+    locales \
+    && \
     # configure 'locale' properly
-    apt-get install -y locales && \
     locale-gen en_US.UTF-8 && \
     \
     # uninstall non-essential libraries, so as not to increase the size of this layer (if applicable)
@@ -31,15 +32,12 @@ RUN set -ex && \
     rm -rf /var/lib/apt/lists/*
 
 # Set the locale environment variables after locale installation and configuration has been performed. Setting them before may show some unharmful warnings.
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US:en
-ENV LC_ALL=en_US.UTF-8
-ENV LC_CTYPE=UTF-8
+ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8 LC_CTYPE=UTF-8
 # <<<<<< Configure Locale <<<<<<
 
 # >>>>>> Install Python >>>>>>
 RUN set -ex && \
-    apt-get update && \
+    apt-get update -y --no-allow-insecure-repositories && \
     # configure Python3.9 repo on the system
     apt-get install -y software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa && \
@@ -47,11 +45,12 @@ RUN set -ex && \
     rm -rf /var/lib/apt/lists/*
 
 RUN set -ex && \
-    apt-get update && \
+    apt-get update -y --no-allow-insecure-repositories && \
     apt-get install -y --no-install-recommends \
     # install Python3.9 (and pip3)
     python3.9 \
-    python3-pip && \
+    python3-pip \
+    && \
     # create symbolic links:
     #   python -> python3
     #   pip -> pip3
@@ -65,9 +64,8 @@ RUN set -ex && \
     rm -rf /var/lib/apt/lists/*
 
 RUN set -ex && \
-    apt-get update && \
-    apt-get install -y \
-    # --no-install-recommends \
+    apt-get update -y --no-allow-insecure-repositories && \
+    apt-get install -y --no-install-recommends \
     apt-utils \
     python3.9-distutils \
     # python3-setuptools \
@@ -104,8 +102,8 @@ RUN set -ex && \
 
 # >>>>>> Install Git >>>>>>
 RUN set -ex && \
-    apt-get update && \
-    apt-get install -y \
+    apt-get update -y --no-allow-insecure-repositories && \
+    apt-get install -y --no-install-recommends \
     # install data transfer tool (and other required packages)
     ca-certificates curl gnupg2 && \
     # Install Git
@@ -121,8 +119,8 @@ RUN set -ex && \
 #       Also, check if the new script automatically configure the PATH (it seems no uses a 'POETRY_HOME' env variable).
 #           curl -sSL https://install.python-poetry.org
 RUN set -ex && \
-    apt-get update && \
-    apt-get install -y \
+    apt-get update -y --no-allow-insecure-repositories && \
+    apt-get install -y --no-install-recommends \
     # install data transfer tool (and other required packages)
     ca-certificates curl gnupg2 && \
     # download poetry installer
@@ -194,6 +192,7 @@ RUN set -ex && \
 #     && pip install jupyter_contrib_nbextensions \
 #     && jupyter contrib nbextension install --system \
 #     && jupyter nbextensions_configurator enable --user
+# This may also be a nice extension: https://github.com/damianavila/RISE
 # # <<<<<< Install Jupyter Extensions <<<<<<
 
 # >>>>>> Clean Up >>>>>>

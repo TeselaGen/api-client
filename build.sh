@@ -30,5 +30,6 @@ docker rmi -f "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_TAG}"
 
 # >>>>>> Build and tag the Docker image >>>>>>
 #   Use the `--no-cache` flag of the `docker build` command if required.
+#   Use the `--progress=plain` if you want to see the detaliled progress of the build
 docker build --tag "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_TAG}" .
 # <<<<<< Build and tag the Docker image <<<<<<
