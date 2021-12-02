@@ -358,9 +358,9 @@ class TestTESTClient():
     #               for lab in logged_client.get_laboratories()
     #               if logged_client.headers["tg-active-lab-id"] == lab["id"]
     #           ][0]
-    @pytest.mark.skip(reason=("These endpoints are under maintenance on the platform. "
-                              "This should be solved in the following updates. "
-                              "Please, contact the TeselaGen team for more information. "))
+    # @pytest.mark.skip(reason=("These endpoints are under maintenance on the platform. "
+    #                           "This should be solved in the following updates. "
+    #                           "Please, contact the TeselaGen team for more information. "))
     def test_download_file(
         self,
         logged_client: TeselaGenClient,

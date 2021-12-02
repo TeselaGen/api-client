@@ -601,9 +601,9 @@ class TestTESTClientMultiomicsData():
         assert len(results_with_subject_data[0]["data"]) == 9, "Wrong number of output rows"
         assert len(results_with_subject_data[0]["data"].columns) == 23, "Wrong number of output columns"
 
-    @pytest.mark.skip(reason=("These endpoints are under maintenance on the platform. "
-                              "This should be solved in the following updates. "
-                              "Please, contact the TeselaGen team for more information. "))
+    # @pytest.mark.skip(reason=("These endpoints are under maintenance on the platform. "
+    #                           "This should be solved in the following updates. "
+    #                           "Please, contact the TeselaGen team for more information. "))
     def test_download_file(
         self,
         optical_density_upload,
