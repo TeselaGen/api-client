@@ -22,7 +22,7 @@ printf "Docker version: %s\n" "$(docker version --format '{{.Server.Version}}')"
 # >>>>>> Definitions >>>>>>
 DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME:-teselagen/python/tgclient}
 DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG:-'v0.0.1'}
-# <<<<<< Definitions <<<<<<add-apt-repository
+# <<<<<< Definitions <<<<<<
 
 # >>>>>> Remove old docker image >>>>>>
 docker rmi -f "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_TAG}"
