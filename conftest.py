@@ -1,6 +1,7 @@
 #!/usr/local/bin/python3
 
-from typing import Dict
+from __future__ import annotations
+
 import typing
 import warnings
 
@@ -12,7 +13,7 @@ from teselagen.utils import load_from_json
 
 
 @pytest.fixture(scope='session')
-def test_configuration() -> Dict[str, str]:
+def test_configuration() -> dict[str, str]:
     """Loads test configuration and updates with it the default conf.
 
     Default configuration is defined here (see source code below) and it will look for CLI endpoints at a local port.
@@ -41,7 +42,7 @@ def test_configuration() -> Dict[str, str]:
     }
     ```
     """
-    DEFAULT_CONFIGURATION: Dict[str, str] = {
+    DEFAULT_CONFIGURATION: dict[str, str] = {
         "host_url": "http://host.docker.internal:3000",
         "api_token_name": "x-tg-cli-token",
     }
@@ -68,19 +69,18 @@ def test_configuration() -> Dict[str, str]:
 
 
 @pytest.fixture(scope='session')
-def host_url(test_configuration: Dict[str, str]) -> str:
+def host_url(test_configuration: dict[str, str]) -> str:
     return test_configuration['host_url']
 
 
 @pytest.fixture(scope='session')
-def api_token_name(test_configuration: Dict[str, str]) -> str:
+def api_token_name(test_configuration: dict[str, str]) -> str:
     return test_configuration['api_token_name']
 
 
 @pytest.fixture(scope='session')
 def expiration_time() -> str:
-    _expiration_time: str = "30m"
-    return _expiration_time
+    return "30m"
 
 
 @pytest.fixture(scope='function')

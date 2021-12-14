@@ -4,6 +4,8 @@ _*/
 *.credentials*
 *.test_configuration
 
+*.pyi
+
 # Auto-generated Finder files on MacOS
 .DS_Store
 **/Thumbs.db

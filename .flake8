@@ -193,11 +193,12 @@ per-file-ignores =
     #   D101    : Missing docstring in public class
     #   D102    : Missing docstring in public method
     #   D103    : Missing docstring in public function
-    #   D104    : Missing docstring in public packageflake8
+    #   D104    : Missing docstring in public package
     #   H601    : class has low (X.YZ%) cohesion
     #   PT001   : use @pytest.fixture() over @pytest.fixture
     #   S101    : Use of assert detected. The enclosed code will be removed when compiling to optimised byte code
     */test_*: D101,D102,D103,H601,PT001,S101
+    conftest.py: S101
     */__init__.py: D104
 
 # flake8-copyright
