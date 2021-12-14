@@ -2,9 +2,11 @@
 # Copyright (C) 2018 TeselaGen Biotechnology, Inc.
 # License: MIT
 
+from __future__ import annotations
+
 import json
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 from urllib.parse import urljoin
 
 from teselagen.api.design_client import DESIGNClient
@@ -18,7 +20,7 @@ from teselagen.utils import post
 from teselagen.utils import put
 
 # ["test", "learn"/"evolve"]
-AVAILABLE_MODULES: List[str] = [
+AVAILABLE_MODULES: List[Literal["test", "evolve"]] = [
     "test",
     "evolve",
 ]
@@ -61,9 +63,9 @@ class TeselaGenClient():
 
                 Default = "x-tg-cli-token"
         """
-        self._design = None
-        self._test = None
-        self._discover = None
+        self._design: Optional[DESIGNClient] = None
+        self._test: Optional[TESTClient] = None
+        self._discover: Optional[DISCOVERClient] = None
         # NOTE: Do not add passwords to the class attributes. Delete all passwords once they've been used.
 
         self.host_url: str = host_url.strip("/")

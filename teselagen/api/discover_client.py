@@ -2,14 +2,19 @@
 # Copyright (C) 2018 TeselaGen Biotechnology, Inc.
 # License: MIT
 
+from __future__ import annotations
+
 import json
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
 
 import numpy as np
 
 from teselagen.utils import get
 from teselagen.utils import post
 from teselagen.utils import wait_for_status
+
+if TYPE_CHECKING:
+    from teselagen.api import TeselaGenClient
 
 # NOTE : Related to Postman and Python requests
 #           "body" goes into the "json" argument
@@ -39,7 +44,7 @@ class DISCOVERClient():
 
     def __init__(
         self,
-        teselagen_client: Any,
+        teselagen_client: TeselaGenClient,
     ) -> None:
         module_name: str = "evolve"  # (now the 'discover' module)
 

@@ -2,10 +2,12 @@
 # Copyright (C) 2018 TeselaGen Biotechnology, Inc.
 # License: MIT
 
+from __future__ import annotations
+
 import getpass
 import json
 from os.path import join
-from typing import Any, cast, Dict, List, Optional, Tuple, Union
+from typing import Any, cast, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
 from urllib.parse import urljoin
 
 import numpy as np
@@ -14,6 +16,9 @@ import pandas as pd
 from teselagen.utils import download_file
 from teselagen.utils import get
 from teselagen.utils import post
+
+if TYPE_CHECKING:
+    from teselagen.api import TeselaGenClient
 
 SUPPORTED_AA_EXPORT_FORMATS = [
     'JSON',
@@ -36,7 +41,7 @@ class DESIGNClient():
 
     def __init__(
         self,
-        teselagen_client: Any,
+        teselagen_client: TeselaGenClient,
     ) -> None:
         module_name: str = "design"
 

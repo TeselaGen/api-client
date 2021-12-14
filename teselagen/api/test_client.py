@@ -2,11 +2,13 @@
 # Copyright (C) 2018 TeselaGen Biotechnology, Inc.
 # License: MIT
 
+from __future__ import annotations
+
 from io import StringIO
 import json
 from os.path import join
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
 import warnings
 
 import pandas as pd
@@ -17,6 +19,9 @@ from teselagen.utils import delete
 from teselagen.utils import get
 from teselagen.utils import post
 from teselagen.utils import put
+
+if TYPE_CHECKING:
+    from teselagen.api import TeselaGenClient
 
 # NOTE : Related to Postman and Python requests
 #           "body" goes into the "json" argument
@@ -40,7 +45,7 @@ class TESTClient():
 
     def __init__(
         self,
-        teselagen_client: Any,
+        teselagen_client: TeselaGenClient,
     ) -> None:
         module_name: str = "test"
 
@@ -728,7 +733,7 @@ class TESTClient():
             raise Exception("Error fetching assay results")
 
     def _get_assay_file_results(
-        self: "TESTClient",
+        self: TESTClient,
         assay_id: str,
         file_id: str,
         page_number: Optional[int] = None,
