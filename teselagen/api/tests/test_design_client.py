@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 import pytest
@@ -9,7 +12,9 @@ import requests_mock  # noqa: F401 # pylint: disable=unused-import # reason: it 
 
 from teselagen.api.client import get
 from teselagen.api.client import post
-from teselagen.api.client import TeselaGenClient
+
+if TYPE_CHECKING:
+    from teselagen.api import TeselaGenClient
 
 # RBS MOCK DATA. These IDs are safe to be public.
 JOB_ID_ONE = 'lowxt1rzramybxeelijsctypix9vk6fl'
@@ -19,12 +24,13 @@ JOB_ID_TWO = 'ouqzbuviolphyjasg0syhkseq6anltxz'
 class TestDESIGNClient():
 
     def test_get_assembly_report_mock(
-        self,
-        tmpdir,
-        logged_client: TeselaGenClient,
-        requests_mock,
+            self,
+            tmpdir,  # pytest fixture (py.path.local)
+            logged_client: TeselaGenClient,
+            requests_mock,  # noqa: F811
     ):
-        """Checks report can be downloaded
+        """Checks report can be downloaded.
+
         TODO: Requires a specific ID! A new endpoint for listing IDS should be implemented!
         """
         TEST_REPORT_ID = 1023
@@ -69,9 +75,9 @@ class TestDESIGNClient():
         assert Path(report_filepath).is_file()
 
     def test_get_dna_sequence_mock(
-        self,
-        logged_client: TeselaGenClient,
-        requests_mock,
+            self,
+            logged_client: TeselaGenClient,
+            requests_mock,  # noqa: F811
     ):
         seq_id = 123807
 
@@ -98,9 +104,9 @@ class TestDESIGNClient():
         assert res['name'] == 'pj5_00001'
 
     def test_get_dna_sequences(
-        self,
-        logged_client: TeselaGenClient,
-        requests_mock,
+            self,
+            logged_client: TeselaGenClient,
+            requests_mock,  # noqa: F811
     ):
         expected_url = logged_client.design.export_dna_sequences_url + '?name=pj5_001'
         requests_mock.get(expected_url, content=b'[{"id": 12, "name": "hey", "sequence": "GATACA"}]')
@@ -115,9 +121,9 @@ class TestDESIGNClient():
         ]
 
     def test_get_designs(
-        self,
-        logged_client: TeselaGenClient,
-        requests_mock,
+            self,
+            logged_client: TeselaGenClient,
+            requests_mock,  # noqa: F811
     ):
         # GET parameters
         params = {

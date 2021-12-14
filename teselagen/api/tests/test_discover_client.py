@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 from itertools import product
-from typing import cast, List, Optional
+from typing import cast, Literal, TYPE_CHECKING
 import typing
 import uuid
 
@@ -11,10 +13,12 @@ import pytest
 import requests_mock  # noqa: F401 # pylint: disable=unused-import # reason: it is being used as tests argument
 
 from teselagen.api import DISCOVERClient
-from teselagen.api import TeselaGenClient
 from teselagen.utils import get_project_root
 
-MODEL_TYPES_TO_BE_TESTED: List[Optional[str]] = [
+if TYPE_CHECKING:
+    from teselagen.api import TeselaGenClient
+
+MODEL_TYPES_TO_BE_TESTED: list[Literal["predictive", "evolutive", "generative"]] = [
     "predictive",
     "evolutive",
     "generative",
@@ -137,13 +141,13 @@ class TestDISCOVERClient():
     def test_get_models_by_type(
             self,
             discover_client: DISCOVERClient,
-            model_type: Optional[str],
+            model_type: str | None,
             submitted_model_name: str,  # pylint: disable=unused-argument # reason: fixture required to create a model
     ):
         response = discover_client.get_models_by_type(model_type=model_type)
         assert isinstance(response, list)
 
-        expected_keys: List[str] = [
+        expected_keys: list[str] = [
             "id",
             "labId",
             "modelType",
@@ -161,7 +165,7 @@ class TestDISCOVERClient():
                 if key == "evolveModelInfo":
                     assert isinstance(data[key], dict)
 
-                    expected_evolveModelInfokeys: List[str] = [
+                    expected_evolveModelInfokeys: list[str] = [
                         "microserviceQueueId",
                         "dataSchema",
                         "modelStats",

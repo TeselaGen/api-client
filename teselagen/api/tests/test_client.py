@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 
-from typing import Any, Dict, List
+from __future__ import annotations
+
+from typing import Any, Dict, List, Literal
 from unittest.mock import patch
 
 import pytest
 
+from teselagen.api import TeselaGenClient
 from teselagen.api.client import DEFAULT_API_TOKEN_NAME
 from teselagen.api.client import DEFAULT_HOST_URL
 from teselagen.api.client import get
-from teselagen.api.client import TeselaGenClient
 from teselagen.utils import get_credentials_path
 
 # module_names = [
@@ -18,7 +20,7 @@ from teselagen.utils import get_credentials_path
 #     "evolve",
 # ]
 
-MODULES_TO_BE_TESTED: List[str] = [
+MODULES_TO_BE_TESTED: List[Literal["test", "evolve"]] = [
     "test",
     "evolve",
 ]
@@ -190,7 +192,7 @@ class TestTeselaGenClient:
     @pytest.mark.parametrize("module_name", MODULES_TO_BE_TESTED)
     def test_client_instantiation(
         self,
-        client,
+        client: TeselaGenClient,
         module_name: str,
         test_configuration,
     ) -> None:
@@ -200,7 +202,7 @@ class TestTeselaGenClient:
     @pytest.mark.parametrize("module_name", MODULES_TO_BE_TESTED)
     def test_get_server_status(
         self,
-        client,
+        client: TeselaGenClient,
         module_name: str,
     ) -> None:
         # We verify that the server is operational.
@@ -211,7 +213,7 @@ class TestTeselaGenClient:
     @pytest.mark.parametrize("module_name", MODULES_TO_BE_TESTED)
     def test_get_api_info_deauthorized(
         self,
-        client,
+        client: TeselaGenClient,
         module_name: str,
     ) -> None:
         # The client should only be instantiated but not authorized.
@@ -222,7 +224,7 @@ class TestTeselaGenClient:
     @pytest.mark.parametrize("module_name", MODULES_TO_BE_TESTED)
     def test_login(
         self,
-        client,
+        client: TeselaGenClient,
         module_name: str,
         expiration_time: str,
         test_configuration,
