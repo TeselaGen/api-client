@@ -18,6 +18,7 @@ from teselagen.utils import get
 from teselagen.utils import get_credentials
 from teselagen.utils import post
 from teselagen.utils import put
+from teselagen.utils.utils import ParsedJSONResponse
 
 # ["test", "learn"/"evolve"]
 AVAILABLE_MODULES: List[Literal["test", "evolve"]] = [
@@ -152,7 +153,7 @@ class TeselaGenClient():
             "password": password,
             "passwordConfirm": password,
         }
-        response: Dict[str, Any] = post(url=self.register_url, json=body)
+        response = post(url=self.register_url, json=body)
         response["content"] = json.loads(response["content"])
         return response
 
@@ -240,8 +241,9 @@ class TeselaGenClient():
         Returns:
             str: The current Server Status.
         """
-        response: Dict[str, Any] = get(
+        response = get(
             url=self.status_url,
+            params=None,
             headers=self.headers,
         )
 
@@ -275,7 +277,7 @@ class TeselaGenClient():
 
         # This happens in the CLI
         try:
-            response: Dict[str, Any] = put(
+            response = put(
                 url=self.auth_url,
                 headers=self.headers,
                 json=body,
@@ -329,18 +331,18 @@ class TeselaGenClient():
             (str): The current info about API.
         """
         try:
-            response: Dict[str, Any] = get(
+            response = get(
                 url=self.info_url,
                 headers=self.headers,
             )
 
         except Exception as e:
             # TODO: Verify if we need to raise an exception.
-            response = {
-                "url": self.info_url,
-                "content": str(e),
-                "status": False,
-            }
+            response = ParsedJSONResponse(
+                url=self.info_url,
+                content=str(e),
+                status=False,
+            )
 
         return response["content"]
 
@@ -355,7 +357,7 @@ class TeselaGenClient():
             ( ): The current user.
         """
         # TODO : implement a method to get the expiration date of the current token
-        response: Dict[str, Any] = get(url=self.auth_url, headers=self.headers)
+        response = get(url=self.auth_url, headers=self.headers)
         response["content"] = json.loads(response["content"])
 
         return response
@@ -368,7 +370,7 @@ class TeselaGenClient():
         Returns :
             () : A list of laboratories objects.
         """
-        response: Dict[str, Any] = get(url=self.labs_url, headers=self.headers)
+        response = get(url=self.labs_url, headers=self.headers)
 
         # response["content"] = [{"id" : str, "name": str}, ...]
         response["content"] = json.loads(response["content"])

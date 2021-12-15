@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 from datetime import date
 from datetime import datetime
 from datetime import time
@@ -8,17 +10,20 @@ import getpass
 import json
 import math
 from pathlib import Path
-from typing import Any, Callable, cast, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, cast, Dict, List, Optional, Tuple, TYPE_CHECKING, TypedDict, TypeVar, Union
 
 import pandas as pd
 import requests
 from tenacity import retry
-from tenacity import retry_if_exception_type
-from tenacity import stop_after_delay
-from tenacity import wait_fixed
+from tenacity.retry import retry_if_exception_type
+from tenacity.stop import stop_after_delay
+from tenacity.wait import wait_fixed
 from typing_extensions import Literal
 
 import teselagen
+
+if TYPE_CHECKING:
+    from teselagen.api import TeselaGenClient
 
 DEFAULT_HOST_URL: str = "https://platform.teselagen.com"
 DEFAULT_API_TOKEN_NAME: str = "x-tg-cli-token"
@@ -147,9 +152,7 @@ def load_from_json(filepath: Path) -> Any:
     """
     absolute_path: Path = filepath.absolute()
 
-    json_obj: Any = json.loads(absolute_path.read_text())
-
-    return json_obj
+    return json.loads(absolute_path.read_text())
 
 
 def get_project_root() -> Path:
@@ -237,11 +240,14 @@ def load_credentials_from_file(path_to_credentials_file: str = None) -> Tuple[Op
     return credentials['username'], credentials['password']
 
 
-def handler(func):
+_DecoratorType = TypeVar('_DecoratorType', bound=Callable[..., Any])
+# _DecoratorFactoryType = Callable[[_DecoratorType], _DecoratorType]
+
+
+def handler(func: _DecoratorType) -> _DecoratorType:
     """Decorator to handle the response from a request."""
 
-    def wrapper(**kwargs):
-        # -> requests.Response
+    def wrapper(**kwargs: Any) -> requests.Response:
         if "url" not in kwargs.keys():
             message = "url MUST be specified as keyword argument"
             raise Exception(message)
@@ -281,13 +287,21 @@ def handler(func):
         except Exception as e:
             raise
 
-    return wrapper
+    # return wrapper
+    return cast(_DecoratorType, wrapper)
 
 
-def parser(func):
+class ParsedJSONResponse(TypedDict, total=True):
+    """Parsed JSON response."""
+    url: str
+    status: bool
+    content: Optional[str]
+
+
+def parser(func: Callable[..., requests.Response]) -> Callable[..., ParsedJSONResponse | Dict[str, Any]]:
     """Decorator to parse the response from a request."""
 
-    def wrapper(**kwargs) -> Dict[str, Union[str, bool, None]]:
+    def wrapper(**kwargs: Any) -> Union[ParsedJSONResponse, Dict[str, Any]]:
 
         if "url" not in kwargs.keys():
             message = "url MUST be specified as keyword argument"
@@ -303,13 +317,11 @@ def parser(func):
             print("Deletion successful.")
             return {}
 
-        response_as_json: Dict[str, Union[str, bool, None]] = {
-            "url": url,
-            "status": response.ok,
-            "content": response.content.decode() if response.ok else None,
-        }
-
-        return response_as_json
+        return ParsedJSONResponse(
+            url=url,
+            status=response.ok,
+            content=response.content.decode() if response.ok else None,
+        )
 
     return wrapper
 
@@ -320,7 +332,7 @@ def requires_login(func):
     Add this decorator to any function from Client or a children that requires to be logged in.
     """
 
-    def wrapper(self, *args, **kwargs):  # sourcery skip: hoist-if-from-if
+    def wrapper(self: TeselaGenClient, *args: Any, **kwargs: Any):  # sourcery skip: hoist-if-from-if
         if self.auth_token is None:
             self.login()
             if self.auth_token is None:
@@ -333,7 +345,7 @@ def requires_login(func):
 
 @parser
 @handler
-def get(url: str, params: Dict[str, Any] = None, **kwargs):
+def get(url: str, params: Dict[str, Any] = None, **kwargs: Any):
     """Same arguments and behavior as requests.get but handles exceptions and returns a dictionary instead of a \
     `requests.Response`.
 
@@ -341,6 +353,7 @@ def get(url: str, params: Dict[str, Any] = None, **kwargs):
 
     Returns:
         (Dict[str, Union[str, bool, None]]) : It returns a dictionary with the following keys and value types:
+
     ```json
             {   "url" : str,
                 "status" : bool,
@@ -351,31 +364,28 @@ def get(url: str, params: Dict[str, Any] = None, **kwargs):
     Raises:
         (Exception) : It raises an exception if something goes wrong.
     """
-    response: requests.Response = requests.get(url, params=params, **kwargs)
-    return response
+    return requests.get(url, params=params, **kwargs)
 
 
 @parser
 @handler
-def post(url: str, **kwargs) -> requests.Response:
+def post(url: str, **kwargs: Any) -> requests.Response:
     """Same as requests.post but handles exceptions and returns a dictionary instead of a `requests.Response`.
 
     NOTE : url key MUST be passed in arguments.
 
     Example :
-
         url = "https://www.some_url.com/"
         response = post(url=url)
 
     Wrong usage:
-
         url = "https://www.some_url.com/"
         response = post(url)
 
     Returns:
-
         (Dict[str, Union[str, bool, None]]) : It returns a dictionary with the
             following keys and value types:
+
     ```json
             {   "url" : str,
                 "status" : bool,
@@ -384,26 +394,22 @@ def post(url: str, **kwargs) -> requests.Response:
     ```
 
     Raises:
-
         (Exception) : It raises an exception if something goes wrong.
     """
-    response: requests.Response = requests.post(url, **kwargs)
-    return response
+    return requests.post(url, **kwargs)
 
 
 @parser
 @handler
-def delete(url: str, **kwargs) -> requests.Response:
+def delete(url: str, **kwargs: Any) -> requests.Response:
     """Same as requests.delete but handles exceptions and returns a dictionary instead of a `requests.Response`."""
-    response: requests.Response = requests.delete(url, **kwargs)
-    return response
+    return requests.delete(url, **kwargs)
 
 
 @parser
 @handler
-def put(url: str, **kwargs):
-    response: requests.Response = requests.put(url, **kwargs, timeout=None)
-    return response
+def put(url: str, **kwargs: Any):
+    return requests.put(url, **kwargs, timeout=None)
 
 
 def download_file(
@@ -469,7 +475,7 @@ def wait_for_status(
         except Exception as ex:
             if not isinstance(ex, AssertionError):
                 print(f"An unexpected error was detected, method result was: {result}")
-            raise ex
+            raise
         return result
 
     return _wait_for_status(method=method, validate=validate, **method_kwargs)

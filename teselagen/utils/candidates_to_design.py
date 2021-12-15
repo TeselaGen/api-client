@@ -10,6 +10,8 @@ at EVOLVE.
 Some usage examples can be found below.
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import math

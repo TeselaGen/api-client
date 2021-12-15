@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 from typing import List, Optional
 
 from dna_features_viewer import GraphicFeature

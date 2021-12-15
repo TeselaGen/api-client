@@ -7,7 +7,7 @@ from __future__ import annotations
 import getpass
 import json
 from os.path import join
-from typing import Any, cast, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
+from typing import Any, cast, Dict, List, Literal, Optional, Set, Tuple, TYPE_CHECKING, Union
 from urllib.parse import urljoin
 
 import numpy as np
@@ -20,7 +20,7 @@ from teselagen.utils import post
 if TYPE_CHECKING:
     from teselagen.api import TeselaGenClient
 
-SUPPORTED_AA_EXPORT_FORMATS = [
+SUPPORTED_AA_EXPORT_FORMATS: List[Literal["JSON", "FASTA", "GENBANK"]] = [
     'JSON',
     'FASTA',
     'GENBANK',
@@ -31,7 +31,7 @@ SUPPORTED_AA_EXPORT_FORMATS = [
 
 
 class DESIGNClient():
-    ALLOWED_SEQ_FORMATS = {
+    ALLOWED_SEQ_FORMATS: Set[Literal['json', 'fasta', 'genbank']] = {
         'json',
         'fasta',
         'genbank',
