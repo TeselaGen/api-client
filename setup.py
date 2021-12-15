@@ -1,4 +1,5 @@
 #!/usr/local/bin/python3
+
 from typing import List
 
 from setuptools import find_packages
