@@ -2,6 +2,8 @@
 # Copyright (C) 2020 TeselaGen Biotechnology, Inc.
 # License: MIT
 
+from __future__ import annotations
+
 import argparse
 
 from teselagen.api.design_client import DESIGNClient

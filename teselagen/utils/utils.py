@@ -31,6 +31,15 @@ DEFAULT_API_TOKEN_NAME: str = "x-tg-cli-token"
 DEFAULT_MAX_DATAPOINTS: int = 100
 TimeUnit = Literal["milliseconds", "seconds", "minutes", "hours", "days"]
 
+T = TypeVar('T')
+
+
+class ParsedJSONResponse(TypedDict, total=True):
+    """Parsed JSON response."""
+    url: str
+    status: bool
+    content: Optional[str]
+
 
 def downsample_data(
     dataframe: pd.DataFrame,
@@ -291,13 +300,6 @@ def handler(func: _DecoratorType) -> _DecoratorType:
     return cast(_DecoratorType, wrapper)
 
 
-class ParsedJSONResponse(TypedDict, total=True):
-    """Parsed JSON response."""
-    url: str
-    status: bool
-    content: Optional[str]
-
-
 def parser(func: Callable[..., requests.Response]) -> Callable[..., ParsedJSONResponse | Dict[str, Any]]:
     """Decorator to parse the response from a request."""
 
@@ -345,7 +347,7 @@ def requires_login(func):
 
 @parser
 @handler
-def get(url: str, params: Dict[str, Any] = None, **kwargs: Any):
+def get(url: str, params: Dict[str, Any] = None, **kwargs: Any) -> requests.Response:
     """Same arguments and behavior as requests.get but handles exceptions and returns a dictionary instead of a \
     `requests.Response`.
 
@@ -408,14 +410,14 @@ def delete(url: str, **kwargs: Any) -> requests.Response:
 
 @parser
 @handler
-def put(url: str, **kwargs: Any):
+def put(url: str, **kwargs: Any) -> requests.Response:
     return requests.put(url, **kwargs, timeout=None)
 
 
 def download_file(
     url: str,
     local_filename: str = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> str:
     """Downloads a file from the specified url."""
     if local_filename is None:
@@ -434,12 +436,12 @@ def download_file(
 
 
 def wait_for_status(
-    method: Callable,
-    validate: Optional[Callable] = None,
-    fixed_wait_time: int = 5,
-    timeout: int = 300,
-    **method_kwargs,
-) -> Any:
+    method: Callable[..., T],
+    validate: Optional[Callable[[T], bool]] = None,
+    fixed_wait_time: float = 5,
+    timeout: float = 300,
+    **method_kwargs: Any,
+) -> T:
     """Tries to run *method* (and run also a validation of its output) until no AssertionError is raised.
 
     Arguments are described below. More keyword arguments can be given for `method`.
@@ -453,9 +455,9 @@ def wait_for_status(
             It must receives the output of `method` as argument and returns `True` if it is ok and `False` if it is \
             invalid. Defaults to None, meaning no validation will be executed.
 
-        fixed_wait_time (int, optional): Time (in seconds) to wait between attempts. Defaults to 5.
+        fixed_wait_time (float, optional): Time (in seconds) to wait between attempts. Defaults to 5.
 
-        timeout (int, optional): Time (in seconds) after which no more attempts are made. Defaults to 300 (5 minutes).
+        timeout (float, optional): Time (in seconds) after which no more attempts are made. Defaults to 300 (5 minutes).
 
     Returns:
         [Any]: The method's output
@@ -466,10 +468,14 @@ def wait_for_status(
         stop=stop_after_delay(timeout),
         retry=retry_if_exception_type(AssertionError),
     )
-    def _wait_for_status(method: Callable, validate: Optional[Callable] = None, **method_kwargs) -> Any:
+    def _wait_for_status(
+        method: Callable[..., T],
+        validate: Optional[Callable[[T], bool]] = None,
+        **method_kwargs: Any,
+    ) -> T:
         """Runs the method and apply validation."""
         try:
-            result = method(**method_kwargs)
+            result: T = method(**method_kwargs)
             if validate is not None:
                 assert validate(result), f"Validation failed. Result is {result}"
         except Exception as ex:

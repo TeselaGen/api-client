@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import time
+from typing import Literal
 
 import pytest
 from tenacity import RetryError
@@ -15,10 +18,10 @@ class TestUtils:
         fixed_wait_time = 0.2
         counter_limit = 5
 
-        def validation_method(x):
+        def validation_method(x: str) -> bool:
             return x == "OK"
 
-        def a_status_request(count_limit: int):
+        def a_status_request(count_limit: int) -> Literal['OK', 'NOT OK']:
             time.sleep(0.2)
             out = "NOT OK"
             nonlocal counter
