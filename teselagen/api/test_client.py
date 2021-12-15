@@ -1,6 +1,7 @@
-#!/usr/local/bin/python3
-# Copyright (C) 2018 TeselaGen Biotechnology, Inc.
+#!/usr/bin/env python3
+# Copyright (c) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved
 # License: MIT
+"""TEST Client Module."""
 
 from __future__ import annotations
 
@@ -8,12 +9,10 @@ from io import StringIO
 import json
 from os.path import join
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, TypedDict, Union
 import warnings
 
 import pandas as pd
-from typing_extensions import Literal
-from typing_extensions import TypedDict
 
 from teselagen.utils import delete
 from teselagen.utils import get
@@ -106,7 +105,7 @@ class TESTClient():
     ):
         body = [{"name": name, "assaySubjectClassId": str(assaySubjectClassId)}]
 
-        response: Dict[str, Any] = post(url=self.create_assay_subjects_url, headers=self.headers, json=body)
+        response = post(url=self.create_assay_subjects_url, headers=self.headers, json=body)
         response["content"] = json.loads(response["content"])
 
         return response["content"]
@@ -150,7 +149,7 @@ class TESTClient():
         else:
             raise TypeError(
                 f"Argument 'assay_subject_ids' must of type int or List[int]. Not type: {type(assay_subject_ids)}")
-        response: Dict[str, Any] = get(
+        response = get(
             url=url,
             params=params,
             headers=self.headers,
@@ -222,7 +221,7 @@ class TESTClient():
             "createSubjectsFromFile": createSubjectsFromFile,
         }
 
-        response: Dict[str, Any] = put(
+        response = put(
             url=self.put_assay_subject_descriptors_url,
             headers=self.headers,
             json=body,
@@ -252,7 +251,7 @@ class TESTClient():
             "createSubjectsFromFile": createSubjectsFromFile,
         }
 
-        response: Dict[str, Any] = post(
+        response = post(
             url=self.post_assay_subjects_descriptors_import_url,
             headers=self.headers,
             json=body,
@@ -280,7 +279,7 @@ class TESTClient():
             (): a JSON object with information on the status of an assay result import job.
         """
         try:
-            response: Dict[str, Any] = get(
+            response = get(
                 url=self.get_assay_subjects_descriptors_import_url.format(importId),
                 headers=self.headers,
             )
@@ -311,7 +310,7 @@ class TESTClient():
             ]
         ```
         """
-        response: Dict[str, Any] = get(
+        response = get(
             url=self.get_experiments_url,
             headers=self.headers,
         )
@@ -395,7 +394,7 @@ class TESTClient():
             ]
         ```
         """
-        response: Dict[str, Any] = get(
+        response = get(
             url=self.get_assays_by_experiment_url.format(experiment_id) if experiment_id else self.get_assays_url,
             headers=self.headers,
         )
@@ -416,7 +415,7 @@ class TESTClient():
         }
 
         try:
-            response: Dict[str, Any] = post(
+            response = post(
                 url=self.create_assay_url.format(experiment_id),
                 headers=self.headers,
                 json=body,
@@ -443,7 +442,7 @@ class TESTClient():
         assay_id: str,
     ) -> Any:
         """Deletes an Assay with ID=`assay_id`."""
-        response: Dict[str, Any] = delete(
+        response = delete(
             url=self.delete_assay_url.format(assay_id),
             headers=self.headers,
         )
@@ -528,7 +527,7 @@ class TESTClient():
         }
 
         try:
-            response: Dict[str, Any] = put(
+            response = put(
                 url=self.assay_results_url.format(assay_id),
                 headers=self.headers,
                 json=body,
@@ -601,7 +600,7 @@ class TESTClient():
         }
 
         try:
-            response: Dict[str, Any] = post(
+            response = post(
                 url=self.post_assay_results_import_url.format(assay_id),
                 headers=self.headers,
                 json=body,
@@ -628,7 +627,7 @@ class TESTClient():
             (): a JSON object with information on the status of an assay result import job.
         """
         try:
-            response: Dict[str, Any] = get(
+            response = get(
                 url=self.get_assay_results_import_url.format(importId),
                 headers=self.headers,
             )
@@ -872,7 +871,7 @@ class TESTClient():
         api_result = None
 
         try:
-            response: Dict[str, Any] = get(
+            response = get(
                 url=url,
                 headers=self.headers,
                 params=params,
@@ -929,7 +928,7 @@ class TESTClient():
         # Removes params with None values.
         params = {key: value for key, value in params.items() if value is not None}
 
-        response: Dict[str, Any] = get(
+        response = get(
             url=self.get_files_info_url,
             headers=self.headers,
             params=params,
@@ -979,7 +978,7 @@ class TESTClient():
             assay_id) if assay_id else self.upload_file_into_experiment_url.format(
                 experiment_id) if experiment_id else self.upload_file_url
 
-        response: Dict[str, Any] = post(
+        response = post(
             url=upload_file_url,
             headers=headers,
             files=multipart_form_data,
@@ -1015,7 +1014,7 @@ class TESTClient():
         Returns:
             StringIO: a StringIO object with the data.
         """
-        response: Dict[str, Any] = get(
+        response = get(
             url=self.get_file_data_url.format(file_id),
             headers=self.headers,
         )
@@ -1064,7 +1063,7 @@ class TESTClient():
             ]
         ```
         """
-        response: Dict[str, Any] = get(
+        response = get(
             url=self.get_metadata_url.format(metadataType),
             headers=self.headers,
         )
@@ -1095,7 +1094,7 @@ class TESTClient():
             },
         }
 
-        response: Dict[str, Any] = post(url=self.create_metadata_url, headers=self.headers, json=body)
+        response = post(url=self.create_metadata_url, headers=self.headers, json=body)
 
         # [{ id: "3" }]
         response["content"] = json.loads(response["content"])
