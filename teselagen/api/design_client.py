@@ -1,6 +1,7 @@
-#!/usr/local/bin/python3
-# Copyright (C) 2018 TeselaGen Biotechnology, Inc.
+#!/usr/bin/env python3
+# Copyright (c) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved
 # License: MIT
+"""DESIGN Client Module."""
 
 from __future__ import annotations
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved
-"""Tests for the TEST Client."""
+# License: MIT
+"""Test the TEST Client."""
 
 from __future__ import annotations
 

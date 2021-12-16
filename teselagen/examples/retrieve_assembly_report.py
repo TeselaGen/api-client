@@ -1,5 +1,5 @@
-#!/usr/local/bin/python3
-# Copyright (C) 2020 TeselaGen Biotechnology, Inc.
+#!/usr/bin/env python3
+# Copyright (c) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved
 # License: MIT
 
 from __future__ import annotations

@@ -1,9 +1,6 @@
-#   !/usr/bin/env python
-#
-#   TeselaGen Data Science Team's.
-#   Created on Aug 23, 2019 by Juan Andrés Ramírez.
-#   TeselaGen Data Science Team.
-#
+#!/usr/bin/env python3
+# Copyright (c) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved
+# License: MIT
 
 from pathlib import Path
 

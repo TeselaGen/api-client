@@ -1,5 +1,5 @@
-#!/usr/local/bin/python3
-# Copyright (C) 2020 TeselaGen Biotechnology, Inc.
+#!/usr/bin/env python3
+# Copyright (c) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved
 # License: MIT
 """This module provides a command line tool that generates a json design that can be imported into TeselaGen's DESIGN
 module.
