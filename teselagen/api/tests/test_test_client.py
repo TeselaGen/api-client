@@ -1,15 +1,23 @@
 #!/usr/bin/env python3
+# Copyright (c) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved
+"""Tests for the TEST Client."""
+
+from __future__ import annotations
 
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
+import typing
 
+from _pytest.fixtures import FixtureRequest
 import pytest
 
-from teselagen.api import TeselaGenClient
 from teselagen.api import TESTClient
 from teselagen.utils import get_project_root
+
+if TYPE_CHECKING:
+    from teselagen.api import TeselaGenClient
 
 TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Example Descriptor 2,Teselagen Example Target,Teselagen Example Target Metric
 1,A0,B1,1,ug/mL
@@ -43,10 +51,9 @@ class TestTESTClient():
             (int) : The laboratory identifier used for testing.
         """
         available_labs = client.get_laboratories()
-        _lab_id: int = available_labs[0]['id']
         # _lab_id: int = 1
 
-        return _lab_id
+        return available_labs[0]['id']
 
     @pytest.fixture
     def select_laboratory(
@@ -69,8 +76,7 @@ class TestTESTClient():
         Returns:
             (int) : The experiment identifier used for testing.
         """
-        _experiment_id: str = experiment["id"]
-        return _experiment_id
+        return experiment["id"]
 
     @pytest.fixture
     def assay_id(self) -> int:
@@ -79,19 +85,18 @@ class TestTESTClient():
         Returns:
             (int) : The assay identifier used for testing.
         """
-        _assay_id: int = 1  # None
-        return _assay_id
+        return 1
 
     @pytest.fixture
     def experiment(
         self,
-        request,
+        request: FixtureRequest,
         logged_client: TeselaGenClient,
         select_laboratory,
-    ) -> Dict[str, Any]:
+    ) -> typing.Generator[Dict[str, Any], None, None]:
         client = logged_client.test
         test_name: str = request.node.name
-        experiment_name: str = f"Python Test Client Experiment - Test: {test_name} - Run at: {str(datetime.now())} "
+        experiment_name: str = f'Python Test Client Experiment - Test: {test_name} - Run at: {datetime.now()} '
         experiment: Dict[str, Any] = client.create_experiment(experiment_name=experiment_name)
 
         yield experiment
@@ -112,12 +117,11 @@ class TestTESTClient():
         assay_name: str = "Python Test Client Assay"
         # TODO : We may need to update this, probably with a parser or parser_id fixture
         parser_id: Optional[int] = None
-        response: Dict[str, Any] = client.create_assay(
+        return client.create_assay(
             experiment_id=experiment_id,
             assay_name=assay_name,
             parser_id=parser_id,
         )
-        return response
 
     def test_class_attributes(self) -> None:
         # We check if the class inherit the parents methods.
