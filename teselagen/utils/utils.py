@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved
 
 from __future__ import annotations
 
@@ -25,8 +26,8 @@ import teselagen
 if TYPE_CHECKING:
     from teselagen.api import TeselaGenClient
 
-DEFAULT_HOST_URL: str = "https://platform.teselagen.com"
-DEFAULT_API_TOKEN_NAME: str = "x-tg-cli-token"
+DEFAULT_HOST_URL: Literal["https://platform.teselagen.com"] = "https://platform.teselagen.com"
+DEFAULT_API_TOKEN_NAME: Literal["x-tg-cli-token"] = "x-tg-cli-token"
 
 DEFAULT_MAX_DATAPOINTS: int = 100
 TimeUnit = Literal["milliseconds", "seconds", "minutes", "hours", "days"]
@@ -248,6 +249,8 @@ def load_credentials_from_file(path_to_credentials_file: str = None) -> Tuple[Op
 
     return credentials['username'], credentials['password']
 
+
+# NOTE: https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
 
 _DecoratorType = TypeVar('_DecoratorType', bound=Callable[..., Any])
 # _DecoratorFactoryType = Callable[[_DecoratorType], _DecoratorType]
