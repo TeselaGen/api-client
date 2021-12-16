@@ -2314,7 +2314,7 @@ examples = ["fastaparser", "jupyter-contrib-nbextensions", "jupyter-console", "j
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9.6"
-content-hash = "5374d8ba6668870f2342cba049d8ba0de2b1559fbebe6d00b1c8042632beb9a8"
+content-hash = "e0c9e7dcea8527a1300f7670dd661fa38148f06cbe9fd33b4fc50957d90a02aa"
 
 [metadata.files]
 anyio = [
