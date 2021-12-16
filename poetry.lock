@@ -1710,6 +1710,17 @@ salt = ["salt"]
 winrm = ["pywinrm"]
 
 [[package]]
+name = "pytest-timeout"
+version = "2.0.2"
+description = "pytest plugin to abort hanging tests"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+pytest = ">=5.0.0"
+
+[[package]]
 name = "pytest-xdist"
 version = "2.4.0"
 description = "pytest xdist plugin for distributed testing and loop-on-failing modes"
@@ -2287,7 +2298,7 @@ examples = ["fastaparser", "jupyter-contrib-nbextensions", "jupyter-console", "j
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9.6"
-content-hash = "135cda582e515a67a01c18ed0ba4822f1f36e88fe80f3a59db16f9f4f267785d"
+content-hash = "5374d8ba6668870f2342cba049d8ba0de2b1559fbebe6d00b1c8042632beb9a8"
 
 [metadata.files]
 anyio = [
@@ -3320,6 +3331,10 @@ pytest-notebook = [
 pytest-testinfra = [
     {file = "pytest-testinfra-6.4.0.tar.gz", hash = "sha256:5c3d1f61852a4e2c08bf40dbdf9ff004b10ee8308985883986e53d1610c0b2c3"},
     {file = "pytest_testinfra-6.4.0-py3-none-any.whl", hash = "sha256:b3f147cf18608298381b976ba5e161bc625e9f58ca6d8d61eb769fbd99716de6"},
+]
+pytest-timeout = [
+    {file = "pytest-timeout-2.0.2.tar.gz", hash = "sha256:e6f98b54dafde8d70e4088467ff621260b641eb64895c4195b6e5c8f45638112"},
+    {file = "pytest_timeout-2.0.2-py3-none-any.whl", hash = "sha256:fe9c3d5006c053bb9e062d60f641e6a76d6707aedb645350af9593e376fcc717"},
 ]
 pytest-xdist = [
     {file = "pytest-xdist-2.4.0.tar.gz", hash = "sha256:89b330316f7fc475f999c81b577c2b926c9569f3d397ae432c0c2e2496d61ff9"},
