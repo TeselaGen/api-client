@@ -43,8 +43,28 @@ class GetRecordsQueryParams(TypedDict, total=True):
     gqlFilter: str
 
 
+# class User(TypedDict):
+#     id: str | int
+#     username: str
+
+
 class AliquotRecord(Record):
     """Aliquot record `TypedDict`."""
+    # id: str
+    # user: User
+    # concentration: int | float | None
+    # concentrationUnitCode: str
+    # volume: int | float | None
+    # volumetricUnitCode: str | None
+    # mass: int | float | None
+    # massUnitCode: None | None
+    # createdAt: str
+    # updatedAt: str
+    # sample: dict
+    # batch: None
+    # lab: None
+    # aliquotType: str
+    # taggedItems: list
 
 
 class SampleRecord(Record):

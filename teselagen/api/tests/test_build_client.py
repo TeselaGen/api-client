@@ -53,22 +53,18 @@ class TestBUILDClient:
 
     def test_get_aliquots_with_default_query_params(
         self,
-        teselagen_client: TeselaGenClient,
+        logged_client: TeselaGenClient,
     ) -> None:
         """Test getting all aliquots with default query parameters."""
+        teselagen_client = logged_client
+
         response = teselagen_client.build.get_aliquots()
         assert_records(records=response)
 
     @pytest.mark.parametrize(
-        ("pageNumber", "pageSize", "sort", "gqFilter"),
+        ("pageNumber", "pageSize", "sort", "gqlFilter"),
         [
             ("1", "10", "id", ""),
-            ("1", "10", "id", "id"),
-            ("1", "10", "id", "id = '1'"),
-            ("1", "10", "id", "id = '1' AND id = '2'"),
-            ("1", "10", "id", "id = '1' OR id = '2'"),
-            ("1", "10", "id", "id = '1' AND id = '2' OR id = '3'"),
-            ("1", "10", "id", "id = '1' AND id = '2' OR id = '3' AND id = '4'"),
         ],
     )
     def test_get_aliquots_with_query_params(
@@ -89,15 +85,14 @@ class TestBUILDClient:
             gqlFilter=gqlFilter,
         )
         assert_records(records=response)
+        assert len(response) <= int(pageSize)
 
+    @pytest.mark.skip(reason="Still need to define values for aliquot_id that can be used for the test.")
     @pytest.mark.parametrize(
         "aliquot_id",
         [
-            # "",
             "1",
             "2",
-            "3",
-            "4",
         ],
     )
     def test_get_aliquots_by_id(
