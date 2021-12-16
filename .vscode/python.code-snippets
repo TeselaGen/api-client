@@ -16,39 +16,6 @@
     //     "description": "Log output to console"
     // },
     // A visual studio code python snippet to had python file header.
-    "python-shebang": {
-        "scope": "python",
-        "prefix": [
-            "header-shebang",
-        ],
-        "body": [
-            "#!/usr/bin/env ${1|python3,python|}",
-        ],
-        "description": [
-            "Python shebang.",
-        ],
-    },
-    "python-copyright": {
-        "scope": "python",
-        "prefix": [
-            "header-copyright",
-        ],
-        "body": [
-            "# Copyright (c) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved",
-        ],
-        "description": "Python file copyright.",
-    },
-    "python-shebang-and-copyright": {
-        "scope": "python",
-        "prefix": "header-shebang-and-copyright",
-        "body": [
-            "#!/usr/bin/env ${1|python3,python|}",
-            "# Copyright (c) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved",
-        ],
-        "description": [
-            "Python shebang and copyright.",
-        ],
-    },
     "python-header": {
         "scope": "python",
         "prefix": [
@@ -57,9 +24,10 @@
         "body": [
             "#!/usr/bin/env ${1|python3,python|}",
             "# Copyright (c) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved",
+            "# License: MIT",
             "$BLOCK_COMMENT_START${3/(.*)/${1:/capitalize}/}.$BLOCK_COMMENT_END",
             "",
-            // "from __future__ import annotations",
+            "from __future__ import annotations",
             "",
             "$0",
         ],
