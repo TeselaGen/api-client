@@ -9,6 +9,7 @@ import time
 from typing import Any, Dict, List, Literal, Optional
 from urllib.parse import urljoin
 
+from teselagen.api.build_client import BUILDClient
 from teselagen.api.design_client import DESIGNClient
 from teselagen.api.discover_client import DISCOVERClient
 from teselagen.api.test_client import TESTClient
@@ -26,16 +27,20 @@ AVAILABLE_MODULES: List[Literal["test", "evolve"]] = [
     "evolve",
 ]
 
-# DEFAULT_HOST_URL: str = "https://platform.teselagen.com"
-# DEFAULT_API_TOKEN_NAME: str = "x-tg-cli-token"
-
 # NOTE : Related to Postman and Python requests
 #           "body" goes into the "json" argument
 #           "Query Params" goes into "params" argument
 
+# from typing import TypedDict
+# class TeselagenClientConfigDict(TypedDict, total=True):
+#     """Teselagen Client Config `TypedDict`."""
+#     host_url: str
+#     api_token_name: str
+#     module_name: str
+
 
 # TODO: Maybe is better to set a default value for expires_in = "30m" instead of "1d" (?) or 8 hours
-class TeselaGenClient():
+class TeselaGenClient:
     """Python TeselaGen Client."""
 
     def __init__(
@@ -67,6 +72,7 @@ class TeselaGenClient():
         self._design: Optional[DESIGNClient] = None
         self._test: Optional[TESTClient] = None
         self._discover: Optional[DISCOVERClient] = None
+        self._build: Optional[BUILDClient] = None
         # NOTE: Do not add passwords to the class attributes. Delete all passwords once they've been used.
 
         self.host_url: str = host_url.strip("/")
@@ -119,7 +125,9 @@ class TeselaGenClient():
     @property
     def build(self):
         """This instantiates the client's 'build' property object which provides TeselaGen BUILD API methods."""
-        raise NotImplementedError("Build module client is not yet implemented.")
+        if self._build is None:
+            self._build = BUILDClient(teselagen_client=self)
+        return self._build
 
     @property
     def discover(self):
