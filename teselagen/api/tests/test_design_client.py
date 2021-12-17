@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import Any, cast, Dict, Literal, TYPE_CHECKING, TypedDict
 from urllib.parse import urlencode
 
 import pytest
@@ -15,6 +15,7 @@ import requests_mock  # noqa: F401 # pylint: disable=unused-import # reason: it 
 
 from teselagen.api.client import get
 from teselagen.api.client import post
+from teselagen.utils.utils import ParsedJSONResponse
 
 if TYPE_CHECKING:
     from teselagen.api import TeselaGenClient
@@ -22,6 +23,89 @@ if TYPE_CHECKING:
 # RBS MOCK DATA. These IDs are safe to be public.
 JOB_ID_ONE = 'lowxt1rzramybxeelijsctypix9vk6fl'
 JOB_ID_TWO = 'ouqzbuviolphyjasg0syhkseq6anltxz'
+
+# To be used as default value when `None` is not an option.
+notset: Any = object()  # singleton
+
+
+class ExpectedParsedJSONResponse(TypedDict, total=True):
+    """Expected Parsed JSON response."""
+    url: str
+    status: Literal[True]
+    content: str
+
+
+def check_parsed_json_response_url(
+    response: ParsedJSONResponse | Dict[str, Any],
+    url: str | None = notset,
+) -> None:
+    assert response is not None
+
+    assert "url" in response
+    assert response["url"] is not None
+    assert isinstance(response["url"], str)
+    assert response["url"].strip() != ""
+    if url is not notset:
+        if url is None:
+            assert response["url"] is None
+        else:
+            assert response["url"] == url
+
+
+def check_parsed_json_response_status(
+    response: ParsedJSONResponse | Dict[str, Any],
+    status: bool = True,
+) -> None:
+    assert response is not None
+
+    assert "status" in response
+    assert response["status"] is not None
+    assert isinstance(response["status"], bool)
+    assert response["status"] is status
+
+
+def check_parsed_json_response_content(
+    response: ParsedJSONResponse | Dict[str, Any],
+    content: str | None = notset,
+) -> None:
+    assert response is not None
+
+    assert "content" in response
+    assert response["content"] is not None
+    assert isinstance(response["content"], str)
+    assert response["content"].strip() != ""
+    if content is not notset:
+        if content is None:
+            assert response["content"] is None
+        else:
+            assert response["content"] == content
+
+
+# custom assertions checks
+def check_parsed_json_response(
+    response: ParsedJSONResponse | Dict[str, Any],
+    url: str | None = notset,
+    status: bool = True,
+    content: str | None = notset,
+) -> ExpectedParsedJSONResponse:
+    """Assert the parsed JSON response is a valid JSON object and has the expected keys and values.
+
+    Args:
+        response (ParsedJSONResponse): The parsed JSON response.
+
+    Returns:
+        (ExpectedParsedJSONResponse): The expected parsed JSON response.
+
+    Raises:
+        AssertionError: If the parsed JSON response is not a valid JSON object or has the wrong keys or values.
+    """
+    assert response is not None
+
+    check_parsed_json_response_url(response=response, url=url)
+    check_parsed_json_response_status(response=response, status=status)
+    check_parsed_json_response_content(response=response, content=content)
+
+    return cast(ExpectedParsedJSONResponse, response)
 
 
 class TestDESIGNClient():
@@ -257,7 +341,10 @@ class TestDESIGNClient():
             "algorithm": "ReverseRBS",
         })
 
-        res = post(url=mock_url, data=params, headers=logged_client.headers)
+        response = post(url=mock_url, data=params, headers=logged_client.headers)
+
+        res = check_parsed_json_response(response=response)
+
         res = json.loads(res["content"])
 
         assert sorted(list(res.keys())) == sorted([
