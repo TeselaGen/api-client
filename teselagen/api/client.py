@@ -42,33 +42,27 @@ AVAILABLE_MODULES: List[Literal["test", "evolve"]] = [
 
 # TODO: Maybe is better to set a default value for expires_in = "30m" instead of "1d" (?) or 8 hours
 class TeselaGenClient:
-    """Python TeselaGen Client."""
+    """TeselaGen Client."""
+    # NOTE: For cross-module endpoints use the DESIGN module as default.
+    DEFAULT_MODULE_NAME: Literal["design"] = "design"
+    TESELAGEN_ACTIVE_LAB_IDENTIFIER: Literal["tg-active-lab-id"] = "tg-active-lab-id"
 
     def __init__(
         self,
         host_url: str = DEFAULT_HOST_URL,
         api_token_name: str = DEFAULT_API_TOKEN_NAME,
-        # NOTE: For cross-module endpoints use the DESIGN module as default.
-        module_name: str = "design",
+        module_name: Literal["test", "discover", "design", "build"] = DEFAULT_MODULE_NAME,
     ) -> None:
-        """A Python Client to use for communication with the TeselaGen modules.
+        """A Client to use for communication with the TeselaGen modules.
 
-        Args :
-            module (str) : The module name to use for communication.
+        Args:
+            module_name (str) : The module name to use for communication. Available Modules are: \
+                 "test", "discover", "design", "build" (WIP)
 
-                    Available Modules :
-                                        "test"
-                                        "discover",
-                                        "design",
-                                        "build" (WIP)
 
-            host_url (str) : The Host URL of the API.
+            host_url (str) : The Host URL of the API. Defaults to "https://platform.teselagen.com"
 
-                Default = "https://platform.teselagen.com"
-
-            api_token_name (str) : The name of the API token to use.
-
-                Default = "x-tg-cli-token"
+            api_token_name (str) : The name of the API token to use. Defaults to "x-tg-cli-token"
         """
         self._design: Optional[DESIGNClient] = None
         self._test: Optional[TESTClient] = None
@@ -264,8 +258,7 @@ class TeselaGenClient:
         password: str,
         expiration_time: str,
     ) -> Optional[str]:
-        """Create a new access token for the user with the given username, password and expiration time, and return \
-        the new access token.
+        """Create a new access token for the user.
 
         Args:
             username (str): The username identifier to authenticate with the API.
@@ -404,24 +397,31 @@ class TeselaGenClient:
         """
         identifier = lab_name if lab_id is None else str(lab_id)
         search_field = 'name' if lab_id is None else 'id'
+
         if identifier is None:
             raise ValueError("Received None lab identifiers")
+
         if isinstance(identifier, str) and identifier.lower() == 'common':
             self.unselect_laboratory()
             return
+
         labs = self.get_laboratories()
         lab = list(filter(lambda x: x[search_field] == identifier, labs))
+
         if len(lab) == 0:
             raise OSError(f"Can't find {search_field} {identifier}. Available labs are {labs}")
+
         # Finally store lab id in headers
         self.headers.update({
-            "tg-active-lab-id": str(lab[0]['id']),
+            self.TESELAGEN_ACTIVE_LAB_IDENTIFIER: str(lab[0]['id']),
         })
+
         print(f"Selected Lab: {lab[0]['name']}")
 
     def unselect_laboratory(self) -> None:
         """Clear the selection of a laboratory and removes it from instance headers."""
-        if "tg-active-lab-id" in self.headers:
+        if self.TESELAGEN_ACTIVE_LAB_IDENTIFIER in self.headers:
             # Removing the lab header is interpreted as Common lab in the server
-            del self.headers["tg-active-lab-id"]
+            del self.headers[self.TESELAGEN_ACTIVE_LAB_IDENTIFIER]
+
         print("Selected Lab: Common")
