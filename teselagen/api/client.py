@@ -110,6 +110,7 @@ class TeselaGenClient:
     # These objects are instantiated with the TeselaGen Client object so they share all common functions (such as:
     # login, logout, register, select/unselect lab).
 
+    # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
     def design(self):
         """This instantiates the client's 'design' property object which provides TeselaGen DESIGN API methods."""
@@ -117,6 +118,7 @@ class TeselaGenClient:
             self._design = DESIGNClient(teselagen_client=self)
         return self._design
 
+    # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
     def build(self):
         """This instantiates the client's 'build' property object which provides TeselaGen BUILD API methods."""
@@ -124,6 +126,7 @@ class TeselaGenClient:
             self._build = BUILDClient(teselagen_client=self)
         return self._build
 
+    # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
     def discover(self):
         """This instantiates the client's 'discover' property object which provides TeselaGen DISCOVER API methods."""
@@ -131,6 +134,7 @@ class TeselaGenClient:
             self._discover = DISCOVERClient(teselagen_client=self)
         return self._discover
 
+    # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
     def test(self):
         """This instantiates the client's 'test' property object which provides TeselaGen TEST API methods."""
