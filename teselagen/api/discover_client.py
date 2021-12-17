@@ -42,11 +42,17 @@ GENERATIVE_MODEL_DATA_SCHEMA = [
 
 
 class DISCOVERClient():
+    """DISCOVER Client."""
 
     def __init__(
         self,
         teselagen_client: TeselaGenClient,
     ) -> None:
+        """Initialize the Client.
+
+        Args:
+            teselagen_client (TeselaGenClient): A TeselaGenClient instance.
+        """
         module_name: str = "evolve"  # (now the 'discover' module)
 
         self.host_url = teselagen_client.host_url

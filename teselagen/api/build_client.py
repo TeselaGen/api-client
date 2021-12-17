@@ -89,10 +89,10 @@ class BUILDClient:
         self,
         teselagen_client: TeselaGenClient,
     ) -> None:
-        """Initialize BUILD Client.
+        """Initialize the Client.
 
         Args:
-            teselagen_client (TeselaGenClient): TeselaGen Client object.
+            teselagen_client (TeselaGenClient): A TeselaGenClient instance.
         """
         module_name: str = "build"
 

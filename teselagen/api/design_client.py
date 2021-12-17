@@ -31,7 +31,9 @@ SUPPORTED_AA_EXPORT_FORMATS: List[Literal["JSON", "FASTA", "GENBANK"]] = [
 #           "Query Params" goes into "params" argument
 
 
-class DESIGNClient():
+class DESIGNClient:
+    """DESIGN Client."""
+
     ALLOWED_SEQ_FORMATS: Set[Literal['json', 'fasta', 'genbank']] = {
         'json',
         'fasta',
@@ -44,6 +46,11 @@ class DESIGNClient():
         self,
         teselagen_client: TeselaGenClient,
     ) -> None:
+        """Initialize the Client.
+
+        Args:
+            teselagen_client (TeselaGenClient): A TeselaGenClient instance.
+        """
         module_name: str = "design"
 
         self.host_url = teselagen_client.host_url

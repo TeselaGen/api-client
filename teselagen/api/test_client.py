@@ -41,11 +41,17 @@ IMPORTED_FILE_STATUSES: List[str] = [
 
 
 class TESTClient():
+    """TEST Client."""
 
     def __init__(
         self,
         teselagen_client: TeselaGenClient,
     ) -> None:
+        """Initialize the Client.
+
+        Args:
+            teselagen_client (TeselaGenClient): A TeselaGenClient instance.
+        """
         module_name: str = "test"
 
         self.host_url = teselagen_client.host_url
