@@ -95,7 +95,7 @@ statistics = True
 #       pydocstyle [D100 D418]
 #       http://www.pydocstyle.org/en/stable/error_codes.html
 #
-#       pyflakes [F401, 841]
+#       pyflakes [F401, F841]
 #       https://github.com/PyCQA/pyflakes
 #
 #       radon [R101, R502]
@@ -125,6 +125,21 @@ statistics = True
 #               run 'pip install --upgrade flake8-simplify'
 #               add 'flake8-simplify' to 'enable-extensions'
 #               add 'SIM' error code prefix to 'select'
+#
+#       flake8-type-checking [TC001, TC201]
+#       https://github.com/snok/flake8-type-checking
+#
+#       flake8-typing-imports [TYP001, TYP006]
+#       https://github.com/asottile/flake8-typing-imports
+#
+#       flake8-no-pep420 [INP001]
+#       https://github.com/adamchainz/flake8-no-pep420
+#
+#       flake8-simplify [SIM101, SIM401]
+#       https://github.com/MartinThoma/flake8-simplify
+#
+#       flake8-quotes [Q000, Q003]
+#       https://github.com/zheller/flake8-quotes
 #
 # TODO: Check AAA
 #       https://github.com/jamescooke/flake8-aaa
@@ -195,10 +210,12 @@ per-file-ignores =
     #   D103    : Missing docstring in public function
     #   D104    : Missing docstring in public package
     #   H601    : class has low (X.YZ%) cohesion
+    #   INP001  : File is part of an implicit namespace package.
     #   PT001   : use @pytest.fixture() over @pytest.fixture
     #   S101    : Use of assert detected. The enclosed code will be removed when compiling to optimised byte code
     */test_*: D101,D102,D103,H601,PT001,S101
-    conftest.py: S101
+    conftest.py: S101,INP001
+    setup.py: INP001
     */__init__.py: D104
 
 # flake8-copyright
@@ -230,4 +247,29 @@ select =
     R,
     S,
     T,
+    # tryceratops & flake8-type-checking
     TC,
+    # flake8-type-checking
+    TC1,
+    TYP,
+    INP,
+    SIM,
+    Q0
+
+# https://github.com/snok/flake8-type-checking
+# type-checking-exempt-modules = typing, typing_extensions, mypy_extensions
+
+# https://github.com/asottile/flake8-typing-imports
+min_python_version = 3.9.0
+
+# https://github.com/m-burst/flake8-pytest-style#configuration
+pytest-fixture-no-parentheses = True
+pytest-parametrize-names-type = tuple
+pytest-parametrize-values-type = list
+pytest-parametrize-values-row-type = tuple
+pytest-raises-require-match-for = True
+pytest-mark-no-parentheses = True
+
+# Potentially useful tools
+#   https://github.com/adamchainz/flake8-tidy-imports\
+#   https://github.com/seddonym/import-linter/
