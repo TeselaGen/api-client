@@ -33,11 +33,7 @@ setup(
     name=name,
     version=__version__,
     packages=find_packages(),
-    # description=description,
-    # author=author,
-    # url=url,
     setup_requires=setup_requires,
-    # install_requires=_load_requirements(PATH_ROOT),
     tests_require=tests_require,
     cmdclass={
         'stest': SingleTestCommand,

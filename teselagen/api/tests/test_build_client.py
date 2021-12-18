@@ -5,15 +5,16 @@
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import pytest
 
-from teselagen.api import BUILDClient  # noqa: F401 # pylint: disable=unused-import
-from teselagen.api.build_client import Record
-
 if TYPE_CHECKING:
+    from typing import List
+
+    from teselagen.api import BUILDClient  # noqa: F401 # pylint: disable=unused-import
     from teselagen.api import TeselaGenClient
+    from teselagen.api.build_client import Record
 
 
 def assert_record(record: Record) -> None:
@@ -27,10 +28,10 @@ def assert_record(record: Record) -> None:
     """
     assert record is not None
     assert isinstance(record, dict)
-    assert "id" in record
-    assert record["id"] is not None
-    assert isinstance(record["id"], str)
-    assert record["id"] != ""
+    assert 'id' in record
+    assert record['id'] is not None
+    assert isinstance(record['id'], str)
+    assert record['id'] != ''
 
 
 def assert_records(records: List[Record]) -> None:
@@ -63,15 +64,15 @@ class TestBUILDClient:
         assert_records(records=response)
 
     @pytest.mark.parametrize(
-        ("pageNumber", "pageSize", "sort", "gqlFilter"),
+        ('pageNumber', 'pageSize', 'sort', 'gqlFilter'),
         [
-            ("1", "10", "id", ""),
+            ('1', '10', 'id', ''),
         ],
     )
     def test_get_aliquots_with_query_params(
         self,
         logged_client: TeselaGenClient,
-        pageNumber: str,
+        pageNumber: str,  # noqa: N803
         pageSize: str,
         sort: str,
         gqlFilter: str,
@@ -88,12 +89,12 @@ class TestBUILDClient:
         assert_records(records=response)
         assert len(response) <= int(pageSize)
 
-    @pytest.mark.skip(reason="Still need to define values for aliquot_id that can be used for the test.")
+    @pytest.mark.skip(reason='Still need to define values for aliquot_id that can be used for the test.')
     @pytest.mark.parametrize(
-        "aliquot_id",
+        'aliquot_id',
         [
-            "1",
-            "2",
+            '1',
+            '2',
         ],
     )
     def test_get_aliquots_by_id(
