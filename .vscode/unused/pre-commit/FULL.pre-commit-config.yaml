@@ -341,6 +341,7 @@ repos:
     hooks:
       - id: mypy
         name: "[check]: type check (Python) [mypy]"
+        # pass_filenames: false
         args:
           - --pretty
           - --show-absolute-path
@@ -359,35 +360,37 @@ repos:
         name: "[check]: PEP 8 (Python) [flake8]"
         args:
           - "--format=%(path)s:%(row)d:%(col)d, %(code).1s, %(code)s:%(text)s"
-        additional_dependencies:
-          #
-          - bandit>="1.7.1"
-          - cohesion>="1.0.0"
-          - pep8>="1.7.1"
-          - pycodestyle>="2.8.0"
-          - pydocstyle>="6.1.1"
-          - radon>="5.1.0"
-          - tryceratops>="1.0.0"
-          - mccabe>="0.6.1"
-            #
-          - pep8-naming>="0.12.1"
-            #
-          - flake8-bandit>="2.1.2"
-          - flake8-broken-line>="0.4.0"
-          - flake8-bugbear>="21.11.29"
-          - flake8-commas>="2.1.0"
-          - flake8-comprehensions>="3.7.0"
-          - flake8-copyright>="0.2.2"
-          - flake8-debugger>="4.0.0"
-          - flake8-docstrings>="1.6.0"
-          - flake8-eradicate>="1.2.0"
-          - flake8-executable>="2.1.1"
-          - flake8-implicit-str-concat>="0.2.0"
-          - flake8-logging-format>="0.6.0"
-          - flake8-polyfill>="1.0.2"
-          - flake8-print>="4.0.0"
-          - flake8-pytest-style>="1.5.1"
-          - flake8-use-pathlib>="0.2.1"
+        additional_dependencies: &flake8_deps
+          - bandit>=1.7.1
+          - cohesion>=1.0.0
+          - flake8-bandit>=2.1.2
+          - flake8-broken-line>=0.4.0
+          - flake8-bugbear>=21.11.29
+          - flake8-commas>=2.1.0
+          - flake8-comprehensions>=3.7.0
+          - flake8-copyright>=0.2.2
+          - flake8-debugger>=4.0.0
+          - flake8-docstrings>=1.6.0
+          - flake8-eradicate>=1.2.0
+          - flake8-executable>=2.1.1
+          - flake8-implicit-str-concat>=0.2.0
+          - flake8-logging-format>=0.6.0
+          - flake8-no-pep420>=2.0.0
+          - flake8-polyfill>=1.0.2
+          - flake8-print>=4.0.0
+          - flake8-pytest-style>=1.5.1
+          - flake8-quotes>=3.3.1
+          - flake8-simplify>=0.14.2
+          - flake8-type-checking>=1.1.1
+          - flake8-typing-imports>=1.12.0
+          - flake8-use-pathlib>=0.2.1
+          - mccabe>=0.6.1
+          - pep8-naming>=0.12.1
+          - pep8>=1.7.1
+          - pycodestyle>=2.8.0
+          - pydocstyle>=6.1.1
+          - radon>=5.1.0
+          - tryceratops>=1.0.0
         stages: [manual]
 
   # NOTE: It may be convenient to define it as local pre-commit hook
@@ -541,6 +544,7 @@ repos:
         alias: remove-unncessary-noqa-comments
         name: "[fix]: remove unnecessary noqa comments [yesqa]"
         # stages: [manual]
+        additional_dependencies: *flake8_deps
 
   # NOTE: Probably pair with https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
   - repo: https://github.com/adrienverge/yamllint
@@ -599,35 +603,7 @@ repos:
       - id: nbqa-flake8
         alias: nbqa-flake8-strict
         name: "[check]: check code style issues (Notebooks) [nbqa-flake8]"
-        additional_dependencies:
-          #
-          - bandit>="1.7.1"
-          - cohesion>="1.0.0"
-          - pep8>="1.7.1"
-          - pycodestyle>="2.8.0"
-          - pydocstyle>="6.1.1"
-          - radon>="5.1.0"
-          - tryceratops>="1.0.0"
-          - mccabe>="0.6.1"
-            #
-          - pep8-naming>="0.12.1"
-            #
-          - flake8-bandit>="2.1.2"
-          - flake8-broken-line>="0.4.0"
-          - flake8-bugbear>="21.11.29"
-          - flake8-commas>="2.1.0"
-          - flake8-comprehensions>="3.7.0"
-          - flake8-copyright>="0.2.2"
-          - flake8-debugger>="4.0.0"
-          - flake8-docstrings>="1.6.0"
-          - flake8-eradicate>="1.2.0"
-          - flake8-executable>="2.1.1"
-          - flake8-implicit-str-concat>="0.2.0"
-          - flake8-logging-format>="0.6.0"
-          - flake8-polyfill>="1.0.2"
-          - flake8-print>="4.0.0"
-          - flake8-pytest-style>="1.5.1"
-          - flake8-use-pathlib>="0.2.1"
+        additional_dependencies: *flake8_deps
         stages: [manual]
 
       - id: nbqa-isort
