@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # Copyright (c) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved
 # License: MIT
+"""PyTest configuration file."""
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING
 import warnings
 
 import pytest
@@ -12,6 +13,15 @@ import pytest
 from teselagen.api.client import TeselaGenClient
 from teselagen.utils import get_test_configuration_path
 from teselagen.utils import load_from_json
+
+if TYPE_CHECKING:
+    import typing
+
+    # from typing import Union
+    # from _pytest.config import ExitCode
+    # from pytest import Session
+
+# https://pypi.org/project/pytest-xdist/#making-session-scoped-fixtures-execute-only-once
 
 
 @pytest.fixture(scope='session')
@@ -45,8 +55,8 @@ def test_configuration() -> dict[str, str]:
     ```
     """
     DEFAULT_CONFIGURATION: dict[str, str] = {
-        "host_url": "http://host.docker.internal:3000",
-        "api_token_name": "x-tg-cli-token",
+        'host_url': 'http://host.docker.internal:3000',
+        'api_token_name': 'x-tg-cli-token',
     }
 
     configuration = DEFAULT_CONFIGURATION.copy()
@@ -56,11 +66,11 @@ def test_configuration() -> dict[str, str]:
     if configuration_filepath.is_file():
         # Load file
         file_conf: dict = load_from_json(filepath=configuration_filepath.absolute())
-        assert isinstance(file_conf, dict)
+        assert isinstance(file_conf, dict), 'Configuration file should be a JSON file.'
 
         # Check keys are ok
         assert all(
-            key in configuration for key in file_conf), f"One or more of these keys are wrong: {file_conf.keys()}"
+            key in configuration for key in file_conf), f'One or more of these keys are wrong: {file_conf.keys()}'
 
         # Update values
         configuration.update(file_conf)
@@ -72,20 +82,23 @@ def test_configuration() -> dict[str, str]:
 
 @pytest.fixture(scope='session')
 def host_url(test_configuration: dict[str, str]) -> str:
+    """Returns the host URL."""
     return test_configuration['host_url']
 
 
 @pytest.fixture(scope='session')
 def api_token_name(test_configuration: dict[str, str]) -> str:
+    """Returns the name of the token to be used in the API calls."""
     return test_configuration['api_token_name']
 
 
 @pytest.fixture(scope='session')
 def expiration_time() -> str:
-    return "30m"
+    """Expiration time for API tokens."""
+    return '30m'
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture
 def client(
     host_url: str,
     api_token_name: str,
@@ -102,7 +115,7 @@ def client(
     )
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture
 def logged_client(
     client: TeselaGenClient,
     expiration_time: str,
@@ -120,3 +133,20 @@ def logged_client(
 
     # tear-down
     client.logout()
+
+
+# def pytest_sessionfinish(
+#     session: Session,
+#     exitstatus: Union[int, ExitCode],
+# ) -> None:
+#     """This hook is called after the `session` has finished.
+
+#     Args:
+#         session (Session): The pytest session.
+#         exitstatus (Union[int, ExitCode]): The exit status.
+
+#     References:
+#         https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_sessionfinish
+#     """
+#     print()
+#     print('run status code:', exitstatus)
