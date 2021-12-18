@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Any, Dict, List, Literal, Optional
+from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
 from teselagen.api.build_client import BUILDClient
@@ -22,10 +22,13 @@ from teselagen.utils import post
 from teselagen.utils import put
 from teselagen.utils.utils import ParsedJSONResponse
 
-# ["test", "learn"/"evolve"]
-AVAILABLE_MODULES: List[Literal["test", "evolve"]] = [
-    "test",
-    "evolve",
+if TYPE_CHECKING:
+    from typing import Any, Dict, List, Literal, Optional
+
+# ['test', 'learn'/'evolve']
+AVAILABLE_MODULES: List[Literal['test', 'evolve']] = [
+    'test',
+    'evolve',
 ]
 
 # NOTE : Related to Postman and Python requests
@@ -74,35 +77,35 @@ class TeselaGenClient:
         self.api_token_name: str = api_token_name
 
         # Here we define a common Base URL. Using the DESIGN Module as the target server for these common endpoints.
-        _module_name: str = module_name if module_name != "discover" else "evolve"
-        # module_url: str = urljoin(f"{self.host_url}/",_module_name)
-        # api_url_base: str = urljoin(self.host_url, f"{_module_name}/cli-api")
+        _module_name: str = module_name if module_name != 'discover' else 'evolve'
+        # module_url: str = urljoin(f'{self.host_url}/',_module_name)
+        # api_url_base: str = urljoin(self.host_url, f'{_module_name}/cli-api')
 
         # Here we define the client endpoints. Using the DESIGN Module as the target server for these common endpoints.
-        self.register_url: str = urljoin(self.host_url, f"{_module_name}/register")
-        self.login_url: str = urljoin(self.host_url, f"{_module_name}/login")
-        self.info_url: str = urljoin(self.host_url, f"{_module_name}/cli-api/info")
+        self.register_url: str = urljoin(self.host_url, f'{_module_name}/register')
+        self.login_url: str = urljoin(self.host_url, f'{_module_name}/login')
+        self.info_url: str = urljoin(self.host_url, f'{_module_name}/cli-api/info')
         self.status_url: str = urljoin(
             self.host_url,
-            f"{_module_name}/cli-api/public/status",
-        )  # f"{api_url_base}/public/status"
+            f'{_module_name}/cli-api/public/status',
+        )  # f'{api_url_base}/public/status'
         self.auth_url: str = urljoin(
             self.host_url,
-            f"{_module_name}/cli-api/public/auth",
-        )  # f"{api_url_base}/public/auth"
+            f'{_module_name}/cli-api/public/auth',
+        )  # f'{api_url_base}/public/auth'
 
         # Laboratories
         self.labs_url: str = urljoin(
             self.host_url,
-            "test/cli-api/laboratories",
-        )  # f"{self.host_url}/test/cli-api/laboratories"
+            'test/cli-api/laboratories',
+        )  # f'{self.host_url}/test/cli-api/laboratories'
 
         # NOTE : The authorization token will be updated with the "login" method.
         self.auth_token: Optional[str] = None
 
         # Here we define the headers.
         self.headers: Dict[str, str] = {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
         }
 
     # The next four properties are TG Module Classes providing a series of functions that interact with their
@@ -154,25 +157,26 @@ class TeselaGenClient:
         NB: Registering a new user might require ADMIN privileges.
         """
         body = {
-            "email": username,
-            "firstName": "test",
-            "lastName": "user",
-            "password": password,
-            "passwordConfirm": password,
+            'email': username,
+            'firstName': 'test',
+            'lastName': 'user',
+            'password': password,
+            'passwordConfirm': password,
         }
         response = post(url=self.register_url, json=body)
-        response["content"] = json.loads(response["content"])
+        response['content'] = json.loads(response['content'])
         return response
 
     def login(
         self,
         username: Optional[str] = None,
         password: Optional[str] = None,
-        apiKey: Optional[str] = None,
-        expiration_time: str = "1d",
+        apiKey: Optional[str] = None,  # noqa: N803
+        expiration_time: str = '1d',
     ) -> None:
-        """Login to the CLI with the username used to login through the UI. A password or an apiKey is required. If \
-        none is provided password will be prompted.
+        """Login to the CLI with the username used to login through the UI.
+
+        A password or an apiKey is required. If none is provided password will be prompted.
 
         Args:
             username (Optional[str]) : A valid username (usually their email) to authenticate. If not provided, it \
@@ -230,7 +234,7 @@ class TeselaGenClient:
         _ = self.create_token(
             username=username,
             password=password,
-            expiration_time="1s",
+            expiration_time='1s',
         )
 
         del username, password
@@ -254,7 +258,7 @@ class TeselaGenClient:
             headers=self.headers,
         )
 
-        return response["content"]
+        return response['content']
 
     def create_token(
         self,
@@ -276,9 +280,9 @@ class TeselaGenClient:
                 None if the email address is not authenticated.
         """
         body = {
-            "username": username,
-            "password": password,
-            "expiresIn": expiration_time,
+            'username': username,
+            'password': password,
+            'expiresIn': expiration_time,
         }
 
         # This happens in the CLI
@@ -290,19 +294,19 @@ class TeselaGenClient:
             )
         except Exception as e:
             # TODO : Use a logger
-            print("Connection Refused")
+            print('Connection Refused')
             return None
-        print("Connection Accepted")
+        print('Connection Accepted')
 
         del username, password, body
 
-        response["content"] = json.loads(response["content"])
+        response['content'] = json.loads(response['content'])
 
         # TODO: We could log the expiration Date
-        # expiration_date: str = content["expirationDate"]
+        # expiration_date: str = content['expirationDate']
 
         # NOTE: Should we raise an exception if the content is not a valid JSON ?
-        token: Optional[str] = response["content"]["token"] if response["status"] else None
+        token: Optional[str] = response['content']['token'] if response['status'] else None
 
         return token
 
@@ -350,7 +354,7 @@ class TeselaGenClient:
                 status=False,
             )
 
-        return response["content"]
+        return response['content']
 
     def is_authorized(self):
         # TODO : Try with get_api_info()
@@ -364,7 +368,7 @@ class TeselaGenClient:
         """
         # TODO : implement a method to get the expiration date of the current token
         response = get(url=self.auth_url, headers=self.headers)
-        response["content"] = json.loads(response["content"])
+        response['content'] = json.loads(response['content'])
 
         return response
 
@@ -379,9 +383,9 @@ class TeselaGenClient:
         response = get(url=self.labs_url, headers=self.headers)
 
         # response["content"] = [{"id" : str, "name": str}, ...]
-        response["content"] = json.loads(response["content"])
+        response['content'] = json.loads(response['content'])
 
-        return response["content"]
+        return response['content']
 
     def select_laboratory(
         self,
@@ -403,7 +407,7 @@ class TeselaGenClient:
         search_field = 'name' if lab_id is None else 'id'
 
         if identifier is None:
-            raise ValueError("Received None lab identifiers")
+            raise ValueError('Received None lab identifiers')
 
         if isinstance(identifier, str) and identifier.lower() == 'common':
             self.unselect_laboratory()
@@ -428,4 +432,4 @@ class TeselaGenClient:
             # Removing the lab header is interpreted as Common lab in the server
             del self.headers[self.TESELAGEN_ACTIVE_LAB_IDENTIFIER]
 
-        print("Selected Lab: Common")
+        print('Selected Lab: Common')

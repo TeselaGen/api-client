@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -15,6 +15,8 @@ from teselagen.utils import post
 from teselagen.utils import wait_for_status
 
 if TYPE_CHECKING:
+    from typing import Any, Dict, List, Optional, Tuple, Union
+
     from teselagen.api import TeselaGenClient
 
 # NOTE : Related to Postman and Python requests
@@ -22,9 +24,9 @@ if TYPE_CHECKING:
 #           "Query Params" goes into "params" argument
 
 ALLOWED_MODEL_TYPES: List[Union[str, None]] = [
-    "predictive",
-    "evolutive",
-    "generative",
+    'predictive',
+    'evolutive',
+    'generative',
     None,
 ]
 
@@ -53,36 +55,36 @@ class DISCOVERClient():
         Args:
             teselagen_client (TeselaGenClient): A TeselaGenClient instance.
         """
-        module_name: str = "evolve"  # (now the 'discover' module)
+        module_name: str = 'evolve'  # (now the 'discover' module)
 
         self.host_url = teselagen_client.host_url
         self.headers = teselagen_client.headers
 
         # Here we define the Base CLI URL.
-        api_url_base: str = f"{self.host_url}/{module_name}/cli-api"
+        api_url_base: str = f'{self.host_url}/{module_name}/cli-api'
 
         # Here we define the client endpoints
         # Example :
-        #    self.some_endpoint_url: str = f"{self.api_url_base}/some_endpoint"
-        self.create_model_url: str = f"{api_url_base}/create-model"
+        #    self.some_endpoint_url: str = f'{self.api_url_base}/some_endpoint'
+        self.create_model_url: str = f'{api_url_base}/create-model'
 
-        self.get_model_url: str = f"{api_url_base}/get-model"
-        self.get_models_by_type_url: str = f"{api_url_base}/get-models-by-type"
-        self.get_model_datapoints_url: str = f"{api_url_base}/get-model-datapoints"
+        self.get_model_url: str = f'{api_url_base}/get-model'
+        self.get_models_by_type_url: str = f'{api_url_base}/get-models-by-type'
+        self.get_model_datapoints_url: str = f'{api_url_base}/get-model-datapoints'
 
-        self.submit_model_url: str = f"{api_url_base}/submit-model"
-        self.submit_multi_objective_optimization_url: str = f"{api_url_base}/multi-objective-optimization-task"
-        self.get_multi_objective_optimization_url: str = f"{api_url_base}/multi-objective-optimization-task/" + "/{}"
-        self.delete_model_url: str = f"{api_url_base}/delete-model"
-        self.cancel_model_url: str = f"{api_url_base}/cancel-model"
-        self.cancel_task_url: str = f"{api_url_base}/cancel-task" + "/{}"
+        self.submit_model_url: str = f'{api_url_base}/submit-model'
+        self.submit_multi_objective_optimization_url: str = f'{api_url_base}/multi-objective-optimization-task'
+        self.get_multi_objective_optimization_url: str = f'{api_url_base}/multi-objective-optimization-task/' + '/{}'
+        self.delete_model_url: str = f'{api_url_base}/delete-model'
+        self.cancel_model_url: str = f'{api_url_base}/cancel-model'
+        self.cancel_task_url: str = f'{api_url_base}/cancel-task' + '/{}'
 
-        self.get_task_url: str = f"{api_url_base}/get-tasks" + "/{}"
-        self.get_models_url: str = f"{api_url_base}/get-models"
-        self.get_completed_tasks_url: str = f"{api_url_base}/get-completed-tasks"
+        self.get_task_url: str = f'{api_url_base}/get-tasks' + '/{}'
+        self.get_models_url: str = f'{api_url_base}/get-models'
+        self.get_completed_tasks_url: str = f'{api_url_base}/get-completed-tasks'
 
-        self.crispr_guide_rnas_url: str = f"{api_url_base}/crispr-grnas"
-        self.crispr_guide_rnas_result_url: str = self.crispr_guide_rnas_url + "/{}"
+        self.crispr_guide_rnas_url: str = f'{api_url_base}/crispr-grnas'
+        self.crispr_guide_rnas_result_url: str = self.crispr_guide_rnas_url + '/{}'
 
     def _get_data_from_content(
         self,
@@ -99,14 +101,14 @@ class DISCOVERClient():
         Returns:
             dict: data field from endpoint response
         """
-        if content_dict["message"] != "Submission success.":
-            message = content_dict["message"]
-            raise OSError(f"A problem occurred with query: {message}")
+        if content_dict['message'] != 'Submission success.':
+            message = content_dict['message']
+            raise OSError(f'A problem occurred with query: {message}')
 
         if 'data' not in content_dict:
             raise OSError(f"Can`t found 'data' key in response: {content_dict}")
 
-        return content_dict["data"]
+        return content_dict['data']
 
     def get_model_info(
         self,
@@ -157,13 +159,13 @@ class DISCOVERClient():
         ```
         """
         body = {
-            "id": str(model_id),
+            'id': str(model_id),
         }
-        response: Dict[str, Any] = post(url=self.get_model_url, headers=self.headers, json=body)
-        response["content"] = json.loads(response["content"])
+        response = post(url=self.get_model_url, headers=self.headers, json=body)
+        response['content'] = json.loads(response['content'])
 
         # Check output
-        return self._get_data_from_content(response["content"])
+        return self._get_data_from_content(response['content'])
 
     def get_models_by_type(
         self,
@@ -254,17 +256,17 @@ class DISCOVERClient():
         ```
         """
         if model_type not in ALLOWED_MODEL_TYPES:
-            raise ValueError(f"Type: {model_type} not in {ALLOWED_MODEL_TYPES}")
+            raise ValueError(f'Type: {model_type} not in {ALLOWED_MODEL_TYPES}')
 
         # body = {
-        #     "modelType": "null" if model_type is None else model_type,
+        #     'modelType': 'null' if model_type is None else model_type,
         # }
         body = {
-            "modelType": model_type,
+            'modelType': model_type,
         }
-        response: Dict[str, Any] = post(url=self.get_models_by_type_url, headers=self.headers, json=body)
-        response["content"] = json.loads(response["content"])
-        return self._get_data_from_content(response["content"])
+        response = post(url=self.get_models_by_type_url, headers=self.headers, json=body)
+        response['content'] = json.loads(response['content'])
+        return self._get_data_from_content(response['content'])
 
     def get_model_datapoints(
         self,
@@ -300,24 +302,24 @@ class DISCOVERClient():
         ```
         """
         body = {
-            "modelId": str(model_id),
-            "datapointType": datapoint_type,
-            "batchSize": batch_size,
-            "batchNumber": batch_number,
+            'modelId': str(model_id),
+            'datapointType': datapoint_type,
+            'batchSize': batch_size,
+            'batchNumber': batch_number,
         }
 
-        response: Dict[str, Any] = post(
+        response = post(
             url=self.get_model_datapoints_url,
             headers=self.headers,
             json=body,
         )
 
-        responseContent: Dict[str, Any] = json.loads(response["content"])
+        responseContent: Dict[str, Any] = json.loads(response['content'])  # noqa: N806
 
         datapoints: List[Dict[str, Any]] = []
         if 'data' in responseContent:
             datapoints = [{
-                key: value for key, value in element['datapoint'].items() if key != 'set_tag' and "PCA" not in key
+                key: value for key, value in element['datapoint'].items() if key != 'set_tag' and 'PCA' not in key
             } for element in responseContent['data']]
 
         responseContent.update({'data': datapoints})
@@ -330,7 +332,7 @@ class DISCOVERClient():
         data_schema: List[Any],
         model_type: str,
         configs: Optional[Any] = None,
-        name: str = "",
+        name: str = '',
         description: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Submits a model for training.
@@ -433,17 +435,17 @@ class DISCOVERClient():
         ```
         """
         body = {
-            "dataInput": data_input,
-            "dataSchema": data_schema,
-            "modelType": model_type,
-            "configs": {} if configs is None else configs,
-            "name": name,
-            "description": "" if description is None else description,
+            'dataInput': data_input,
+            'dataSchema': data_schema,
+            'modelType': model_type,
+            'configs': {} if configs is None else configs,
+            'name': name,
+            'description': '' if description is None else description,
         }
-        response: Dict[str, Any] = post(url=self.submit_model_url, headers=self.headers, json=body)
+        response = post(url=self.submit_model_url, headers=self.headers, json=body)
 
-        response["content"] = json.loads(response["content"])
-        return self._get_data_from_content(response["content"])
+        response['content'] = json.loads(response['content'])
+        return self._get_data_from_content(response['content'])
 
     def submit_prediction_task(
         self,
@@ -462,21 +464,21 @@ class DISCOVERClient():
             - A Task object with metadata information on the submitted task including its ID for later retrieval.
         """
         body = {
-            "dataInput": data_input,
-            "dataSchema": data_schema,
-            "modelType": "predictive",
-            "predictiveModelId": model_id,
-            # "configs": {} if configs is None else configs,
-            "name": "pretrained",
-            # "description": "" if description is None else description
+            'dataInput': data_input,
+            'dataSchema': data_schema,
+            'modelType': 'predictive',
+            'predictiveModelId': model_id,
+            # 'configs': {} if configs is None else configs,
+            'name': 'pretrained',
+            # 'description': '' if description is None else description
         }
-        response: Dict[str, Any] = post(
+        response = post(
             url=self.submit_model_url,
             headers=self.headers,
             json=body,
         )
 
-        responseContent: Dict[str, Any] = json.loads(response["content"])
+        responseContent: Dict[str, Any] = json.loads(response['content'])  # noqa: N806
 
         responseContent['data'].update({'pretrainedModelId': model_id})
 
@@ -503,7 +505,7 @@ class DISCOVERClient():
         """
         model_id = task['data']['modelId']
         task_id = task['data']['id']
-        task_response: Dict[str, Any] = self.get_task(task_id=task_id)
+        task_response = self.get_task(task_id=task_id)
         task_status: Dict[str, Any] = task_response['data'][0]['status']
 
         results: Dict[str, Any] = {}
@@ -523,7 +525,7 @@ class DISCOVERClient():
         self,
         data_input: List[Any],
         data_schema: List[Any],
-        pretrainedModelIds: List[Union[int, str]] = None,
+        pretrainedModelIds: List[Union[int, str]] = None,  # noqa: N803
         configs: Optional[Any] = None,
     ):
         """Submits a multi objective optimization task.
@@ -615,30 +617,30 @@ class DISCOVERClient():
         ```
         """
         body = {
-            "dataInput": data_input,
-            "dataSchema": data_schema,
-            "predictiveModelIds": pretrainedModelIds,
-            "configs": {} if configs is None else configs,
+            'dataInput': data_input,
+            'dataSchema': data_schema,
+            'predictiveModelIds': pretrainedModelIds,
+            'configs': {} if configs is None else configs,
         }
-        response: Dict[str, Any] = post(
+        response = post(
             url=self.submit_multi_objective_optimization_url,
             headers=self.headers,
             json=body,
         )
-        response["content"] = json.loads(response["content"])
-        return response["content"]
+        response['content'] = json.loads(response['content'])
+        return response['content']
 
     def get_multi_objective_optimization(
-        self,
-        taskId: str,
+            self,
+            taskId: str,  # noqa: N803
     ) -> Any:
-        response: Dict[str, Any] = get(
+        response = get(
             url=self.get_multi_objective_optimization_url.format(taskId),
             headers=self.headers,
         )
 
-        response["content"] = json.loads(response["content"])
-        return response["content"]
+        response['content'] = json.loads(response['content'])
+        return response['content']
 
     def delete_model(
         self,
@@ -656,9 +658,9 @@ class DISCOVERClient():
         body = {
             "id": str(model_id),
         }
-        response: Dict[str, Any] = post(url=self.delete_model_url, headers=self.headers, json=body)
-        response["content"] = json.loads(response["content"])
-        return self._get_data_from_content(response["content"])
+        response = post(url=self.delete_model_url, headers=self.headers, json=body)
+        response['content'] = json.loads(response['content'])
+        return self._get_data_from_content(response['content'])
         # raise NotImplementedError
 
     def cancel_model(
@@ -675,11 +677,11 @@ class DISCOVERClient():
             () :
         """
         body = {
-            "id": str(model_id),
+            'id': str(model_id),
         }
-        response: Dict[str, Any] = post(url=self.cancel_model_url, headers=self.headers, json=body)
-        response["content"] = json.loads(response["content"])
-        return self._get_data_from_content(response["content"])
+        response = post(url=self.cancel_model_url, headers=self.headers, json=body)
+        response['content'] = json.loads(response['content'])
+        return self._get_data_from_content(response['content'])
 
     def get_task(
         self,
@@ -692,12 +694,12 @@ class DISCOVERClient():
 
         Returns: A task object with task metadata including its ID and status.
         """
-        response: Dict[str, Any] = get(
+        response = get(
             url=self.get_task_url.format(task_id),
             headers=self.headers,
         )
 
-        return json.loads(response["content"])
+        return json.loads(response['content'])
 
     def cancel_task(self, task_id: int) -> Any:
         """Cancels the submission of a task matching the specified `task_id`.
@@ -708,11 +710,11 @@ class DISCOVERClient():
         Returns:
             ():
         """
-        response: Dict[str, Any] = post(
+        response = post(
             url=self.cancel_task_url.format(task_id),
             headers=self.headers,
         )
-        return json.loads(response["content"])
+        return json.loads(response['content'])
 
     def design_crispr_grnas(
         self,
@@ -777,14 +779,14 @@ class DISCOVERClient():
         if max_number is not None:
             body['options']['maxNumber'] = max_number
 
-        response: Dict[str, Any] = post(url=self.crispr_guide_rnas_url, headers=self.headers, json=body)
-        result = json.loads(response["content"])
+        response = post(url=self.crispr_guide_rnas_url, headers=self.headers, json=body)
+        result = json.loads(response['content'])
 
         if wait_for_results and 'taskId' in result:
             result = wait_for_status(
                 method=self._design_crispr_grnas_get_result,
-                validate=lambda x: x["status"] == "completed-successfully",
-                task_id=result["taskId"],
+                validate=lambda x: x['status'] == 'completed-successfully',
+                task_id=result['taskId'],
             )['data']
 
         return result
@@ -801,9 +803,9 @@ class DISCOVERClient():
         Returns:
             dict: status of the process and, if finished, guides information  as described in `design_crispr_grnas`.
         """
-        response: Dict[str, Any] = get(url=self.crispr_guide_rnas_result_url.format(task_id), headers=self.headers)
+        response = get(url=self.crispr_guide_rnas_result_url.format(task_id), headers=self.headers)
 
-        return json.loads(response["content"])
+        return json.loads(response['content'])
 
     def submit_generative_model(
         self,
@@ -865,17 +867,17 @@ class DISCOVERClient():
                 if all(isinstance(x, str) for x in aa_sequences):
                     kwargs['data_input'] = list(map(lambda x: {'sequence': x}, aa_sequences))
                 else:
-                    raise ValueError("All amino acid sequences must be of type string.")
+                    raise ValueError('All amino acid sequences must be of type string.')
         elif aa_sequence_ids is not None:
             if isinstance(aa_sequence_ids, (list, np.ndarray)):
                 if all(isinstance(x, int) for x in aa_sequence_ids):
-                    NotImplementedError("Passing sequence IDs is not yet supported.")
+                    NotImplementedError('Passing sequence IDs is not yet supported.')
                     # TODO: import sequences from DESIGN using the IDs in aa_sequence_ids.
                     # exported_sequences = DESIGNClient.export_aa_sequences(...)
                     # kwargs['data_input'] = list(map(lambda x: {'sequence': x}, exported_sequences))
 
         # response = self.submit_model(**kwargs)
-        response: Dict[str, Any] = self.submit_model(
+        response = self.submit_model(
             data_input=kwargs['data_input'],
             data_schema=kwargs['data_schema'],
             model_type=kwargs['model_type'],
@@ -887,10 +889,10 @@ class DISCOVERClient():
         # formatted_response
         return {
             # When submitting a model a new microservice job is created with ID=response['id']
-            "jobId": response['id'],
+            'jobId': response['id'],
             # When submitting a model a new model record is created with ID=response['modelId']
-            "modelId": response['modelId'],
-            "status": response['status'],
-            "createdAt": response['createdAt'],
-            "updatedAt": response['updatedAt'],
+            'modelId': response['modelId'],
+            'status': response['status'],
+            'createdAt': response['createdAt'],
+            'updatedAt': response['updatedAt'],
         }

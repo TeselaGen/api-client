@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, cast, Dict, List, Literal, TYPE_CHECKING, TypedDict, Union
+from typing import Any, cast, Dict, List, TYPE_CHECKING, TypedDict, Union
 
 from teselagen.utils import delete  # noqa: F401 # pylint: disable=unused-import
 from teselagen.utils import get  # pylint: disable=unused-import
@@ -15,6 +15,8 @@ from teselagen.utils import post  # noqa: F401 # pylint: disable=unused-import
 from teselagen.utils import put  # noqa: F401 # pylint: disable=unused-import
 
 if TYPE_CHECKING:
+    from typing import Literal
+
     from teselagen.api import TeselaGenClient
 
 # NOTE : Related to Postman and Python requests
@@ -37,10 +39,10 @@ class Record(TypedDict, total=True):
 
 class GetRecordsQueryParams(TypedDict, total=True):
     """Get records query parameters `TypedDict`."""
-    pageNumber: str
-    pageSize: str
+    pageNumber: str  # noqa: N815
+    pageSize: str  # noqa: N815
     sort: str
-    gqlFilter: str
+    gqlFilter: str  # noqa: N815
 
 
 # class User(TypedDict):
@@ -94,23 +96,23 @@ class BUILDClient:
         Args:
             teselagen_client (TeselaGenClient): A TeselaGenClient instance.
         """
-        module_name: str = "build"
+        module_name: str = 'build'
 
         self.host_url = teselagen_client.host_url
         self.headers = teselagen_client.headers
 
         # Here we define the Base CLI URL.
-        api_url_base: str = f"{self.host_url}/{module_name}/cli-api"
+        api_url_base: str = f'{self.host_url}/{module_name}/cli-api'
 
         # Here we define the client endpoints
         # Example :
-        #    self.some_endpoint_url: str = f"{api_url_base}/some_endpoint"
+        #    self.some_endpoint_url: str = f'{api_url_base}/some_endpoint'
 
-        self.aliquots_url: str = f"{api_url_base}/aliquots"
-        self.aliquot_url: str = f"{api_url_base}/aliquots" + "/{}"
+        self.aliquots_url: str = f'{api_url_base}/aliquots'
+        self.aliquot_url: str = f'{api_url_base}/aliquots' + '/{}'
 
-        self.samples_url: str = f"{api_url_base}/samples"
-        self.sample_url: str = f"{api_url_base}/samples" + "/{}"
+        self.samples_url: str = f'{api_url_base}/samples'
+        self.sample_url: str = f'{api_url_base}/samples' + '/{}'
 
     def get_aliquots_by_id(
         self,
@@ -131,13 +133,13 @@ class BUILDClient:
             headers=self.headers,
         )
 
-        assert response["content"] is not None
+        assert response['content'] is not None
 
-        return cast(AliquotRecord, json.loads(response["content"]))
+        return cast(AliquotRecord, json.loads(response['content']))
 
     def get_aliquots(
             self,
-            pageNumber: str | int = '1',
+            pageNumber: str | int = '1',  # noqa: N803
             pageSize: str | int = DEFAULT_PAGE_SIZE,
             sort: str = '-updatedAt',
             gqlFilter: str = '',  # TODO(diegovalenzuelaiturra): Chech default parameter (if any).
@@ -173,9 +175,9 @@ class BUILDClient:
             params=params,
         )
 
-        assert response["content"] is not None
+        assert response['content'] is not None
 
-        return cast(List[AliquotRecord], json.loads(response["content"]))
+        return cast(List[AliquotRecord], json.loads(response['content']))
 
     def get_sample(
         self,
@@ -196,13 +198,13 @@ class BUILDClient:
             headers=self.headers,
         )
 
-        assert response["content"] is not None
+        assert response['content'] is not None
 
-        return cast(SampleRecord, json.loads(response["content"]))
+        return cast(SampleRecord, json.loads(response['content']))
 
     def get_samples(
             self,
-            pageNumber: str | int = '1',
+            pageNumber: str | int = '1',  # noqa: N803
             pageSize: str | int = DEFAULT_PAGE_SIZE,
             sort: str = '-updatedAt',
             gqlFilter: str = '',  #  TODO(diegovalenzuelaiturra): Chech default parameter (if any).
@@ -238,6 +240,6 @@ class BUILDClient:
             params=params,
         )
 
-        assert response["content"] is not None
+        assert response['content'] is not None
 
-        return cast(List[SampleRecord], json.loads(response["content"]))
+        return cast(List[SampleRecord], json.loads(response['content']))

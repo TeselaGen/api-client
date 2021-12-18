@@ -6,8 +6,7 @@
 from __future__ import annotations
 
 from itertools import product
-from typing import cast, Literal, TYPE_CHECKING
-import typing
+from typing import cast, TYPE_CHECKING
 import uuid
 
 import fastaparser
@@ -15,16 +14,19 @@ from fastaparser.fastasequence import FastaSequence
 import pytest
 import requests_mock  # noqa: F401 # pylint: disable=unused-import # reason: it is being used as tests argument
 
-from teselagen.api import DISCOVERClient
 from teselagen.utils import get_project_root
 
 if TYPE_CHECKING:
+    from typing import Literal
+    import typing
+
+    from teselagen.api import DISCOVERClient
     from teselagen.api import TeselaGenClient
 
-MODEL_TYPES_TO_BE_TESTED: list[Literal["predictive", "evolutive", "generative"]] = [
-    "predictive",
-    "evolutive",
-    "generative",
+MODEL_TYPES_TO_BE_TESTED: list[Literal['predictive', 'evolutive', 'generative']] = [
+    'predictive',
+    'evolutive',
+    'generative',
 ]
 
 
@@ -36,7 +38,7 @@ class TestDISCOVERClient():
         logged_client: TeselaGenClient,
     ) -> typing.Generator[DISCOVERClient, None, None]:
         # set up
-        logged_client.select_laboratory(lab_name="The Test Lab")
+        logged_client.select_laboratory(lab_name='The Test Lab')
 
         # yield
         yield logged_client.discover
@@ -55,43 +57,43 @@ class TestDISCOVERClient():
         # set up
         # Define synthetic problem parameters
         params = {
-            "name": f"Model X times Y {uuid.uuid1()}",
-            "description": "This is a model created by PyTest.",
-            "data_input": [{
-                "X": str(el[0]),
-                "Y": str(el[1]),
-                "Z": el[0] * el[1],
+            'name': f'Model X times Y {uuid.uuid1()}',
+            'description': 'This is a model created by PyTest.',
+            'data_input': [{
+                'X': str(el[0]),
+                'Y': str(el[1]),
+                'Z': el[0] * el[1],
             } for el in product(range(10), range(10))],
-            "data_schema": [
+            'data_schema': [
                 {
-                    "name": "X",
-                    "id": 0,
-                    "value_type": "categoric",
-                    "type": "descriptor",
+                    'name': 'X',
+                    'id': 0,
+                    'value_type': 'categoric',
+                    'type': 'descriptor',
                 },
                 {
-                    "name": "Y",
-                    "id": 1,
-                    "value_type": "categoric",
-                    "type": "descriptor",
+                    'name': 'Y',
+                    'id': 1,
+                    'value_type': 'categoric',
+                    'type': 'descriptor',
                 },
                 {
-                    "name": "Z",
-                    "id": 2,
-                    "value_type": "numeric",
-                    "type": "target",
+                    'name': 'Z',
+                    'id': 2,
+                    'value_type': 'numeric',
+                    'type': 'target',
                 },
             ],
-            "model_type": "predictive",
+            'model_type': 'predictive',
         }
 
         result = discover_client.submit_model(**params)
 
         # store model ID for tear down
-        model_id: int = result["id"]
+        model_id: int = result['id']
 
         # yield
-        yield str(params["name"])
+        yield str(params['name'])
 
         # tear down
         # NOTE: This is a partial tear down. We remove the model only if it was created by this test.
@@ -111,15 +113,15 @@ class TestDISCOVERClient():
         discover_client: DISCOVERClient,
     ):
         # We check if the client has the required attributes.
-        assert hasattr(discover_client, "create_model_url")
-        assert hasattr(discover_client, "get_model_url")
-        assert hasattr(discover_client, "get_models_by_type_url")
-        assert hasattr(discover_client, "get_model_datapoints_url")
-        assert hasattr(discover_client, "submit_model_url")
-        assert hasattr(discover_client, "delete_model_url")
-        assert hasattr(discover_client, "cancel_model_url")
-        assert hasattr(discover_client, "get_models_url")
-        assert hasattr(discover_client, "get_completed_tasks_url")
+        assert hasattr(discover_client, 'create_model_url')
+        assert hasattr(discover_client, 'get_model_url')
+        assert hasattr(discover_client, 'get_models_by_type_url')
+        assert hasattr(discover_client, 'get_model_datapoints_url')
+        assert hasattr(discover_client, 'submit_model_url')
+        assert hasattr(discover_client, 'delete_model_url')
+        assert hasattr(discover_client, 'cancel_model_url')
+        assert hasattr(discover_client, 'get_models_url')
+        assert hasattr(discover_client, 'get_completed_tasks_url')
 
     def test_login(
         self,
@@ -131,7 +133,7 @@ class TestDISCOVERClient():
         assert api_token_name not in client.headers.keys()
 
         # LOGIN
-        expiration_time: str = "1d"
+        expiration_time: str = '1d'
         client.login(expiration_time=expiration_time)
 
         # After login, the client has tokens
@@ -140,7 +142,7 @@ class TestDISCOVERClient():
         assert isinstance(client.headers[api_token_name], str)
 
     # TODO: `test_get_models_by_type` test fails for evolutive models
-    @pytest.mark.parametrize("model_type", MODEL_TYPES_TO_BE_TESTED)
+    @pytest.mark.parametrize('model_type', MODEL_TYPES_TO_BE_TESTED)
     def test_get_models_by_type(
             self,
             discover_client: DISCOVERClient,
@@ -151,31 +153,31 @@ class TestDISCOVERClient():
         assert isinstance(response, list)
 
         expected_keys: list[str] = [
-            "id",
-            "labId",
-            "modelType",
-            "name",
-            "description",
-            "status",
-            "evolveModelInfo",
+            'id',
+            'labId',
+            'modelType',
+            'name',
+            'description',
+            'status',
+            'evolveModelInfo',
         ]
 
-        for data in response:  # ["data"]:
+        for data in response:  # ['data']:
 
             for key in expected_keys:
                 assert key in data.keys()
 
-                if key == "evolveModelInfo":
+                if key == 'evolveModelInfo':
                     assert isinstance(data[key], dict)
 
                     expected_evolveModelInfokeys: list[str] = [
-                        "microserviceQueueId",
-                        "dataSchema",
-                        "modelStats",
+                        'microserviceQueueId',
+                        'dataSchema',
+                        'modelStats',
                     ]
                     assert all(k in data[key].keys() for k in expected_evolveModelInfokeys)
 
-                elif key == "labId":
+                elif key == 'labId':
                     assert isinstance(data[key], str) or data[key] is None
 
                 else:
@@ -186,7 +188,7 @@ class TestDISCOVERClient():
         discover_client: DISCOVERClient,
     ):
         # Fasta file
-        seq_filepath = get_project_root() / "teselagen/examples/pytested/dummy_organism.fasta"
+        seq_filepath = get_project_root() / 'teselagen/examples/pytested/dummy_organism.fasta'
 
         # Load file
         with open(seq_filepath) as fasta_file:
@@ -212,16 +214,16 @@ class TestDISCOVERClient():
         requests_mock,
     ):
         expected_url = discover_client.crispr_guide_rnas_url
-        sequence = "AGTCAGGTACGGTACGGTACGGTATGGCAAAAGGACGGATGGACAGGCT"
+        sequence = 'AGTCAGGTACGGTACGGTACGGTATGGCAAAAGGACGGATGGACAGGCT'
         target_indexes = (10, 14)
         endpoint_output = [
             {
-                "start": 10,
-                "end": 12,
-                "offTargetScore": 0.8,
-                "forward": True,
-                "pam": "CGG",
-                "onTargetScore": 0.6,
+                'start': 10,
+                'end': 12,
+                'offTargetScore': 0.8,
+                'forward': True,
+                'pam': 'CGG',
+                'onTargetScore': 0.6,
             },
         ]
         requests_mock.post(expected_url, json=endpoint_output)
@@ -240,7 +242,7 @@ class TestDISCOVERClient():
         submitted_model_name: str,
     ):
         for _ in range(3):
-            res = discover_client.get_models_by_type(model_type="predictive")
+            res = discover_client.get_models_by_type(model_type='predictive')
             new_model = list(filter(lambda x: x['name'] == submitted_model_name, res))
             if len(new_model) > 0:
                 break
@@ -268,8 +270,8 @@ class TestDISCOVERClient():
     ):
         expected_url = discover_client.submit_model_url
         endpoint_output = {
-            "message": "Submission success.",
-            "data": {
+            'message': 'Submission success.',
+            'data': {
                 'id': 0,
             },
         }
@@ -277,35 +279,35 @@ class TestDISCOVERClient():
 
         # Define synthetic problem parameters
         params = {
-            "name": f"Model X times Y {uuid.uuid1()}",
-            "data_input": [{
-                "X": str(el[0]),
-                "Y": str(el[1]),
-                "Z": el[0] * el[1],
+            'name': f'Model X times Y {uuid.uuid1()}',
+            'data_input': [{
+                'X': str(el[0]),
+                'Y': str(el[1]),
+                'Z': el[0] * el[1],
             } for el in product(range(10), range(10))],
-            "data_schema": [
+            'data_schema': [
                 {
-                    "name": "X",
-                    "id": 0,
-                    "value_type": "categoric",
-                    "type": "descriptor",
+                    'name': 'X',
+                    'id': 0,
+                    'value_type': 'categoric',
+                    'type': 'descriptor',
                 },
                 {
-                    "name": "Y",
-                    "id": 1,
-                    "value_type": "categoric",
-                    "type": "descriptor",
+                    'name': 'Y',
+                    'id': 1,
+                    'value_type': 'categoric',
+                    'type': 'descriptor',
                 },
                 {
-                    "name": "Z",
-                    "id": 2,
-                    "value_type": "numeric",
-                    "type": "target",
+                    'name': 'Z',
+                    'id': 2,
+                    'value_type': 'numeric',
+                    'type': 'target',
                 },
             ],
-            "model_type": "predictive",
-            "configs": {},
-            "description": "",
+            'model_type': 'predictive',
+            'configs': {},
+            'description': '',
         }
 
         result = discover_client.submit_model(**params)
@@ -314,8 +316,8 @@ class TestDISCOVERClient():
 
         # Names to camel case:
         expected_params = params.copy()
-        expected_params["dataInput"] = expected_params.pop("data_input")
-        expected_params["dataSchema"] = expected_params.pop("data_schema")
-        expected_params["modelType"] = expected_params.pop("model_type")
+        expected_params['dataInput'] = expected_params.pop('data_input')
+        expected_params['dataSchema'] = expected_params.pop('data_schema')
+        expected_params['modelType'] = expected_params.pop('model_type')
 
         assert requests_mock.last_request.json() == expected_params

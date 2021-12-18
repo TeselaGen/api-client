@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, cast, Dict, Literal, TYPE_CHECKING, TypedDict
+from typing import cast, TYPE_CHECKING, TypedDict
 from urllib.parse import urlencode
 
 import pytest
@@ -15,10 +15,12 @@ import requests_mock  # noqa: F401 # pylint: disable=unused-import # reason: it 
 
 from teselagen.api.client import get
 from teselagen.api.client import post
-from teselagen.utils.utils import ParsedJSONResponse
 
 if TYPE_CHECKING:
+    from typing import Any, Dict, Literal
+
     from teselagen.api import TeselaGenClient
+    from teselagen.utils.utils import ParsedJSONResponse
 
 # RBS MOCK DATA. These IDs are safe to be public.
 JOB_ID_ONE = 'lowxt1rzramybxeelijsctypix9vk6fl'
@@ -41,15 +43,15 @@ def check_parsed_json_response_url(
 ) -> None:
     assert response is not None
 
-    assert "url" in response
-    assert response["url"] is not None
-    assert isinstance(response["url"], str)
-    assert response["url"].strip() != ""
+    assert 'url' in response
+    assert response['url'] is not None
+    assert isinstance(response['url'], str)
+    assert response['url'].strip() != ''
     if url is not notset:
         if url is None:
-            assert response["url"] is None
+            assert response['url'] is None
         else:
-            assert response["url"] == url
+            assert response['url'] == url
 
 
 def check_parsed_json_response_status(
@@ -58,10 +60,10 @@ def check_parsed_json_response_status(
 ) -> None:
     assert response is not None
 
-    assert "status" in response
-    assert response["status"] is not None
-    assert isinstance(response["status"], bool)
-    assert response["status"] is status
+    assert 'status' in response
+    assert response['status'] is not None
+    assert isinstance(response['status'], bool)
+    assert response['status'] is status
 
 
 def check_parsed_json_response_content(
@@ -70,15 +72,15 @@ def check_parsed_json_response_content(
 ) -> None:
     assert response is not None
 
-    assert "content" in response
-    assert response["content"] is not None
-    assert isinstance(response["content"], str)
-    assert response["content"].strip() != ""
+    assert 'content' in response
+    assert response['content'] is not None
+    assert isinstance(response['content'], str)
+    assert response['content'].strip() != ''
     if content is not notset:
         if content is None:
-            assert response["content"] is None
+            assert response['content'] is None
         else:
-            assert response["content"] == content
+            assert response['content'] == content
 
 
 # custom assertions checks
@@ -123,13 +125,13 @@ class TestDESIGNClient():
         TEST_REPORT_ID = 1023
 
         # Create Mock
-        api_url_base = f"{logged_client.host_url}/design/cli-api"
-        url = f"{api_url_base}{logged_client.design.URL_GET_ASSEMBLY_REPORT}/{TEST_REPORT_ID}"
+        api_url_base = f'{logged_client.host_url}/design/cli-api'
+        url = f'{api_url_base}{logged_client.design.URL_GET_ASSEMBLY_REPORT}/{TEST_REPORT_ID}'
 
-        requests_mock.get(url, content=b"estoesunarchivobinario")
+        requests_mock.get(url, content=b'estoesunarchivobinario')
 
         # Create temporary folder
-        local_filename = tmpdir.mkdir('assembly_report').join(f"report_{TEST_REPORT_ID}.zip")
+        local_filename = tmpdir.mkdir('assembly_report').join(f'report_{TEST_REPORT_ID}.zip')
 
         # Download report and make assertions
         report_filepath = logged_client.design.get_assembly_report(
@@ -139,7 +141,7 @@ class TestDESIGNClient():
 
         assert Path(report_filepath).is_file()
 
-    @pytest.mark.skip("This test should be skipped until we have some way to ensure there is a report in database")
+    @pytest.mark.skip('This test should be skipped until we have some way to ensure there is a report in database')
     def test_get_assembly_report(
         self,
         tmpdir,
@@ -151,7 +153,7 @@ class TestDESIGNClient():
         TEST_REPORT_ID = 1023
 
         # Create temporary folder
-        local_filename = tmpdir.mkdir('assembly_report').join(f"report_{TEST_REPORT_ID}.zip")
+        local_filename = tmpdir.mkdir('assembly_report').join(f'report_{TEST_REPORT_ID}.zip')
 
         # Download report and make assertions
         report_filepath = logged_client.design.get_assembly_report(
@@ -169,7 +171,7 @@ class TestDESIGNClient():
         seq_id = 123807
 
         # Create Mock
-        url = f"{logged_client.design.export_dna_sequence_url}json/{seq_id}"
+        url = f'{logged_client.design.export_dna_sequence_url}json/{seq_id}'
         requests_mock.get(url, content=b'{"name": "pj5_00001"}')
 
         # Call method
@@ -178,7 +180,7 @@ class TestDESIGNClient():
         assert isinstance(res, dict)
         assert res['name'] == 'pj5_00001'
 
-    @pytest.mark.skip("This test should be skipped until we know a dna sequence id in db")
+    @pytest.mark.skip('This test should be skipped until we know a dna sequence id in db')
     def test_get_dna_sequence(
         self,
         logged_client: TeselaGenClient,
@@ -201,9 +203,9 @@ class TestDESIGNClient():
 
         assert res == [
             {
-                "id": 12,
-                "name": "hey",
-                "sequence": "GATACA",
+                'id': 12,
+                'name': 'hey',
+                'sequence': 'GATACA',
             },
         ]
 
@@ -223,7 +225,7 @@ class TestDESIGNClient():
         # Build expected URL
         expected_params = params.copy()
         expected_params['gqlFilter'] = json.dumps(expected_params['gqlFilter'])
-        expected_url = logged_client.design.get_designs_url + "?" + urlencode(expected_params)
+        expected_url = logged_client.design.get_designs_url + '?' + urlencode(expected_params)
 
         # Prepare output from mock request
         requests_mock.get(expected_url, content=b'[{"id": 12, "name": "hola", "__typename": "design"}]')
@@ -238,8 +240,8 @@ class TestDESIGNClient():
 
         assert res == [
             {
-                "id": 12,
-                "name": "hola",
+                'id': 12,
+                'name': 'hola',
             },
         ]
 
@@ -261,11 +263,11 @@ class TestDESIGNClient():
         logged_client: TeselaGenClient,
     ):
         """Hits a mock CLI API endpoint, it tests that its correctly calling it with the expected mock response."""
-        api_url_base = f"{logged_client.host_url}/design/cli-api"
-        mock_url = f"{api_url_base}/mock/rbs-calculator/jobs"
+        api_url_base = f'{logged_client.host_url}/design/cli-api'
+        mock_url = f'{api_url_base}/mock/rbs-calculator/jobs'
 
         res = get(url=mock_url, headers=logged_client.headers)
-        res = json.loads(res["content"])
+        res = json.loads(res['content'])
 
         assert sorted(list(res.keys())) == sorted([
             'authenticated',
@@ -283,11 +285,11 @@ class TestDESIGNClient():
         self,
         logged_client: TeselaGenClient,
     ):
-        api_url_base = f"{logged_client.host_url}/design/cli-api"
-        mock_url = f"{api_url_base}/mock/rbs-calculator/organisms"
+        api_url_base = f'{logged_client.host_url}/design/cli-api'
+        mock_url = f'{api_url_base}/mock/rbs-calculator/organisms'
 
         res = get(url=mock_url, headers=logged_client.headers)
-        res = json.loads(res["content"])
+        res = json.loads(res['content'])
 
         assert isinstance(res, list)
         assert len(res) == 4
@@ -300,11 +302,11 @@ class TestDESIGNClient():
         self,
         logged_client: TeselaGenClient,
     ):
-        api_url_base = f"{logged_client.host_url}/design/cli-api"
-        mock_url = f"{api_url_base}/mock/rbs-calculator/jobs/{JOB_ID_ONE}"
+        api_url_base = f'{logged_client.host_url}/design/cli-api'
+        mock_url = f'{api_url_base}/mock/rbs-calculator/jobs/{JOB_ID_ONE}'
 
         res = get(url=mock_url, headers=logged_client.headers)
-        res = json.loads(res["content"])
+        res = json.loads(res['content'])
 
         assert sorted(list(res.keys())) == sorted([
             'authenticated',
@@ -335,17 +337,17 @@ class TestDESIGNClient():
         self,
         logged_client: TeselaGenClient,
     ):
-        api_url_base = f"{logged_client.host_url}/design/cli-api"
-        mock_url = f"{api_url_base}/mock/rbs-calculator/submit"
+        api_url_base = f'{logged_client.host_url}/design/cli-api'
+        mock_url = f'{api_url_base}/mock/rbs-calculator/submit'
         params = json.dumps({
-            "algorithm": "ReverseRBS",
+            'algorithm': 'ReverseRBS',
         })
 
         response = post(url=mock_url, data=params, headers=logged_client.headers)
 
         res = check_parsed_json_response(response=response)
 
-        res = json.loads(res["content"])
+        res = json.loads(res['content'])
 
         assert sorted(list(res.keys())) == sorted([
             'authenticated',
