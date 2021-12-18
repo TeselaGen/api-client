@@ -240,6 +240,45 @@ repos:
       - id: yesqa
         alias: remove-unncessary-noqa-comments
         name: "[fix]: remove unnecessary noqa comments [yesqa]"
+        additional_dependencies: &flake8_deps
+          - bandit>=1.7.1
+          - cohesion>=1.0.0
+          - flake8-bandit>=2.1.2
+          - flake8-broken-line>=0.4.0
+          - flake8-bugbear>=21.11.29
+          - flake8-commas>=2.1.0
+          - flake8-comprehensions>=3.7.0
+          - flake8-copyright>=0.2.2
+          - flake8-debugger>=4.0.0
+          - flake8-docstrings>=1.6.0
+          - flake8-eradicate>=1.2.0
+          - flake8-executable>=2.1.1
+          - flake8-implicit-str-concat>=0.2.0
+          - flake8-logging-format>=0.6.0
+          - flake8-no-pep420>=2.0.0
+          - flake8-polyfill>=1.0.2
+          - flake8-print>=4.0.0
+          - flake8-pytest-style>=1.5.1
+          - flake8-quotes>=3.3.1
+          - flake8-simplify>=0.14.2
+          - flake8-type-checking>=1.1.1
+          - flake8-typing-imports>=1.12.0
+          - flake8-use-pathlib>=0.2.1
+          - mccabe>=0.6.1
+          - pep8-naming>=0.12.1
+          - pep8>=1.7.1
+          - pycodestyle>=2.8.0
+          - pydocstyle>=6.1.1
+          - radon>=5.1.0
+          - tryceratops>=1.0.0
+
+  # - repo: https://github.com/pycqa/flake8
+  #   rev: 4.0.1
+  #   hooks:
+  #     - id: flake8
+  #       alias: check-flake8
+  #       name: "[check]: PEP 8 (Python) [flake8]"
+  #       additional_dependencies: *flake8_deps
 
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.26.3
