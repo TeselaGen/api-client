@@ -369,6 +369,9 @@ def optical_density_upload(
         mapper=wt_od_mapper,
     )
 
+    assert response is not None, "Response is None"
+    assert "importId" in response, "Response does not contain importId"
+
     # Wait until process is finished
     _ = wait_for_status(
         method=client_with_lab.test.get_assay_results_import_status,
@@ -379,7 +382,7 @@ def optical_density_upload(
     yield response
 
     delete_file(
-        file_name=new_od_filepath.name,
+        file_name=cast(str, new_od_filepath.name),
         client_with_lab=client_with_lab,
     )
 

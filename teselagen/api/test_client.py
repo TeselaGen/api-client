@@ -584,7 +584,7 @@ class TESTClient():
         if assay_id is None and assay_name is None:
             raise Exception("Please provide a valid 'assay_id' or 'assay_name'.")
 
-        if (assay_id is None and assay_name is not None):
+        if assay_id is None and assay_name is not None:
             # Supports creating a new assay by providing an assay name and an experiment ID.
             assay_id = self.get_or_create_assay(
                 assay_name=assay_name,
