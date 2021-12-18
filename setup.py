@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 # Copyright (c) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved
 # License: MIT
+"""Setup file for TeselaGen library."""
 
-from typing import List
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import List
 
 from setuptools import find_packages
 from setuptools import setup
@@ -16,12 +22,12 @@ from teselagen.utils.setup_commands import SingleTestCommand
 # This are only set for editable mode,
 # (https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs),
 # as appears that poetry don't have this mode yet
-name: str = "teselagen"
+name: str = 'teselagen'
 
-version: str = "0.0.0"
+version: str = '0.0.0'
 
-setup_requires: List[str] = ["pytest-runner"]
-tests_require: List[str] = ["pytest"]
+setup_requires: List[str] = ['pytest-runner']
+tests_require: List[str] = ['pytest']
 
 setup(
     name=name,
@@ -34,6 +40,6 @@ setup(
     # install_requires=_load_requirements(PATH_ROOT),
     tests_require=tests_require,
     cmdclass={
-        "stest": SingleTestCommand,
+        'stest': SingleTestCommand,
     },
 )
