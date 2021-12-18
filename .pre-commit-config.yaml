@@ -147,6 +147,12 @@ repos:
       - id: text-unicode-replacement-char
         name: "[check]: no unicode replacement chars"
 
+      - id: python-check-mock-methods
+        name: "[check]: not-real mock methods"
+
+      - id: python-use-type-annotations
+        name: "[check]: use type annotations, not comments"
+
   - repo: https://github.com/myint/autoflake
     rev: v1.4
     hooks:
