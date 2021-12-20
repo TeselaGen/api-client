@@ -32,12 +32,12 @@ if TYPE_CHECKING:
 ResponseDict = Union[ParsedJSONResponse, Dict[str, Any]]
 
 
-class Record(TypedDict, total=True):
+class Record(TypedDict, total=True):  # noqa: H601
     """Record `TypedDict`."""
     id: str
 
 
-class GetRecordsQueryParams(TypedDict, total=True):
+class GetRecordsQueryParams(TypedDict, total=True):  # noqa: H601
     """Get records query parameters `TypedDict`."""
     pageNumber: str  # noqa: N815
     pageSize: str  # noqa: N815
