@@ -24,7 +24,7 @@ DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG:-'v0.0.1'}
 
 # >>>>>> Remove old docker image >>>>>>
 echo "[$(date)] Removing the Docker image ...: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
-docker rmi -f "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_TAG}"
+docker rmi --force "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_TAG}"
 # <<<<<< Remove old docker image <<<<<<
 
 # >>>>>> Build and tag the Docker image >>>>>>
