@@ -298,46 +298,46 @@
         "editor.defaultFormatter": "redhat.vscode-yaml",
     },
     //
-    // workaround for errors not being displayed in the editor
-    //   See https://github.com/microsoft/vscode-python/issues/17989#issuecomment-972026138
-    //
-    "python.linting.pylintCategorySeverity.convention": "Hint",
-    "python.linting.pylintCategorySeverity.error": "Hint",
-    "python.linting.pylintCategorySeverity.fatal": "Hint",
-    "python.linting.pylintCategorySeverity.refactor": "Hint",
-    "python.linting.pylintCategorySeverity.warning": "Hint",
-    //
-    "python.linting.flake8CategorySeverity.A": "Hint",
-    "python.linting.flake8CategorySeverity.B": "Hint",
-    "python.linting.flake8CategorySeverity.C": "Hint",
-    "python.linting.flake8CategorySeverity.D": "Hint",
-    "python.linting.flake8CategorySeverity.E": "Hint",
-    "python.linting.flake8CategorySeverity.F": "Hint",
-    "python.linting.flake8CategorySeverity.G": "Hint",
-    "python.linting.flake8CategorySeverity.H": "Hint",
-    "python.linting.flake8CategorySeverity.I": "Hint",
-    "python.linting.flake8CategorySeverity.J": "Hint",
-    "python.linting.flake8CategorySeverity.K": "Hint",
-    "python.linting.flake8CategorySeverity.L": "Hint",
-    "python.linting.flake8CategorySeverity.M": "Hint",
-    "python.linting.flake8CategorySeverity.N": "Hint",
-    "python.linting.flake8CategorySeverity.O": "Hint",
-    "python.linting.flake8CategorySeverity.P": "Hint",
-    "python.linting.flake8CategorySeverity.Q": "Hint",
-    "python.linting.flake8CategorySeverity.R": "Hint",
-    "python.linting.flake8CategorySeverity.S": "Hint",
-    "python.linting.flake8CategorySeverity.T": "Hint",
-    "python.linting.flake8CategorySeverity.U": "Hint",
-    "python.linting.flake8CategorySeverity.V": "Hint",
-    "python.linting.flake8CategorySeverity.W": "Hint",
-    "python.linting.flake8CategorySeverity.X": "Hint",
-    "python.linting.flake8CategorySeverity.Y": "Hint",
-    "python.linting.flake8CategorySeverity.Z": "Hint",
-    //
-    "python.linting.mypyCategorySeverity.error": "Hint",
-    "python.linting.mypyCategorySeverity.note": "Hint",
-    //
-    "python.linting.pycodestyleCategorySeverity.E": "Hint",
-    "python.linting.pycodestyleCategorySeverity.W": "Hint",
-    //
+    // // workaround for errors not being displayed in the editor
+    // //   See https://github.com/microsoft/vscode-python/issues/17989#issuecomment-972026138
+    // //
+    // "python.linting.pylintCategorySeverity.convention": "Hint",
+    // "python.linting.pylintCategorySeverity.error": "Hint",
+    // "python.linting.pylintCategorySeverity.fatal": "Hint",
+    // "python.linting.pylintCategorySeverity.refactor": "Hint",
+    // "python.linting.pylintCategorySeverity.warning": "Hint",
+    // //
+    // "python.linting.flake8CategorySeverity.A": "Hint",
+    // "python.linting.flake8CategorySeverity.B": "Hint",
+    // "python.linting.flake8CategorySeverity.C": "Hint",
+    // "python.linting.flake8CategorySeverity.D": "Hint",
+    // "python.linting.flake8CategorySeverity.E": "Hint",
+    // "python.linting.flake8CategorySeverity.F": "Hint",
+    // "python.linting.flake8CategorySeverity.G": "Hint",
+    // "python.linting.flake8CategorySeverity.H": "Hint",
+    // "python.linting.flake8CategorySeverity.I": "Hint",
+    // "python.linting.flake8CategorySeverity.J": "Hint",
+    // "python.linting.flake8CategorySeverity.K": "Hint",
+    // "python.linting.flake8CategorySeverity.L": "Hint",
+    // "python.linting.flake8CategorySeverity.M": "Hint",
+    // "python.linting.flake8CategorySeverity.N": "Hint",
+    // "python.linting.flake8CategorySeverity.O": "Hint",
+    // "python.linting.flake8CategorySeverity.P": "Hint",
+    // "python.linting.flake8CategorySeverity.Q": "Hint",
+    // "python.linting.flake8CategorySeverity.R": "Hint",
+    // "python.linting.flake8CategorySeverity.S": "Hint",
+    // "python.linting.flake8CategorySeverity.T": "Hint",
+    // "python.linting.flake8CategorySeverity.U": "Hint",
+    // "python.linting.flake8CategorySeverity.V": "Hint",
+    // "python.linting.flake8CategorySeverity.W": "Hint",
+    // "python.linting.flake8CategorySeverity.X": "Hint",
+    // "python.linting.flake8CategorySeverity.Y": "Hint",
+    // "python.linting.flake8CategorySeverity.Z": "Hint",
+    // //
+    // "python.linting.mypyCategorySeverity.error": "Hint",
+    // "python.linting.mypyCategorySeverity.note": "Hint",
+    // //
+    // "python.linting.pycodestyleCategorySeverity.E": "Hint",
+    // "python.linting.pycodestyleCategorySeverity.W": "Hint",
+    // //
 }
