@@ -13,26 +13,24 @@
 #   Example:
 #       bash run_dev.sh ~/Documents/GitHub/ai/Notebooks
 
-# pipefail is necessary to propagate exit codes (but it may not be supported by your shell)
-set -o pipefail >/dev/null 2>&1
-
-# Any subsequent(*) commands which fail will cause the shell script to exit immediately
-set -ex
+set -o pipefail >/dev/null 2>&1 || true # bash specific option to propagate exit codes through pipes
+set -o errexit                          # Exit immediately if a command exits with a non-zero status
+set -o xtrace                           # Trace the execution of the script (debug mode)
 
 # start with an error if Docker isn't working...
 docker version >/dev/null
-printf "Docker version: %s\n" "$(docker version --format '{{.Server.Version}}')"
+printf "[$(date)] Docker version: %s\n" "$(docker version --format '{{.Server.Version}}')"
 
 # >>>>>> Command line arguments >>>>>>
 # Check if the first command line argument is empty
 if
     [ -z "$1" ]
-    echo "No additional volume provided."
+    echo "[$(date)] No additional volume provided."
 then
     ADDITIONAL_VOLUME=""
 else
     ADDITIONAL_VOLUME="--volume $1:/home/development/Notebooks"
-    echo "Additional volume: " "${ADDITIONAL_VOLUME}"
+    echo "[$(date)] Additional volume: " "${ADDITIONAL_VOLUME}"
 fi
 # >>>>>> Command line arguments >>>>>>
 
@@ -66,7 +64,9 @@ CONTAINER_PARENT_DIRPATH_OF_SETUP_PY=${CONTAINER_PARENT_DIRPATH_OF_SETUP_PY:-'/h
 # For more info, run : docker run --help
 #   --init: Makes process PID=1 be docker-init backed by tini: https://docs.docker.com/engine/reference/run/#specify-an-init-process
 #   --security-opt seccomp=unconfined : https://docs.docker.com/engine/reference/run/#seccomp-profile
-docker run --publish "${HOST_JUPYTER_NOTEBOOK_PORT}":"${CONTAINER_JUPYTER_NOTEBOOK_PORT}" \
+echo "[$(date)] Running the Docker container ...: ${DOCKER_CONTAINER_NAME}"
+docker run \
+    --publish "${HOST_JUPYTER_NOTEBOOK_PORT}":"${CONTAINER_JUPYTER_NOTEBOOK_PORT}" \
     --volume "${HOST_DIRPATH_TO_SHARED_FOLDER}":"${CONTAINER_DIRPATH_TO_SHARED_FOLDER}" \
     ${ADDITIONAL_VOLUME} \
     --name "${DOCKER_CONTAINER_NAME}" \
@@ -78,14 +78,19 @@ docker run --publish "${HOST_JUPYTER_NOTEBOOK_PORT}":"${CONTAINER_JUPYTER_NOTEBO
 # <<<<<< Run the Docker container <<<<<<
 
 # >>>>>> Opt out from `vscode` experiments >>>>>>
+echo "[$(date)] Opt-out from VSCode Experiments ..."
 # docker exec --tty --interactive "${DOCKER_CONTAINER_NAME}" bash -c 'mkdir -p /root/.vscode-server/data/Machine/ && printf "{\n\t\"python.defaultInterpreterPath\": \"/usr/bin/python3\",\n\t\"python.experiments.enabled\": false,\n\t\"jupyter.experiments.enabled\": false\n}\n" > /root/.vscode-server/data/Machine/settings.json && cat /root/.vscode-server/data/Machine/settings.json'
 docker exec --tty --interactive "${DOCKER_CONTAINER_NAME}" bash -c 'mkdir -p /root/.vscode-server/data/Machine/ && printf "{\n\t\"python.experiments.enabled\": false,\n\t\"jupyter.experiments.enabled\": false\n}\n" > /root/.vscode-server/data/Machine/settings.json && cat /root/.vscode-server/data/Machine/settings.json'
 # <<<<<< Opt out from `vscode` experiments <<<<<<
 
 # >>>>>> Install `teselagen` library in "editable" mode in the container >>>>>>
+echo "[$(date)] Installing 'TeselaGen' Library (in 'editable' mode) in the Docker container ...: ${DOCKER_CONTAINER_NAME}"
 docker exec "${DOCKER_CONTAINER_NAME}" bash -c "cd ${CONTAINER_PARENT_DIRPATH_OF_SETUP_PY}; python3 setup.py develop"
 # <<<<<< Install `teselagen` library in "editable" mode in the container <<<<<<
 
 # >>>>>> Run 'teselagen' Library Tests >>>>>>
+# echo "[$(date)] Running 'TeselaGen' Library tests in the Docker container ...: ${DOCKER_CONTAINER_NAME}"
 # docker exec --tty --interactive --workdir="${CONTAINER_PARENT_DIRPATH_OF_SETUP_PY}" "${DOCKER_CONTAINER_NAME}" /bin/bash -c 'pytest --maxfail=100 --cov="teselagen" --cov-report term:skip-covered'
 # <<<<<< Run 'teselagen' Library Tests <<<<<<
+
+echo "[$(date)] Done."
