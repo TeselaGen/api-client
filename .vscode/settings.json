@@ -340,4 +340,9 @@
     // "python.linting.pycodestyleCategorySeverity.E": "Hint",
     // "python.linting.pycodestyleCategorySeverity.W": "Hint",
     // //
+    "resmon.show.battery": false,
+    "resmon.show.cpufreq": false,
+    "resmon.show.disk": false,
+    // "terminal.integrated.scrollback": 1000,
+    "terminal.integrated.scrollback": 100000,
 }
