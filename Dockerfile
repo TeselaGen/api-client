@@ -169,7 +169,6 @@ RUN set -ex && \
     # poetry installations are not editable # NOTE(diegovalenzuelaiturra: 2021-11-23): this may not be true anymore
     # to avoid installing development packages, use 'poetry install --no-dev'
     POETRY_VIRTUALENVS_CREATE=false poetry install && \
-    cd .. && \
     # sanity checks
     python3 -c "import teselagen" && \
     python3 -c "import teselagen; print('teselagen version: ', teselagen.__version__)" && \

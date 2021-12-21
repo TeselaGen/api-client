@@ -84,12 +84,12 @@ docker exec --tty --interactive "${DOCKER_CONTAINER_NAME}" bash -c 'mkdir -p /ro
 # <<<<<< Opt out from `vscode` experiments <<<<<<
 
 # >>>>>> Install `teselagen` library in "editable" mode in the container >>>>>>
-echo "[$(date)] Installing 'TeselaGen' Library (in 'editable' mode) in the Docker container ...: ${DOCKER_CONTAINER_NAME}"
+echo "[$(date)] Installing TeselaGen Library (in 'editable' mode) in the Docker container ...: ${DOCKER_CONTAINER_NAME}"
 docker exec "${DOCKER_CONTAINER_NAME}" bash -c "cd ${CONTAINER_PARENT_DIRPATH_OF_SETUP_PY}; python3 setup.py develop"
 # <<<<<< Install `teselagen` library in "editable" mode in the container <<<<<<
 
 # >>>>>> Run 'teselagen' Library Tests >>>>>>
-# echo "[$(date)] Running 'TeselaGen' Library tests in the Docker container ...: ${DOCKER_CONTAINER_NAME}"
+# echo "[$(date)] Running TeselaGen Library tests in the Docker container ...: ${DOCKER_CONTAINER_NAME}"
 # docker exec --tty --interactive --workdir="${CONTAINER_PARENT_DIRPATH_OF_SETUP_PY}" "${DOCKER_CONTAINER_NAME}" /bin/bash -c 'pytest --maxfail=100 --cov="teselagen" --cov-report term:skip-covered'
 # <<<<<< Run 'teselagen' Library Tests <<<<<<
 
