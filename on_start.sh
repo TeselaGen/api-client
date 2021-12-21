@@ -32,8 +32,8 @@ jupyter notebook --ip "${JUPYTER_NOTEBOOK_IP}" \
     --NotebookApp.allow_password_change=False \
     --NotebookApp.token='' \
     --notebook-dir="${JUPYTER_NOTEBOOK_DIR}" \
-    --allow-root
-#  --no-browser
+    --allow-root \
+    --no-browser
 # <<<<<< Start Jupyter Notebook <<<<<<
 
 # Necessary if no service is open by this script in the current screen
