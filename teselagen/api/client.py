@@ -47,14 +47,14 @@ AVAILABLE_MODULES: List[Literal['test', 'evolve']] = [
 class TeselaGenClient:
     """TeselaGen Client."""
     # NOTE: For cross-module endpoints use the DESIGN module as default.
-    DEFAULT_MODULE_NAME: Literal["design"] = "design"
-    TESELAGEN_ACTIVE_LAB_IDENTIFIER: Literal["tg-active-lab-id"] = "tg-active-lab-id"
+    DEFAULT_MODULE_NAME: Literal['design'] = 'design'
+    TESELAGEN_ACTIVE_LAB_IDENTIFIER: Literal['tg-active-lab-id'] = 'tg-active-lab-id'
 
     def __init__(
         self,
         host_url: str = DEFAULT_HOST_URL,
         api_token_name: str = DEFAULT_API_TOKEN_NAME,
-        module_name: Literal["test", "discover", "design", "build"] = DEFAULT_MODULE_NAME,
+        module_name: Literal['test', 'discover', 'design', 'build'] = DEFAULT_MODULE_NAME,
     ) -> None:
         """A Client to use for communication with the TeselaGen modules.
 
@@ -73,7 +73,7 @@ class TeselaGenClient:
         self._build: Optional[BUILDClient] = None
         # NOTE: Do not add passwords to the class attributes. Delete all passwords once they've been used.
 
-        self.host_url: str = host_url.strip("/")
+        self.host_url: str = host_url.strip('/')
         self.api_token_name: str = api_token_name
 
         # Here we define a common Base URL. Using the DESIGN Module as the target server for these common endpoints.

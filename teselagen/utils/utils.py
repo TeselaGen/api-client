@@ -282,22 +282,22 @@ def handler(func: _DecoratorType) -> _DecoratorType:
                 raise Exception(message)
 
             elif response.status_code == 401:
-                message: str = f"URL : {url} access is unauthorized."
+                message: str = f'URL : {url} access is unauthorized.'
                 raise Exception(message)
 
             elif response.status_code == 404:
-                message: str = f"URL : {url} cannot be found."
+                message: str = f'URL : {url} cannot be found.'
                 raise Exception(message)
 
             elif response.status_code == 405:
-                message: str = f"Method not allowed. URL : {url}"
+                message: str = f'Method not allowed. URL : {url}'
                 raise Exception(message)
 
             # TODO : Add more exceptions.
 
             else:
                 # reason: str = response.reason
-                message: str = f"Got code : {response.status_code}. Reason : {response.reason}"
+                message: str = f'Got code : {response.status_code}. Reason : {response.reason}'
                 raise Exception(message)
 
         except Exception as e:
@@ -312,18 +312,18 @@ def parser(func: Callable[..., requests.Response]) -> Callable[..., ParsedJSONRe
 
     def wrapper(**kwargs: Any) -> Union[ParsedJSONResponse, Dict[str, Any]]:
 
-        if "url" not in kwargs.keys():
-            message = "url MUST be specified as keyword argument"
+        if 'url' not in kwargs.keys():
+            message = 'url MUST be specified as keyword argument'
             raise Exception(message)
 
-        url: str = kwargs["url"]
+        url: str = kwargs['url']
 
         response: requests.Response = func(**kwargs)
 
         # TODO: Should we get/return JSON Serializable values ?
         # status 204 has no content.
         if response.status_code == 204:
-            print("Deletion successful.")
+            print('Deletion successful.')
             return {}
 
         return ParsedJSONResponse(
@@ -346,7 +346,7 @@ def requires_login(func):
             self.login()
             if self.auth_token is None:
                 raise Exception(
-                    "Could not access API, access token missing. Please use the 'login' function to obtain access.")
+                    'Could not access API, access token missing. Please use the "login" function to obtain access.')
         return func(self, *args, **kwargs)
 
     return wrapper
