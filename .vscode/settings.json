@@ -344,5 +344,7 @@
     "resmon.show.cpufreq": false,
     "resmon.show.disk": false,
     // "terminal.integrated.scrollback": 1000,
-    "terminal.integrated.scrollback": 100000,
+    "terminal.integrated.scrollback": 10000,
+    // "jupyter.jupyterServerType": "local",
+    // "jupyter.jupyterServerType": "remote",
 }
