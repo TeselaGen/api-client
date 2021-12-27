@@ -8,16 +8,19 @@ from __future__ import annotations
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
-import typing
+from typing import TYPE_CHECKING
 
-from _pytest.fixtures import FixtureRequest
 import pytest
 
 from teselagen.api import TESTClient
 from teselagen.utils import get_project_root
 
 if TYPE_CHECKING:
+    from typing import Any, Dict, List, Optional
+    import typing
+
+    from _pytest.fixtures import FixtureRequest
+
     from teselagen.api import TeselaGenClient
 
 TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Example Descriptor 2,Teselagen Example Target,Teselagen Example Target Metric
@@ -77,7 +80,7 @@ class TestTESTClient():
         Returns:
             (int) : The experiment identifier used for testing.
         """
-        return experiment["id"]
+        return experiment['id']
 
     @pytest.fixture
     def assay_id(self) -> int:
@@ -114,8 +117,8 @@ class TestTESTClient():
         select_laboratory,
     ) -> Dict[str, Any]:
         client = logged_client.test
-        experiment_id: str = experiment["id"]
-        assay_name: str = "Python Test Client Assay"
+        experiment_id: str = experiment['id']
+        assay_name: str = 'Python Test Client Assay'
         # TODO : We may need to update this, probably with a parser or parser_id fixture
         parser_id: Optional[int] = None
         return client.create_assay(
@@ -144,28 +147,28 @@ class TestTESTClient():
         # We check if the class has the required methods.
 
         experiment_methods: List[str] = [
-            "get_experiments",
-            "create_experiment",
-            "delete_experiment",
+            'get_experiments',
+            'create_experiment',
+            'delete_experiment',
         ]
 
         assay_methods: List[str] = [
-            "get_assays",
-            "create_assay",
-            "delete_assay",
+            'get_assays',
+            'create_assay',
+            'delete_assay',
         ]
 
         file_methods: List[str] = [
-            "get_files_info",
-            "upload_file",
-            "download_file",
-            "delete_file",
+            'get_files_info',
+            'upload_file',
+            'download_file',
+            'delete_file',
         ]
 
         metadata_methods: List[str] = [
-            "get_metadata",
-            "create_metadata",
-            "delete_metadata",
+            'get_metadata',
+            'create_metadata',
+            'delete_metadata',
         ]
 
         attributes: List[str] = [
@@ -183,35 +186,35 @@ class TestTESTClient():
         logged_client: TeselaGenClient,
     ) -> None:
         # We check if the client inherit the required parents attributes.
-        # parent_class_attributes: List[str] = ["labs_url"]
+        # parent_class_attributes: List[str] = ['labs_url']
 
         # We check if the client has the required attributes.
 
         experiment_attributes: List[str] = [
-            "get_experiments_url",
-            "create_experiment_url",
-            "delete_experiment_url",
+            'get_experiments_url',
+            'create_experiment_url',
+            'delete_experiment_url',
         ]
 
         assay_attributes: List[str] = [
-            "get_assays_url",
-            "get_assays_by_experiment_url",
-            "create_assay_url",
-            "delete_assay_url",
+            'get_assays_url',
+            'get_assays_by_experiment_url',
+            'create_assay_url',
+            'delete_assay_url',
         ]
 
         file_attributes: List[str] = [
-            "get_files_info_url",
-            "get_file_data_url",
-            "delete_file_url",
-            "upload_file_url",
-            "upload_file_into_assay_url",
+            'get_files_info_url',
+            'get_file_data_url',
+            'delete_file_url',
+            'upload_file_url',
+            'upload_file_into_assay_url',
         ]
 
         metadata_attributes: List[str] = [
-            "get_metadata_url",
-            "create_metadata_url",
-            "delete_metadata_url",
+            'get_metadata_url',
+            'create_metadata_url',
+            'delete_metadata_url',
         ]
 
         attributes: List[str] = [
@@ -251,8 +254,8 @@ class TestTESTClient():
     ) -> None:
         response = experiment
         assert isinstance(response, dict)
-        assert "id" in response.keys()
-        assert response["id"] is not None
+        assert 'id' in response.keys()
+        assert response['id'] is not None
 
     def test_delete_experiment(
         self,
@@ -260,7 +263,7 @@ class TestTESTClient():
         experiment: List[Dict[str, Any]],
     ) -> None:
         client = logged_client.test
-        experiment_id: str = experiment["id"]
+        experiment_id: str = experiment['id']
         response = client.delete_experiment(experiment_id=experiment_id)
         assert response is None
 
@@ -270,9 +273,9 @@ class TestTESTClient():
     ) -> None:
         response = assay
         assert isinstance(response, dict)
-        assert "id" in response.keys()
-        assert "name" in response.keys()
-        assert response["id"] is not None
+        assert 'id' in response.keys()
+        assert 'name' in response.keys()
+        assert response['id'] is not None
 
     def test_delete_assay(
         self,
@@ -281,10 +284,10 @@ class TestTESTClient():
         assay: Dict[str, Any],
     ) -> None:
         client = logged_client.test
-        assay_id = assay["id"]
+        assay_id = assay['id']
         response = client.delete_assay(assay_id=assay_id)
 
-        assert response["id"] == assay_id, "Error deleting assay."
+        assert response['id'] == assay_id, 'Error deleting assay.'
 
     def test_get_experiments(
         self,
@@ -298,7 +301,7 @@ class TestTESTClient():
         assert len(response) > 0
         assert all(isinstance(element, dict) for element in response)
         assert all(
-            key in element.keys() and element[key] is not None for element in response for key in ["id", "name"])
+            key in element.keys() and element[key] is not None for element in response for key in ['id', 'name'])
         # assert all(element[key] is not None for element in response for key in ["id", "name"])
 
     def test_get_assays(
@@ -319,10 +322,9 @@ class TestTESTClient():
 
         # TODO : We may have to test if an "experiment" object containing an "id" and "name" is included
         assert all(
-            key in element.keys() and element[key] is not None for element in response for key in ["id", "name"])
+            key in element.keys() and element[key] is not None for element in response for key in ['id', 'name'])
         # assert all( element[key] is not None for element in response for key in ["id", "name"])
 
-    # @pytest.mark.skip(reason="The files endpoints are under maintenance.")
     def test_get_files(
         self,
         logged_client: TeselaGenClient,
@@ -337,9 +339,8 @@ class TestTESTClient():
         assert all(isinstance(element, dict) for element in response)
 
         # TODO: We should expect an "assay" key that may be None
-        assert all(key in element.keys() for element in response for key in ["id", "name", "assay", "experiment"])
+        assert all(key in element.keys() for element in response for key in ['id', 'name', 'assay', 'experiment'])
 
-    # @pytest.mark.skip(reason="The files endpoints are under maintenance.")
     def test_upload_file(
         self,
         logged_client: TeselaGenClient,
@@ -348,36 +349,21 @@ class TestTESTClient():
     ):
         client = logged_client.test
 
-        filepath: Path = get_project_root() / Path("teselagen/api/tests/example_file.csv")
+        filepath: Path = get_project_root() / Path('teselagen/api/tests/example_file.csv')
         assay_id: Optional[int] = None
         response: Dict[str, Any] = client.upload_file(
             filepath=filepath,
             assay_id=assay_id,
         )
 
-        assert all(key in ["id", "importStatus", "name", "assay", "experiment"] for key in response)
+        assert all(key in ['id', 'importStatus', 'name', 'assay', 'experiment'] for key in response)
 
-    # TODO: Check lab name is right! It is currently pointing to "Example Lab"
-    #           lab_name = [
-    #               lab["name"]
-    #               for lab in logged_client.get_laboratories()
-    #               if logged_client.headers["tg-active-lab-id"] == lab["id"]
-    #           ][0]
-    # @pytest.mark.skip(reason=("These endpoints are under maintenance on the platform. "
-    #                           "This should be solved in the following updates. "
-    #                           "Please, contact the TeselaGen team for more information. "))
     def test_download_file(
         self,
         logged_client: TeselaGenClient,
         host_url: str,
         select_laboratory,
     ):
-        # if "platform.teselagen.com" in host_url:
-        #     # NOTE: No other code is executed after the pytest.xfail() call, differently from the pytest.mark.xfail()
-        #     pytest.xfail(reason=("These endpoints are under maintenance on the platform. "
-        #                          "This should be solved in the following updates. "
-        #                          "Please, contact the TeselaGen team for more information. "))
-
         client = logged_client.test
         response = client.get_files_info()
         file_id: str = response[0]['id']
@@ -385,7 +371,6 @@ class TestTESTClient():
 
         assert isinstance(response, StringIO)
 
-    # @pytest.mark.skip(reason="The files endpoints are under maintenance.")
     def test_delete_file(
         self,
         logged_client: TeselaGenClient,
@@ -394,15 +379,15 @@ class TestTESTClient():
     ):
         client = logged_client.test
 
-        filepath: Path = get_project_root() / Path("teselagen/api/tests/example_file.csv")
+        filepath: Path = get_project_root() / Path('teselagen/api/tests/example_file.csv')
         upload_response: Dict[str, Any] = client.upload_file(filepath=filepath)
 
         file_id: str = upload_response['id']
         response = client.delete_file(file_id=file_id)
 
-        assert response['id'] == file_id, "Error deleting file."
+        assert response['id'] == file_id, 'Error deleting file.'
 
-    @pytest.mark.skip(reason="We need to create a test experiment first")
+    @pytest.mark.skip(reason='We need to create a test experiment first')
     def test_download_assay(
         self,
         logged_client: TeselaGenClient,
@@ -448,9 +433,9 @@ class TestTESTClient():
         client = logged_client
 
         # UPLOAD ASSAY
-        filename: str = "test_data.csv"
+        filename: str = 'test_data.csv'
         contents = TEST_FILE_CONTENTS
-        assay_name: str = "test_name"
+        assay_name: str = 'test_name'
         experiment_id: str = '1'
         parser_id: str = '1'
 
