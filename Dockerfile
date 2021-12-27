@@ -7,8 +7,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Enable terminal colors
-ENV TERM=xterm-color
-ENV COLORTERM=truecolor
+ENV TERM=xterm-color \
+    COLORTERM=truecolor
 
 # Set the user as "root" during the building process
 USER root
@@ -32,7 +32,10 @@ RUN set -ex && \
     rm -rf /var/lib/apt/lists/*
 
 # Set the locale environment variables after locale installation and configuration has been performed. Setting them before may show some unharmful warnings.
-ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8 LC_CTYPE=UTF-8
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8 \
+    LC_CTYPE=UTF-8
 # <<<<<< Configure Locale <<<<<<
 
 # >>>>>> Install Python >>>>>>
@@ -44,13 +47,22 @@ RUN set -ex && \
     # ensure to remove package's state information (it can be recreated with 'apt-get update')
     rm -rf /var/lib/apt/lists/*
 
+# NOTE: 'python*-venv' is required by poetry (since it installation script requires 'ensurepip', which is
+#       currently not provided by the deadsnakes ppa). See https://github.com/deadsnakes/issues/issues/148
 RUN set -ex && \
     apt-get update -y --no-allow-insecure-repositories && \
     apt-get install -y --no-install-recommends \
     # install Python3.9 (and pip3)
-    python3.9 \
-    python3-pip \
+    # python3.9 python3-pip \
+    python3.9 python3.9-dev python3.9-venv \
     && \
+    python3.9 -m ensurepip --default-pip && \
+    python3.9 -m pip install --upgrade pip && \
+    #
+    # python3.9 -m ensurepip --default-pip --user && \
+    # python3.9 -m pip install --upgrade pip --user && \
+    # export PATH="/root/.local/bin:$PATH" && \
+    #
     # create symbolic links:
     #   python -> python3
     #   pip -> pip3
@@ -63,6 +75,9 @@ RUN set -ex && \
     # ensure to remove package's state information (it can be recreated with 'apt-get update')
     rm -rf /var/lib/apt/lists/*
 
+# Add 'pip' to the 'PATH' environment variable
+ENV PATH="/root/.local/bin:$PATH"
+
 RUN set -ex && \
     apt-get update -y --no-allow-insecure-repositories && \
     apt-get install -y --no-install-recommends \
@@ -71,7 +86,7 @@ RUN set -ex && \
     # python3-setuptools \
     # python3 \
     # python3-pip \
-    python3-venv \
+    # python3-venv \
     # install data transfer (and other) packages
     ca-certificates curl gnupg2 \
     # install packages required for building the docker image
@@ -91,8 +106,12 @@ RUN set -ex && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN set -ex && \
+    # print installed versions (pip==21.3.1 and setuptools==58.1.0 and wheel is not installed)
+    python -m pip list | grep -iE '^pip|^setuptools|^wheel' && \
     # upgrade 'pip', 'setuptools', 'wheel'
-    python -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    # pip>=21.3.1 setuptools==58.1.0 wheel>=0.37.0
+    # python -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    python -m pip install --user --no-cache-dir --upgrade pip setuptools wheel && \
     # pip install --no-cache-dir --upgrade setuptools wheel && \
     # sanity checks
     python -m pip list | grep -iE '^pip|^setuptools|^wheel' && \
@@ -115,6 +134,8 @@ RUN set -ex && \
 # <<<<<< Install Git <<<<<<
 
 # >>>>>> Install Poetry >>>>>>
+# NOTE: https://github.com/tiangolo/poetry-version-plugin/tree/0.1.3#install-poetry-120a1
+#
 # TODO: Starting from poetry 1.2, 'get-poetry.py' installer is deprecated. We should migrate to 'install-poetry.py'.
 #       Also, check if the new script automatically configure the PATH (it seems no uses a 'POETRY_HOME' env variable).
 #           curl -sSL https://install.python-poetry.org
@@ -123,20 +144,33 @@ RUN set -ex && \
     apt-get install -y --no-install-recommends \
     # install data transfer tool (and other required packages)
     ca-certificates curl gnupg2 && \
-    # download poetry installer
+    #
+    # download poetry installer (1.1.10)
     curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py && \
-    # curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py -o install-poetry.py && \
-    # install poetry
+    # install poetry (1.1.10)
     python3 get-poetry.py --version 1.1.10 && \
-    # python3 install-poetry.py --version 1.2.0 && \
-    # remove unnecessary files
+    # remove unnecessary files (1.1.10)
     rm -rf get-poetry.py && \
-    # rm -rf install-poetry.py && \
+    #
+    #       # download poetry installer (1.2.0a2)
+    #       curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py -o install-poetry.py && \
+    #       # install poetry (1.2.0a2)
+    #       # python install-poetry.py --version 1.2.0a2 && \
+    #       python install-poetry.py --preview && \
+    #       # remove unnecessary files (1.2.0a2)
+    #       rm -rf install-poetry.py && \
+    #       # # export PATH="/root/.local/bin:$PATH" && \
+    #
     # ensure to remove package's state information (it can be recreated with 'apt-get update')
     rm -rf /var/lib/apt/lists/*
 
-# Add poetry to the 'PATH' environment variable
+# NOTE: automatically set to to $HOME/.poetry/bin by the installer, by modifying the profile file at $HOME/.profile
+# Add poetry to the 'PATH' environment variable (1.1.10)
 ENV PATH="/root/.poetry/bin:$PATH"
+
+# NOTE: poetry version 1.2.0a2 automatically add poetry (/root/.local/bin) to the 'PATH', so the following is not needed.
+#               Add poetry to the 'PATH' environment variable (1.2.0a2)
+#               ENV PATH="/root/.local/bin:$PATH"
 
 # Set environment variable to tell poetry to install everything on system's python
 ENV POETRY_VIRTUALENVS_CREATE=false
@@ -172,7 +206,8 @@ RUN set -ex && \
     # sanity checks
     python3 -c "import teselagen" && \
     python3 -c "import teselagen; print('teselagen version: ', teselagen.__version__)" && \
-    poetry cache clear --no-interaction --all $(poetry cache list)
+    # remove cache files
+    poetry cache clear --no-interaction --all "$(poetry cache list)"
 # >>>>>> Install teselagen Library >>>>>>
 
 # >>>>>> Generate Jupyter Config >>>>>>
