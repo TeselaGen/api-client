@@ -260,45 +260,6 @@ class BUILDClient:
 
         return output_sample
 
-    def _get_record(
-        self,
-        get_records,
-        record_id: str | int,
-    ) -> Any | Record | None:
-        """Bruteforce implementation."""
-        warnings.warn(f'An error occured while calling {get_records.__name__}, fallback to bruteforce.')
-
-        output_record: Record | None = None
-
-        def criteria(record: Record) -> bool:
-            return record.get('id', None) == str(record_id)
-
-        pageNumber: int = 1  # noqa: N806
-        # pageSize: int = 10  # noqa: E800
-
-        while True:
-            records: List[Record] = get_records(
-                pageNumber=str(pageNumber),
-                # NOTE: We prefer to use the default values
-                # pageSize=pageSize,  # noqa: E800
-                # sort='-updatedAt',  # noqa: E800
-                # gqlFilter='',  # noqa: E800
-            )
-
-            # When `pageNumber` value is greater than the existing pages, the endpoint returns an empty list.
-            if len(records) == 0:
-                break
-
-            # we return the first record that meets the desired criteria
-            for record in records:
-                if criteria(record):
-                    output_record = record
-                    break
-
-            pageNumber += 1
-
-        return output_record
-
     def get_samples(
             self,
             pageNumber: str | int = '1',  # noqa: N803
@@ -340,3 +301,42 @@ class BUILDClient:
         assert response['content'] is not None
 
         return cast(List[SampleRecord], json.loads(response['content']))
+
+    def _get_record(
+        self,
+        get_records,
+        record_id: str | int,
+    ) -> Any | Record | None:
+        """Bruteforce implementation."""
+        warnings.warn(f'An error occured while calling {get_records.__name__}, fallback to bruteforce.')
+
+        output_record: Record | None = None
+
+        def criteria(record: Record) -> bool:
+            return record.get('id', None) == str(record_id)
+
+        pageNumber: int = 1  # noqa: N806
+        # pageSize: int = 10  # noqa: E800
+
+        while True:
+            records: List[Record] = get_records(
+                pageNumber=str(pageNumber),
+                # NOTE: We prefer to use the default values
+                # pageSize=pageSize,  # noqa: E800
+                # sort='-updatedAt',  # noqa: E800
+                # gqlFilter='',  # noqa: E800
+            )
+
+            # When `pageNumber` value is greater than the existing pages, the endpoint returns an empty list.
+            if len(records) == 0:
+                break
+
+            # we return the first record that meets the desired criteria
+            for record in records:
+                if criteria(record):
+                    output_record = record
+                    break
+
+            pageNumber += 1
+
+        return output_record
