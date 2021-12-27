@@ -37,7 +37,7 @@ fail_fast: false
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.1.0
     hooks:
       - id: check-ast
         name: "[check]: files parse as valid python"
@@ -206,7 +206,7 @@ repos:
           - --filter-files
 
   - repo: https://github.com/pre-commit/mirrors-yapf
-    rev: v0.31.0
+    rev: v0.32.0
     hooks:
       - id: yapf
         name: "  [fix]: format code (Python) [yapf]"
@@ -328,10 +328,13 @@ repos:
 
       - id: nbqa-yapf
         name: "  [fix]: format code (Notebooks) [nbqa-yapf]"
+        additional_dependencies:
+          - toml>=0.10.2
+          - yapf>=0.31.0
 
-  - repo: meta
-    hooks:
-      - id: check-hooks-apply
-        name: "[check]: check that all hooks are applied [check-hooks-apply]"
-      - id: check-useless-excludes
-        name: "[check]: check that no useless excludes are used [check-useless-excludes]"
+  # - repo: meta
+  #   hooks:
+  #     - id: check-hooks-apply
+  #       name: "[check]: check that all hooks are applied [check-hooks-apply]"
+  #     - id: check-useless-excludes
+  #       name: "[check]: check that no useless excludes are used [check-useless-excludes]"
