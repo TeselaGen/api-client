@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) TeselaGen Biotechnology, Inc. and its affiliates. All Rights Reserved
 # License: MIT
+"""Utilities for the teselagen package."""
 
 from __future__ import annotations
 
@@ -12,7 +13,7 @@ import getpass
 import json
 import math
 from pathlib import Path
-from typing import Any, Callable, cast, Dict, List, Optional, Tuple, TYPE_CHECKING, TypedDict, TypeVar, Union
+from typing import Any, Callable, cast, Literal, TYPE_CHECKING, TypedDict, TypeVar
 
 import pandas as pd
 import requests
@@ -20,23 +21,25 @@ from tenacity import retry
 from tenacity.retry import retry_if_exception_type
 from tenacity.stop import stop_after_delay
 from tenacity.wait import wait_fixed
-from typing_extensions import Literal
 
 import teselagen
 
 if TYPE_CHECKING:
+    from typing import Dict, List, Optional, Tuple, Union
+
     from teselagen.api import TeselaGenClient
 
-DEFAULT_HOST_URL: Literal["https://platform.teselagen.com"] = "https://platform.teselagen.com"
-DEFAULT_API_TOKEN_NAME: Literal["x-tg-cli-token"] = "x-tg-cli-token"
+DEFAULT_HOST_URL: Literal['https://platform.teselagen.com'] = 'https://platform.teselagen.com'
+DEFAULT_API_TOKEN_NAME: Literal['x-tg-cli-token'] = 'x-tg-cli-token'
 
 DEFAULT_MAX_DATAPOINTS: int = 100
-TimeUnit = Literal["milliseconds", "seconds", "minutes", "hours", "days"]
+
+TimeUnit = Literal['milliseconds', 'seconds', 'minutes', 'hours', 'days']
 
 T = TypeVar('T')
 
 
-class ParsedJSONResponse(TypedDict, total=True):
+class ParsedJSONResponse(TypedDict, total=True):  # noqa: H601
     """Parsed JSON response."""
     url: str
     status: bool
@@ -82,11 +85,11 @@ def downsample_data(
 
     # Create a date time column for decimation with pandas resample.
     # A dummy date with a dummy seconds time unit will be used.
-    _df["DateTime"] = _df[f"{time_column}"].apply(
+    _df['DateTime'] = _df[f'{time_column}'].apply(
         lambda timevalues: datetime.combine(date.today(), time()) + timedelta(seconds=timevalues))
 
     # Compute the time span in seconds.
-    timespan = (cast(datetime, _df["DateTime"].max()) - cast(datetime, _df["DateTime"].min())).total_seconds()
+    timespan = (cast(datetime, _df['DateTime'].max()) - cast(datetime, _df['DateTime'].min())).total_seconds()
 
     # number of sample points in input dataframe.
     number_of_datapoints = _df.shape[0]
@@ -102,8 +105,8 @@ def downsample_data(
             # Compute the sampling period automatically based on the number of datapoints wanted
             # (defaulted to 'DEFAULT_max_samples').
             sampling_period = math.floor(timespan / max_samples)
-            _df.set_index("DateTime", inplace=True)
-            _df = _df.resample(rule=f"{sampling_period}s").first().dropna().reset_index(drop=True)
+            _df.set_index('DateTime', inplace=True)
+            _df = _df.resample(rule=f'{sampling_period}s').first().dropna().reset_index(drop=True)
 
         # If no down sampling is needed simply return the input dataframe.
         else:
@@ -111,13 +114,13 @@ def downsample_data(
 
     # If a sampling period is provided, resample the dataframe by it.
     else:
-        _df.set_index("DateTime", inplace=True)
-        _df = _df.resample(rule=f"{sampling_period}s").first().dropna().reset_index(drop=True)
+        _df.set_index('DateTime', inplace=True)
+        _df = _df.resample(rule=f'{sampling_period}s').first().dropna().reset_index(drop=True)
 
     if verbose:
-        print(f"Data timespan: {timespan}")
-        print(f"Sample points left: {_df.shape[0]}")
-        print(f"Sample points removed: {dataframe.shape[0] - _df.shape[0]}")
+        print(f'Data timespan: {timespan}')
+        print(f'Sample points left: {_df.shape[0]}')
+        print(f'Sample points removed: {dataframe.shape[0] - _df.shape[0]}')
 
     return _df
 
@@ -135,17 +138,17 @@ def xlsx_parser(
         sheet_names (Optional[List[str]]): Sheet names to process. If None is provided, all sheets will be processed.
     """
     sheets_data = {}
-    reader = pd.ExcelFile(filepath, engine="openpyxl")
+    reader = pd.ExcelFile(filepath, engine='openpyxl')
     for sheet_name in reader.sheet_names:
         # If sheet_names is provided, skip sheets not in 'sheet_names'
         if isinstance(sheet_names, list) and len(sheet_names) > 0 and sheet_name not in sheet_names:
             continue
 
-        print(f"Reading data from sheet: {sheet_name}")
+        print(f'Reading data from sheet: {sheet_name}')
         sheet_df = pd.read_excel(
             str(filepath),
             sheet_name=sheet_name,
-            engine="openpyxl",
+            engine='openpyxl',
         )
         sheets_data[sheet_name] = sheet_df
 
@@ -208,8 +211,8 @@ def get_credentials(
 
     # If credentials aren't defined, get them from user input
     try:
-        username = input("Enter username: ") if username is None else username
-        password = getpass.getpass(prompt=f"Password for {username}: ") if password is None else password
+        username = input('Enter username: ') if username is None else username
+        password = getpass.getpass(prompt=f'Password for {username}: ') if password is None else password
     except OSError as e:  # noqa: F841 # pylint: disable=unused-variable
         msg = ("""There was an error with user input. If you are making parallel
                tests, make sure you are avoiding 'input' by adding CREDENTIALS
@@ -261,11 +264,11 @@ def handler(func: _DecoratorType) -> _DecoratorType:
     """Decorator to handle the response from a request."""
 
     def wrapper(**kwargs: Any) -> requests.Response:
-        if "url" not in kwargs.keys():
-            message = "url MUST be specified as keyword argument"
+        if 'url' not in kwargs.keys():
+            message = 'url MUST be specified as keyword argument'
             raise Exception(message)
 
-        url: str = kwargs.pop("url")
+        url: str = kwargs.pop('url')
 
         try:
             response: requests.Response = func(url, **kwargs)
@@ -352,8 +355,7 @@ def requires_login(func):
 @parser
 @handler
 def get(url: str, params: Dict[str, Any] = None, **kwargs: Any) -> requests.Response:
-    """Same arguments and behavior as requests.get but handles exceptions and returns a dictionary instead of a \
-    `requests.Response`.
+    """Same as `requests.get` but handles exceptions and returns a dictionary instead of a `requests.Response` object.
 
     NOTE : url key MUST be passed in arguments.
 
@@ -376,21 +378,20 @@ def get(url: str, params: Dict[str, Any] = None, **kwargs: Any) -> requests.Resp
 @parser
 @handler
 def post(url: str, **kwargs: Any) -> requests.Response:
-    """Same as requests.post but handles exceptions and returns a dictionary instead of a `requests.Response`.
+    """Same as `requests.post` but handles exceptions and returns a dictionary instead of a `requests.Response` object.
 
-    NOTE : url key MUST be passed in arguments.
+    NOTE: `url` key MUST be passed in arguments.
 
-    Example :
-        url = "https://www.some_url.com/"
-        response = post(url=url)
+    Example:
+        >>> url = "https://www.some_url.com/"
+        ... response = post(url=url)
 
     Wrong usage:
-        url = "https://www.some_url.com/"
-        response = post(url)
+        >>> url = "https://www.some_url.com/"
+        ... response = post(url)
 
     Returns:
-        (Dict[str, Union[str, bool, None]]) : It returns a dictionary with the
-            following keys and value types:
+        (dict) : It returns a dictionary with the following keys and value types:
 
     ```json
             {   "url" : str,
@@ -408,13 +409,21 @@ def post(url: str, **kwargs: Any) -> requests.Response:
 @parser
 @handler
 def delete(url: str, **kwargs: Any) -> requests.Response:
-    """Same as requests.delete but handles exceptions and returns a dictionary instead of a `requests.Response`."""
+    """Same as `requests.delete` but handles exceptions and returns a dictionary instead of a `requests.Response` \
+    object.
+
+    NOTE: `url` key MUST be passed in arguments.
+    """
     return requests.delete(url, **kwargs)
 
 
 @parser
 @handler
 def put(url: str, **kwargs: Any) -> requests.Response:
+    """Same as `requests.put` but handles exceptions and returns a dictionary instead of a `requests.Response` object.
+
+    NOTE: `url` key MUST be passed in arguments.
+    """
     return requests.put(url, **kwargs, timeout=None)
 
 
@@ -427,7 +436,7 @@ def download_file(
     if local_filename is None:
         local_filename = url.split('/')[-1]
 
-    # NOTE the stream=True parameter below
+    # NOTE: the stream=True parameter below
     chunk_size = None
     with requests.get(url, stream=True, **kwargs) as r:
         r.raise_for_status()
@@ -481,10 +490,10 @@ def wait_for_status(
         try:
             result: T = method(**method_kwargs)
             if validate is not None:
-                assert validate(result), f"Validation failed. Result is {result}"
+                assert validate(result), f'Validation failed. Result is {result}'
         except Exception as ex:
             if not isinstance(ex, AssertionError):
-                print(f"An unexpected error was detected, method result was: {result}")
+                print(f'An unexpected error was detected, method result was: {result}')
             raise
         return result
 

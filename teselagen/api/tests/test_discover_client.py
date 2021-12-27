@@ -30,13 +30,15 @@ MODEL_TYPES_TO_BE_TESTED: list[Literal['predictive', 'evolutive', 'generative']]
 ]
 
 
-class TestDISCOVERClient():
+class TestDISCOVERClient:
+    """Tests for the DISCOVER Client."""
 
     @pytest.fixture
     def discover_client(
         self,
         logged_client: TeselaGenClient,
     ) -> typing.Generator[DISCOVERClient, None, None]:
+        """Get a logged in DISCOVER Client."""
         # set up
         logged_client.select_laboratory(lab_name='The Test Lab')
 

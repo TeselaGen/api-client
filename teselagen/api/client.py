@@ -115,7 +115,7 @@ class TeselaGenClient:
 
     # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
-    def design(self):
+    def design(self) -> DESIGNClient:
         """This instantiates the client's 'design' property object which provides TeselaGen DESIGN API methods."""
         if self._design is None:
             self._design = DESIGNClient(teselagen_client=self)
@@ -123,7 +123,7 @@ class TeselaGenClient:
 
     # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
-    def build(self):
+    def build(self) -> BUILDClient:
         """This instantiates the client's 'build' property object which provides TeselaGen BUILD API methods."""
         if self._build is None:
             self._build = BUILDClient(teselagen_client=self)
@@ -131,7 +131,7 @@ class TeselaGenClient:
 
     # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
-    def discover(self):
+    def discover(self) -> DISCOVERClient:
         """This instantiates the client's 'discover' property object which provides TeselaGen DISCOVER API methods."""
         if self._discover is None:
             self._discover = DISCOVERClient(teselagen_client=self)
@@ -139,7 +139,7 @@ class TeselaGenClient:
 
     # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
-    def test(self):
+    def test(self) -> TESTClient:
         """This instantiates the client's 'test' property object which provides TeselaGen TEST API methods."""
         if self._test is None:
             self._test = TESTClient(teselagen_client=self)
