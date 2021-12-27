@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 from typing import Any, cast, Dict, List, TYPE_CHECKING, TypedDict, Union
+import warnings
 
 from teselagen.utils import delete  # noqa: F401 # pylint: disable=unused-import
 from teselagen.utils import get  # pylint: disable=unused-import
@@ -32,9 +33,76 @@ if TYPE_CHECKING:
 ResponseDict = Union[ParsedJSONResponse, Dict[str, Any]]
 
 
-class Record(TypedDict, total=True):  # noqa: H601
+class Record(TypedDict):  # noqa: H601
     """Record `TypedDict`."""
     id: str
+
+
+class User(TypedDict):  # noqa: H601
+    """User `TypedDict`."""
+    id: str
+    username: str
+    # __typename: Literal['user']  # noqa: E800
+
+
+class Material(TypedDict):  # noqa: H601
+    """Material `TypedDict`."""
+    id: str
+    name: str
+    # __typename: Literal['material']  # noqa: E800
+
+
+class Sample(TypedDict):  # noqa: H601
+    """Sample `TypedDict`."""
+    id: str
+    name: str
+    material: Material
+    # __typename: Literal['sample']  # noqa: E800
+
+
+class AliquotRecord(Record, total=False):  # noqa: H601
+    """Aliquot record `TypedDict`."""
+    # id: str  # noqa: E800
+    user: User
+    concentration: int | float | None
+    concentrationUnitCode: str  # noqa: N815
+    volume: int | float | None
+    volumetricUnitCode: str | None  # noqa: N815
+    mass: int | float | None
+    massUnitCode: Any  # None  # noqa: N815
+    createdAt: str  # noqa: N815  # Example: '2020-08-05T15:24:35.291Z'
+    updatedAt: str  # noqa: N815  # Example: '2020-08-06T19:16:00.195Z'
+    sample: Sample
+    batch: Any  # None
+    lab: Any  # None
+    aliquotType: str  # noqa: N815
+    taggedItems: list[Any]  # noqa: N815
+    # __typename: Literal['aliquot']  # noqa: E800
+
+
+class SampleType(TypedDict):  # noqa: H601
+    """SampleType `TypedDict`."""
+    code: str
+    name: str
+    # __typename: Literal['sampleType'] # noqa: E800
+
+
+class SampleRecord(Record, total=False):  # noqa: H601
+    """Sample record `TypedDict`."""
+    # id: str  # noqa: E800
+    name: str
+    status: Any  # None
+    sampleTypeCode: str  # noqa: N815
+    sampleType: SampleType  # noqa: N815
+    sampleFormulations: list[Any]  # noqa: N815
+    updatedAt: str  # noqa: N815
+    createdAt: str  # noqa: N815
+    taggedItems: list[Any]  # noqa: N815
+    material: Material
+    batch: Any  # None
+    lab: Any  # None
+    user: User
+    # __typename: Literal['sample']  # noqa: E800
 
 
 class GetRecordsQueryParams(TypedDict, total=True):  # noqa: H601
@@ -45,39 +113,11 @@ class GetRecordsQueryParams(TypedDict, total=True):  # noqa: H601
     gqlFilter: str  # noqa: N815
 
 
-# class User(TypedDict):
-#     id: str | int
-#     username: str
-
-
-class AliquotRecord(Record):
-    """Aliquot record `TypedDict`."""
-    # id: str
-    # user: User
-    # concentration: int | float | None
-    # concentrationUnitCode: str
-    # volume: int | float | None
-    # volumetricUnitCode: str | None
-    # mass: int | float | None
-    # massUnitCode: None | None
-    # createdAt: str
-    # updatedAt: str
-    # sample: dict
-    # batch: None
-    # lab: None
-    # aliquotType: str
-    # taggedItems: list
-
-
-class SampleRecord(Record):
-    """Sample record `TypedDict`."""
-
-
-class GetSamplesQueryParams(GetRecordsQueryParams):
+class GetSamplesQueryParams(GetRecordsQueryParams):  # noqa: H601
     """Get samples query parameters `TypedDict`."""
 
 
-class GetAliquotsQueryParams(GetRecordsQueryParams):
+class GetAliquotsQueryParams(GetRecordsQueryParams):  # noqa: H601
     """Get aliquots query parameters `TypedDict`."""
 
 
@@ -114,7 +154,7 @@ class BUILDClient:
         self.samples_url: str = f'{api_url_base}/samples'
         self.sample_url: str = f'{api_url_base}/samples' + '/{}'
 
-    def get_aliquots_by_id(
+    def get_aliquot(
         self,
         aliquot_id: str,
     ) -> AliquotRecord:
@@ -126,16 +166,25 @@ class BUILDClient:
         Returns:
             AliquotRecord: Aliquot record.
         """
-        url: str = self.aliquot_url.format(str(aliquot_id))
+        output_aliquot: AliquotRecord = None  # {}
 
-        response: ResponseDict = get(
-            url=url,
-            headers=self.headers,
-        )
+        try:
+            url: str = self.aliquot_url.format(str(aliquot_id))
+            response: ResponseDict = get(
+                url=url,
+                headers=self.headers,
+            )
+            assert response['content'] is not None  # noqa: S101
+            output_aliquot = cast(AliquotRecord, json.loads(response['content']))
 
-        assert response['content'] is not None
+        except Exception as _exc:  # noqa: F841
+            # fallback to bruteforce if an error occurs
+            output_aliquot = self._get_record(
+                get_records=self.get_aliquots,
+                record_id=aliquot_id,
+            )
 
-        return cast(AliquotRecord, json.loads(response['content']))
+        return output_aliquot
 
     def get_aliquots(
             self,
@@ -191,16 +240,64 @@ class BUILDClient:
         Returns:
             SampleRecord: Sample record.
         """
-        url: str = self.sample_url.format(str(sample_id))
+        output_sample: SampleRecord = None  # {}
 
-        response: ResponseDict = get(
-            url=url,
-            headers=self.headers,
-        )
+        try:
+            url: str = self.sample_url.format(str(sample_id))
+            response: ResponseDict = get(
+                url=url,
+                headers=self.headers,
+            )
+            assert response['content'] is not None  # noqa: S101
+            output_sample = cast(SampleRecord, json.loads(response['content']))
 
-        assert response['content'] is not None
+        except Exception as _exc:  # noqa: F841
+            # fallback to bruteforce if an error occurs
+            output_sample = self._get_record(
+                get_records=self.get_samples,
+                record_id=sample_id,
+            )
 
-        return cast(SampleRecord, json.loads(response['content']))
+        return output_sample
+
+    def _get_record(
+        self,
+        get_records,
+        record_id: str | int,
+    ) -> Any | Record | None:
+        """Bruteforce implementation."""
+        warnings.warn(f'An error occured while calling {get_records.__name__}, fallback to bruteforce.')
+
+        output_record: Record | None = None
+
+        def criteria(record: Record) -> bool:
+            return record.get('id', None) == str(record_id)
+
+        pageNumber: int = 1  # noqa: N806
+        # pageSize: int = 10  # noqa: E800
+
+        while True:
+            records: List[Record] = get_records(
+                pageNumber=str(pageNumber),
+                # NOTE: We prefer to use the default values
+                # pageSize=pageSize,  # noqa: E800
+                # sort='-updatedAt',  # noqa: E800
+                # gqlFilter='',  # noqa: E800
+            )
+
+            # When `pageNumber` value is greater than the existing pages, the endpoint returns an empty list.
+            if len(records) == 0:
+                break
+
+            # we return the first record that meets the desired criteria
+            for record in records:
+                if criteria(record):
+                    output_record = record
+                    break
+
+            pageNumber += 1
+
+        return output_record
 
     def get_samples(
             self,
