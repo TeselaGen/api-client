@@ -210,6 +210,8 @@ repos:
     hooks:
       - id: yapf
         name: "  [fix]: format code (Python) [yapf]"
+        additional_dependencies:
+          - toml>=0.10.2
 
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.29.1
