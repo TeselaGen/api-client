@@ -269,7 +269,6 @@ class TestTeselaGenClient:
         api_info = client.get_api_info()
         assert 'unauthorized' in api_info.lower()
 
-    # @pytest.mark.skip(reason='This endpoint is currently not implemented')
     @pytest.mark.parametrize('module_name', MODULES_TO_BE_TESTED)
     def test_get_laboratories(
         self,

@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import warnings
 
+from _pytest.config import notset
 import pytest
 
 from teselagen.api.client import TeselaGenClient
@@ -15,13 +16,51 @@ from teselagen.utils import get_test_configuration_path
 from teselagen.utils import load_from_json
 
 if TYPE_CHECKING:
+    from typing import List
     import typing
 
-    # from typing import Union
+    from _pytest import nodes
+    import _pytest  # noqa: F401 # pylint: disable=unused-import
+    from _pytest.config import Config
+    from _pytest.mark.structures import MarkDecorator
+
     # from _pytest.config import ExitCode
-    # from pytest import Session
+    # from _pytest.config.argparsing import OptionGroup
+    # from _pytest.config.argparsing import Parser
 
 # https://pypi.org/project/pytest-xdist/#making-session-scoped-fixtures-execute-only-once
+
+
+def pytest_configure(config: Config) -> None:
+    """Configure pytest."""
+    # The line format must be: f"{mark_name}: {description}"
+
+    # SLOW TESTS
+    config.addinivalue_line(
+        name='markers',
+        line=('slow: mark test as slow to run. '
+              "Deselect with '-m \"not slow\"'. "),
+    )
+
+
+def pytest_collection_modifyitems(
+    session: pytest.Session,  # pylint: disable=unused-argument
+    config: Config,
+    items: List[nodes.Item],
+) -> None:
+    """Modify test collection."""
+    should_run_slow: bool = config.getoption(
+        '--run_slow',
+        default=notset,
+        skip=False,
+    )
+
+    for item in items:
+
+        if not should_run_slow:
+            skip_slow: MarkDecorator = pytest.mark.skip(reason='Slow tests run with --run_slow flag.')
+            if 'slow' in item.keywords:
+                item.add_marker(marker=skip_slow)
 
 
 @pytest.fixture(scope='session')
