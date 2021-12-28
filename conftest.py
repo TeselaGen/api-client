@@ -90,6 +90,7 @@ def test_configuration() -> dict[str, str]:
         'host_url': 'http://host.docker.internal:3000',
         'api_token_name': 'x-tg-cli-token',
     }
+    DEFAULT_CONFIGURATION['host_url'] = DEFAULT_CONFIGURATION['host_url'].strip('/')
 
     configuration = DEFAULT_CONFIGURATION.copy()
 
@@ -115,7 +116,7 @@ def test_configuration() -> dict[str, str]:
 @pytest.fixture(scope='session')
 def host_url(test_configuration: dict[str, str]) -> str:
     """Returns the host URL."""
-    return test_configuration['host_url']
+    return test_configuration['host_url'].strip('/')
 
 
 @pytest.fixture(scope='session')
@@ -264,7 +265,9 @@ def clean_test_module_used_for_testing() -> None:
 
 
 def pytest_sessionstart(session: pytest.Session) -> None:
-    """Called after the `Session` object has been created and before performing collection and entering the run test
+    """A `PyTest` hook.
+
+    Called after the `Session` object has been created and before performing collection and entering the run test \
     loop.
 
     Args:
@@ -280,7 +283,9 @@ def pytest_sessionfinish(
     session: pytest.Session,
     exitstatus: Union[int, ExitCode],
 ) -> None:
-    """Called after whole test run finished, right before returning the exit status to the system.
+    """A `PyTest` hook.
+
+    Called after whole test run finished, right before returning the exit status to the system.
 
     Args:
         session (pytest.Session):  The pytest session object.
@@ -291,5 +296,5 @@ def pytest_sessionfinish(
     """
     clean_test_module_used_for_testing()
 
-    print()
-    print('run status code:', exitstatus)
+    print()  # noqa: T001
+    print('run status code:', exitstatus)  # noqa: T001
