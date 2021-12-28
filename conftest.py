@@ -204,7 +204,7 @@ def clean_test_module_used_for_testing() -> None:
             if filename in filenames_to_remove:
                 for id in ids:
                     pp(f'Deleting {filename} with id {id}')
-                    client.test.delete_file(id)
+                    client.test.delete_file(file_id=id)
 
         REMOVE_ALL_DUPLICATED_FILES: bool = False  # noqa: N806
         if REMOVE_ALL_DUPLICATED_FILES:
@@ -212,37 +212,53 @@ def clean_test_module_used_for_testing() -> None:
                 if len(ids) > 1:
                     for id in ids:
                         pp(f'Deleting {filename} with id {id}')
-                        client.test.delete_file(id)
+                        client.test.delete_file(file_id=id)
 
-        # ASSAYS
-        assays: Assays = client.test.get_assays()
+    # ASSAYS
+    assays: Assays = client.test.get_assays()
 
-        assay_names_to_remove: Set[str] = {
-            'Wild Type External Metabolites',
-        }
+    assay_names_to_remove: Set[str] = {
+        'Wild Type External Metabolites',
+    }
 
-        if assays is not None and len(assays) > 0:
-            # map assay names to assay ids, to remove them by name
-            assay_name2ids: Dict[str, List[str]] = {}
-            for assay in assays:
-                if assay['name'] not in assay_name2ids:
-                    assay_name2ids[assay['name']] = []
-                assay_name2ids[assay['name']].append(assay['id'])
+    if assays is not None and len(assays) > 0:
+        # map assay names to assay ids, to remove them by name
+        assay_name2ids: Dict[str, List[str]] = {}
+        for assay in assays:
+            if assay['name'] not in assay_name2ids:
+                assay_name2ids[assay['name']] = []
+            assay_name2ids[assay['name']].append(assay['id'])
 
-            # remove assays from previous tests if they exist in the lab
+        # remove assays from previous tests if they exist in the lab
+        for assay_name, ids in assay_name2ids.items():
+            if assay_name in assay_names_to_remove:
+                for id in ids:
+                    pp(f'Deleting {assay_name} with id {id}')
+                    client.test.delete_assay(assay_id=id)
+
+        REMOVE_ALL_DUPLICATED_ASSAYS: bool = False  # noqa: N806
+        if REMOVE_ALL_DUPLICATED_ASSAYS:
             for assay_name, ids in assay_name2ids.items():
-                if assay_name in assay_names_to_remove:
+                if len(ids) > 1:
                     for id in ids:
                         pp(f'Deleting {assay_name} with id {id}')
-                        client.test.delete_assay(id)
+                        client.test.delete_assay(assay_id=id)
 
-            REMOVE_ALL_DUPLICATED_ASSAYS: bool = False  # noqa: N806
-            if REMOVE_ALL_DUPLICATED_ASSAYS:
-                for assay_name, ids in assay_name2ids.items():
-                    if len(ids) > 1:
-                        for id in ids:
-                            pp(f'Deleting {assay_name} with id {id}')
-                            client.test.delete_assay(id)
+    # MODELS
+    # NOTE: Do not remove `Teselagen Example Evolutive Model` evolutive model.
+    model_type: str = 'predictive'
+    models = client.discover.get_models_by_type(model_type=model_type)
+
+    if models is not None and len(models) > 0:
+        # map model ids to model names, to show their names if needed when removing them by id
+        id2model_name: Dict[str, str] = {
+            model['id']: model['name'] for model in models if model['name'].startswith('Model X times Y')
+        }
+
+        # remove models from previous tests if they exist in the lab
+        for id, name in id2model_name.items():
+            pp(f'Deleting {name} with id {id}')
+            client.discover.delete_model(model_id=id)
 
     client.logout()
 
