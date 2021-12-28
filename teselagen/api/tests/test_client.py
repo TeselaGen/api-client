@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from unittest.mock import patch
+from urllib.parse import urljoin
 
 import pytest
 
@@ -19,20 +20,16 @@ from teselagen.utils import get_credentials_path
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Literal
 
-# module_names = [
-#     'design',
-#     'build',
-#     'test',
-#     'evolve',
-# ]
-
-MODULES_TO_BE_TESTED: List[Literal['test', 'evolve']] = [
+MODULES_TO_BE_TESTED: List[Literal['design', 'build', 'test', 'evolve']] = [
+    'design',
+    'build',
     'test',
-    'evolve',
+    'evolve',  # NOTE: 'evolve' module is now called 'discovery', but the API path is still 'evolve'
 ]
 
 
 class TestTeselaGenClient:
+    """Tests for the TeselaGen Client."""
 
     @pytest.fixture
     def expiration_time(self) -> str:
@@ -172,12 +169,13 @@ class TestTeselaGenClient:
         host_url: str,
         headers: Dict[str, str],
     ) -> None:
-        api_url_base: str = f'{host_url}/{module_name}/cli-api'
-        api_path: str = 'public/status'
-        api_url: str = f'{api_url_base}/{api_path}'
+        base_url: str = host_url
+        path: str = f'/{module_name}/cli-api/public/status'
+        api_url: str = urljoin(base_url, path)  # Example: https://platform.teselagen.com/test/cli-api/public/status
 
         response = get(url=api_url, headers=headers)
 
+        assert response is not None
         assert isinstance(response, dict)
 
         expected_keys: List[str] = [
