@@ -13,6 +13,10 @@ set -o pipefail >/dev/null 2>&1 || true # bash specific option to propagate exit
 set -o errexit                          # Exit immediately if a command exits with a non-zero status
 set -o xtrace                           # Trace the execution of the script (debug mode)
 
+# if [ "$1" == "--dev" ]; then
+#     set -o xtrace                       # Trace the execution of the script (debug mode)
+# fi
+
 # start with an error if Docker isn't working...
 docker version >/dev/null
 printf "[$(date)] Docker version: %s\n" "$(docker version --format '{{.Server.Version}}')"

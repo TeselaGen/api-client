@@ -13,6 +13,10 @@ set -o pipefail >/dev/null 2>&1 || true # bash specific option to propagate exit
 set -o errexit                          # Exit immediately if a command exits with a non-zero status
 set -o xtrace                           # Trace the execution of the script (debug mode)
 
+# if [ "$1" == "--dev" ]; then
+#     set -o xtrace                       # Trace the execution of the script (debug mode)
+# fi
+
 # start with an error if Docker isn't working...
 docker version >/dev/null
 printf "[$(date)] Docker version: %s\n" "$(docker version --format '{{.Server.Version}}')"
@@ -28,10 +32,13 @@ docker rmi --force "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_TAG}"
 # <<<<<< Remove old docker image <<<<<<
 
 # >>>>>> Build and tag the Docker image >>>>>>
-echo "[$(date)] Building the Docker image ...: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
-#   Use the `--no-cache` flag of the `docker build` command if required.
-#   Use the `--progress=plain` if you want to see the detaliled progress of the build
-docker build --tag "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_TAG}" .
+if [ "$1" == "--dev" ]; then
+    echo "[$(date)] Building the Docker image (without cache) ...: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+    docker build --no-cache --progress=plain -t "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_TAG}" .
+else
+    echo "[$(date)] Building the Docker image ...: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+    docker build --tag "${DOCKER_IMAGE_NAME}":"${DOCKER_IMAGE_TAG}" .
+fi
 # <<<<<< Build and tag the Docker image <<<<<<
 
 echo "[$(date)] Done."
