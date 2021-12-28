@@ -97,18 +97,20 @@ class TestDISCOVERClient:
         # yield
         yield str(params['name'])
 
-        # tear down
-        # NOTE: This is a partial tear down. We remove the model only if it was created by this test.
-        #       If the model was created by another test, we leave it there.
-        try:
-            # attempt to delete the model
-            _ = discover_client.delete_model(model_id=model_id)
-        except OSError as exc:
-            # if it fails, for now, we asume that the model was deleted by the test
-            pass
-        finally:
-            # otherwise we ignore it and we leave it there
-            pass
+        # # tear down
+        # # NOTE: This is a partial tear down. We remove the model only if it was created by this test.
+        # #       If the model was created by another test, we leave it there.
+        # try:
+        #     # attempt to delete the model
+        #     _ = discover_client.delete_model(model_id=model_id)
+        # except OSError as exc:
+        #     # if it fails, for now, we asume that the model was deleted by the test
+        #     pass
+        # finally:
+        #     # otherwise we ignore it and we leave it there
+        #     pass
+        # NOTE: See if we need to handle the tear down differently for `test_get_model_submit_get_cancel_delete``
+        dummy = 1
 
     def test_client_attributes(
         self,
@@ -238,6 +240,7 @@ class TestDISCOVERClient:
         assert isinstance(res, list)
         assert res == endpoint_output
 
+    # NOTE: See if we need to handle the tear down differently for `test_get_model_submit_get_cancel_delete`
     def test_get_model_submit_get_cancel_delete(
         self,
         discover_client: DISCOVERClient,
