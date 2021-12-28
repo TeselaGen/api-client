@@ -10,7 +10,7 @@ import time
 from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
-# from teselagen.api.build_client import BUILDClient  # TODO(diegovalenzuelaiturra): branching
+from teselagen.api.build_client import BUILDClient
 from teselagen.api.design_client import DESIGNClient
 from teselagen.api.discover_client import DISCOVERClient
 from teselagen.api.test_client import TESTClient
@@ -64,7 +64,7 @@ class TeselaGenClient:
         self._design: Optional[DESIGNClient] = None
         self._test: Optional[TESTClient] = None
         self._discover: Optional[DISCOVERClient] = None
-        # self._build: Optional[BUILDClient] = None  # TODO(diegovalenzuelaiturra): branching
+        self._build: Optional[BUILDClient] = None
 
         # NOTE: Do not add passwords to the class attributes. Delete all passwords once they've been used.
 
@@ -118,17 +118,11 @@ class TeselaGenClient:
 
     # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
-    def build(self) -> None:  # TODO(diegovalenzuelaiturra): branching
+    def build(self) -> BUILDClient:
         """This instantiates the client's 'build' property object which provides TeselaGen BUILD API methods."""
-        raise NotImplementedError('The BUILD module is not yet implemented.')
-
-    # # NOTE: A factory pattern may be preferable here, to reduce coupling.
-    # @property
-    # def build(self) -> BUILDClient:  # TODO(diegovalenzuelaiturra): branching
-    #     """This instantiates the client's 'build' property object which provides TeselaGen BUILD API methods."""
-    #     if self._build is None:
-    #         self._build = BUILDClient(teselagen_client=self)
-    #     return self._build
+        if self._build is None:
+            self._build = BUILDClient(teselagen_client=self)
+        return self._build
 
     # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
