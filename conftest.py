@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from pprint import pprint as pp
 from typing import TYPE_CHECKING
 import warnings
 
@@ -15,12 +16,42 @@ from teselagen.utils import get_test_configuration_path
 from teselagen.utils import load_from_json
 
 if TYPE_CHECKING:
-
+    from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union
     import typing
 
-    # from _pytest.config import ExitCode
+    from _pytest.config import ExitCode
+
     # from _pytest.config.argparsing import OptionGroup
     # from _pytest.config.argparsing import Parser
+
+    ImportStatusValue = Union[str, Literal['FINISHED', 'INPROGRESS']]
+
+    class Assay(TypedDict, total=True):  # noqa: H601
+        """Assay `TypedDict`."""
+        id: str
+        name: str
+
+    class AssayWithExperiment(TypedDict, total=True):  # noqa: H601
+        """Assay With Experiment `TypedDict`."""
+        id: str
+        name: str
+        experiment: Experiment
+
+    class Experiment(TypedDict, total=True):  # noqa: H601
+        """Experiment `TypedDict`."""
+        id: str
+        name: str
+
+    class File(TypedDict, total=True):  # noqa: H601
+        """File `TypedDict`."""
+        id: str
+        name: str
+        importStatus: ImportStatusValue  # noqa: N815
+        experiment: Optional[Experiment]  # None
+        assay: Optional[Assay]  # None
+
+    Files = Union[List[File], List[Dict[str, Any]]]
+    Assays = Union[List[Assay], List[AssayWithExperiment], List[Dict[str, Any]]]
 
 # https://pypi.org/project/pytest-xdist/#making-session-scoped-fixtures-execute-only-once
 
@@ -59,6 +90,7 @@ def test_configuration() -> dict[str, str]:
         'host_url': 'http://host.docker.internal:3000',
         'api_token_name': 'x-tg-cli-token',
     }
+    DEFAULT_CONFIGURATION['host_url'] = DEFAULT_CONFIGURATION['host_url'].strip('/')
 
     configuration = DEFAULT_CONFIGURATION.copy()
 
@@ -84,7 +116,7 @@ def test_configuration() -> dict[str, str]:
 @pytest.fixture(scope='session')
 def host_url(test_configuration: dict[str, str]) -> str:
     """Returns the host URL."""
-    return test_configuration['host_url']
+    return test_configuration['host_url'].strip('/')
 
 
 @pytest.fixture(scope='session')
@@ -136,18 +168,133 @@ def logged_client(
     client.logout()
 
 
-# def pytest_sessionfinish(
-#     session: Session,
-#     exitstatus: Union[int, ExitCode],
-# ) -> None:
-#     """This hook is called after the `session` has finished.
+def clean_test_module_used_for_testing() -> None:
+    """Cleanup files and assays."""
+    client: TeselaGenClient = TeselaGenClient()
+    client.login(expiration_time='30m')
 
-#     Args:
-#         session (Session): The pytest session.
-#         exitstatus (Union[int, ExitCode]): The exit status.
+    LAB_NAME: str = 'The Test Lab'  # noqa: N806
+    client.select_laboratory(lab_name=LAB_NAME)
 
-#     References:
-#         https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_sessionfinish
-#     """
-#     print()
-#     print('run status code:', exitstatus)
+    # FILES
+    files: Files = client.test.get_files_info()
+
+    filenames_to_remove: Set[str] = {
+        'EDD_experiment_description_file_BE_designs.csv',
+        'EDD_experiment_description_file_WT.csv',
+        'TEST_OD_WT.csv',
+        'TEST_experiment_description_file_BE_designs.csv',
+        'TEST_experiment_description_file_WT.csv',
+        'TEST_external_metabolites_WT.csv',
+        'TEST_isoprenol_production.csv',
+        'TEST_metabolomics_WTSM.csv',
+        'TEST_proteomics_WTSM.csv',
+        'TEST_transcriptomics_WTSM.csv',
+    }
+
+    if files is not None and len(files) > 0:
+        # map filenames to file ids, to remove them by name
+        filename2ids: Dict[str, List[str]] = {}
+        for file in files:
+            if file['name'] not in filename2ids:
+                filename2ids[file['name']] = []
+            filename2ids[file['name']].append(file['id'])
+
+        # remove files from previous tests if they exist in the lab
+        for filename, ids in filename2ids.items():
+            if filename in filenames_to_remove:
+                for id in ids:
+                    pp(f'Deleting {filename} with id {id}')
+                    client.test.delete_file(file_id=id)
+
+        REMOVE_ALL_DUPLICATED_FILES: bool = False  # noqa: N806
+        if REMOVE_ALL_DUPLICATED_FILES:
+            for filename, ids in filename2ids.items():
+                if len(ids) > 1:
+                    for id in ids:
+                        pp(f'Deleting {filename} with id {id}')
+                        client.test.delete_file(file_id=id)
+
+    # ASSAYS
+    assays: Assays = client.test.get_assays()
+
+    assay_names_to_remove: Set[str] = {
+        'Wild Type External Metabolites',
+    }
+
+    if assays is not None and len(assays) > 0:
+        # map assay names to assay ids, to remove them by name
+        assay_name2ids: Dict[str, List[str]] = {}
+        for assay in assays:
+            if assay['name'] not in assay_name2ids:
+                assay_name2ids[assay['name']] = []
+            assay_name2ids[assay['name']].append(assay['id'])
+
+        # remove assays from previous tests if they exist in the lab
+        for assay_name, ids in assay_name2ids.items():
+            if assay_name in assay_names_to_remove:
+                for id in ids:
+                    pp(f'Deleting {assay_name} with id {id}')
+                    client.test.delete_assay(assay_id=id)
+
+        REMOVE_ALL_DUPLICATED_ASSAYS: bool = False  # noqa: N806
+        if REMOVE_ALL_DUPLICATED_ASSAYS:
+            for assay_name, ids in assay_name2ids.items():
+                if len(ids) > 1:
+                    for id in ids:
+                        pp(f'Deleting {assay_name} with id {id}')
+                        client.test.delete_assay(assay_id=id)
+
+    # MODELS
+    # NOTE: Do not remove `Teselagen Example Evolutive Model` evolutive model.
+    model_type: str = 'predictive'
+    models = client.discover.get_models_by_type(model_type=model_type)
+
+    if models is not None and len(models) > 0:
+        # map model ids to model names, to show their names if needed when removing them by id
+        id2model_name: Dict[str, str] = {
+            model['id']: model['name'] for model in models if model['name'].startswith('Model X times Y')
+        }
+
+        # remove models from previous tests if they exist in the lab
+        for id, name in id2model_name.items():
+            pp(f'Deleting {name} with id {id}')
+            client.discover.delete_model(model_id=id)
+
+    client.logout()
+
+
+def pytest_sessionstart(session: pytest.Session) -> None:
+    """A `PyTest` hook.
+
+    Called after the `Session` object has been created and before performing collection and entering the run test \
+    loop.
+
+    Args:
+        session (pytest.Session):  The pytest session object.
+
+    References:
+        https://pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_sessionstart
+    """
+    clean_test_module_used_for_testing()
+
+
+def pytest_sessionfinish(
+    session: pytest.Session,
+    exitstatus: Union[int, ExitCode],
+) -> None:
+    """A `PyTest` hook.
+
+    Called after whole test run finished, right before returning the exit status to the system.
+
+    Args:
+        session (pytest.Session):  The pytest session object.
+        exitstatus (Union[int, ExitCode]): The status which pytest will return to the system.
+
+    References:
+        https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_sessionfinish
+    """
+    clean_test_module_used_for_testing()
+
+    print()  # noqa: T001
+    print('run status code:', exitstatus)  # noqa: T001

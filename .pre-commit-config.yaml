@@ -214,7 +214,7 @@ repos:
           - toml>=0.10.2
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.29.1
+    rev: v2.30.0
     hooks:
       - id: pyupgrade
         name: "  [fix]: upgrade syntax (Python) [pyupgrade]"
