@@ -108,11 +108,8 @@ RUN set -ex && \
 RUN set -ex && \
     # print installed versions (pip==21.3.1 and setuptools==58.1.0 and wheel is not installed)
     python -m pip list | grep -iE '^pip|^setuptools|^wheel' && \
-    # upgrade 'pip', 'setuptools', 'wheel'
-    # pip>=21.3.1 setuptools==58.1.0 wheel>=0.37.0
-    # python -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    python -m pip install --user --no-cache-dir --upgrade pip setuptools wheel && \
-    # pip install --no-cache-dir --upgrade setuptools wheel && \
+    # upgrade 'pip', do not upgrade 'setuptools', and install 'wheel' | pip>=21.3.1 setuptools==58.1.0 wheel>=0.37.0 |
+    python -m pip install --no-cache-dir --upgrade pip>=21.3.1 setuptools==58.1.0 wheel>=0.37.0 && \
     # sanity checks
     python -m pip list | grep -iE '^pip|^setuptools|^wheel' && \
     # Remove all items from the 'pip' cache
