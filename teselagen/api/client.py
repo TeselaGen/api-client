@@ -10,7 +10,7 @@ import time
 from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
-from teselagen.api.build_client import BUILDClient
+# from teselagen.api.build_client import BUILDClient  # TODO(diegovalenzuelaiturra): branching
 from teselagen.api.design_client import DESIGNClient
 from teselagen.api.discover_client import DISCOVERClient
 from teselagen.api.test_client import TESTClient
@@ -24,12 +24,6 @@ from teselagen.utils.utils import ParsedJSONResponse
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Literal, Optional
-
-# ['test', 'learn'/'evolve']
-AVAILABLE_MODULES: List[Literal['test', 'evolve']] = [
-    'test',
-    'evolve',
-]
 
 # NOTE : Related to Postman and Python requests
 #           "body" goes into the "json" argument
@@ -70,7 +64,8 @@ class TeselaGenClient:
         self._design: Optional[DESIGNClient] = None
         self._test: Optional[TESTClient] = None
         self._discover: Optional[DISCOVERClient] = None
-        self._build: Optional[BUILDClient] = None
+        # self._build: Optional[BUILDClient] = None  # TODO(diegovalenzuelaiturra): branching
+
         # NOTE: Do not add passwords to the class attributes. Delete all passwords once they've been used.
 
         self.host_url: str = host_url.strip('/')
@@ -123,11 +118,17 @@ class TeselaGenClient:
 
     # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
-    def build(self) -> BUILDClient:
+    def build(self) -> None:  # TODO(diegovalenzuelaiturra): branching
         """This instantiates the client's 'build' property object which provides TeselaGen BUILD API methods."""
-        if self._build is None:
-            self._build = BUILDClient(teselagen_client=self)
-        return self._build
+        raise NotImplementedError('The BUILD module is not yet implemented.')
+
+    # # NOTE: A factory pattern may be preferable here, to reduce coupling.
+    # @property
+    # def build(self) -> BUILDClient:  # TODO(diegovalenzuelaiturra): branching
+    #     """This instantiates the client's 'build' property object which provides TeselaGen BUILD API methods."""
+    #     if self._build is None:
+    #         self._build = BUILDClient(teselagen_client=self)
+    #     return self._build
 
     # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property

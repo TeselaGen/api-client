@@ -525,14 +525,13 @@ def upload_transcriptomics(
     )
 
 
-class TestTESTClientMultiomicsData():
+class TestTESTClientMultiomicsData:
 
     def test_experiment_description_upload(
         self,
         experiment_description_upload,
     ):
         """Tests data upload methods works ok."""
-        # Some assertions
         for _, response in experiment_description_upload.items():
             assert 'importId' in response
             assert 'message' in response
@@ -543,7 +542,6 @@ class TestTESTClientMultiomicsData():
         client_with_lab: TeselaGenClient,
     ):
         """Tests data upload methods works ok."""
-        # Some assertions
         assert 'importId' in optical_density_upload
         assert 'message' in optical_density_upload
 
@@ -558,7 +556,6 @@ class TestTESTClientMultiomicsData():
         client_with_lab: TeselaGenClient,
     ):
         """Tests data upload methods works ok."""
-        # Some assertions
         assert 'importId' in upload_external_metabolites
         assert 'message' in upload_external_metabolites
 
@@ -573,7 +570,6 @@ class TestTESTClientMultiomicsData():
         client_with_lab: TeselaGenClient,
     ):
         """Tests data upload methods works ok."""
-        # Some assertions
         assert 'importId' in upload_transcriptomics
         assert 'message' in upload_transcriptomics
 

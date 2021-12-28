@@ -42,7 +42,7 @@ IMPORTED_FILE_STATUSES: List[str] = [
 ]
 
 
-class TESTClient():
+class TESTClient:
     """TEST Client."""
 
     def __init__(

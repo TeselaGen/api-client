@@ -42,7 +42,7 @@ TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Exam
 #       parserId = 1
 
 
-class TestTESTClient():
+class TestTESTClient:
 
     @pytest.fixture
     def lab_id(

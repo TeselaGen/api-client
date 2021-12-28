@@ -18,8 +18,9 @@ if TYPE_CHECKING:
     from teselagen.api.build_client import Record
 
 # NOTE: Explore '__tracebackhide__ = True' to hide the traceback from pytest.
-# See
-# https://docs.pytest.org/en/6.2.x/example/simple.html?highlight=check#writing-well-integrated-assertion-helpers
+#       https://docs.pytest.org/en/6.2.x/example/simple.html?highlight=check#writing-well-integrated-assertion-helpers
+
+# NOTE: An empty record should probably be considered valid.
 
 
 def assert_record(record: Any | Record) -> None:
@@ -87,7 +88,7 @@ class TestBUILDClient:
         self,
         logged_build_client: BUILDClient,
     ) -> None:
-        """Test getting all aliquots with default query parameters."""
+        """Default query parameters should always work."""
         client = logged_build_client
 
         response = client.get_aliquots()
@@ -97,6 +98,7 @@ class TestBUILDClient:
         ('pageNumber', 'pageSize', 'sort', 'gqlFilter'),
         [
             ('1', '10', 'id', ''),
+            ('2', '10', 'id', ''),
         ],
     )
     def test_get_aliquots_with_query_params(
@@ -107,7 +109,7 @@ class TestBUILDClient:
         sort: str,
         gqlFilter: str,
     ) -> None:
-        """Test getting aliquots with custom query params."""
+        """Custom query params."""
         client = logged_build_client
 
         response = client.get_aliquots(
@@ -138,12 +140,11 @@ class TestBUILDClient:
         response = client.get_aliquot(aliquot_id=aliquot_id)
         assert_record(record=response)
 
-    # NOTE: maybe ommit this test, since there may be a very large number of records - mark it as slow or integration
     def test_get_samples_with_default_query_params(
         self,
         logged_build_client: BUILDClient,
     ) -> None:
-        """Test getting all samples with default query parameters."""
+        """Test getting samples with default query parameters."""
         client = logged_build_client
 
         response = client.get_samples()
@@ -153,6 +154,7 @@ class TestBUILDClient:
         ('pageNumber', 'pageSize', 'sort', 'gqlFilter'),
         [
             ('1', '10', 'id', ''),
+            ('2', '10', 'id', ''),
         ],
     )
     def test_get_samples_with_query_params(
@@ -163,7 +165,7 @@ class TestBUILDClient:
         sort: str,
         gqlFilter: str,
     ) -> None:
-        """Test getting samples with custom query params."""
+        """Custom query params."""
         client = logged_build_client
 
         response = client.get_samples(
@@ -175,7 +177,6 @@ class TestBUILDClient:
         assert_records(records=response)
         assert len(response) <= int(pageSize)
 
-    # @pytest.mark.skip(reason='Still need to define values for sample_id that can be used for the test.')
     @pytest.mark.parametrize(
         'sample_id',
         [

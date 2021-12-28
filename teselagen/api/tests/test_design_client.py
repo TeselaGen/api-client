@@ -110,7 +110,7 @@ def check_parsed_json_response(
     return cast(ExpectedParsedJSONResponse, response)
 
 
-class TestDESIGNClient():
+class TestDESIGNClient:
 
     def test_get_assembly_report_mock(
             self,
