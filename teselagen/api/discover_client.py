@@ -15,15 +15,19 @@ from teselagen.utils import post
 from teselagen.utils import wait_for_status
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional, Tuple, Union
+    from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
     from teselagen.api import TeselaGenClient
+
+    ModelID = Union[str, int]  # NewType('ModelID', str, int)
+    TaskID = Union[str, int]  # NewType('TaskID', str, int)
+    ModelType = Literal['predictive', 'evolutive', 'generative', None]
 
 # NOTE : Related to Postman and Python requests
 #           "body" goes into the "json" argument
 #           "Query Params" goes into "params" argument
 
-ALLOWED_MODEL_TYPES: List[Union[str, None]] = [
+ALLOWED_MODEL_TYPES: List[ModelType] = [
     'predictive',
     'evolutive',
     'generative',
@@ -112,14 +116,14 @@ class DISCOVERClient():
 
     def get_model_info(
         self,
-        model_id: int,
+        model_id: ModelID,
     ):
         """Retrieves model general information.
 
         This will return a JSON object with the metadata of a model filtered by the provided model ID.
 
         Args :
-            model_id (int): Model identifier.
+            model_id (ModelID): Model identifier.
 
         Returns :
             () : A dict containing model info. An example is shown below:
@@ -169,12 +173,12 @@ class DISCOVERClient():
 
     def get_models_by_type(
         self,
-        model_type: Optional[str] = None,
+        model_type: Optional[ModelType] = None,
     ):
         """This will return a JSON object with the metadata of multiple models, filtered by the provided `model_type`.
 
         Args :
-            model_type (str) :
+            model_type (ModelType) :
 
         ```
             "predictive"
@@ -270,17 +274,21 @@ class DISCOVERClient():
 
     def get_model_datapoints(
         self,
-        model_id: Union[int, str],
+        model_id: ModelID,
         datapoint_type: str,
         batch_size: int,
         batch_number: int,
     ) -> Dict[str, Any]:
-        """This will return a JSON object with an array of datapoints filtered by the provided model ID and datapoint
-        type. This array will come in the data field in the response body. Each element of the array has a datapoint
+        """Return model datapoints.
+
+        This will return a JSON object with an array of datapoints filtered by the provided model ID and datapoint \
+        type.
+
+        This array will come in the data field in the response body. Each element of the array has a datapoint \
         field, this corresponds to a JSON object with the datapoint data.
 
         Args :
-            model_id (int): ID of the model
+            model_id (ModelID): ID of the model
 
             datapoint_type (str) : The `datapoint_type` has two options are "input", "output". One can fetch only \
                 input datapoints (a.k.a training datapoints) or just fetch the output datapoint (a.k.a predicted \
@@ -330,7 +338,7 @@ class DISCOVERClient():
         self,
         data_input: List[Any],
         data_schema: List[Any],
-        model_type: str,
+        model_type: ModelType,
         configs: Optional[Any] = None,
         name: str = '',
         description: Optional[str] = None,
@@ -389,7 +397,7 @@ class DISCOVERClient():
                 - `value_type` : defines the type of value of this column.
                     Available types are "numeric" or "categoric".
 
-            model_type (str) :
+            model_type (ModelType) :
                 The type of model wanting to submit. Either "predictive", "evolutive" or "generative".
 
                 NOTE: If submitting a "generative" model, there's no "descriptor" column, in fact there should only be
@@ -451,14 +459,14 @@ class DISCOVERClient():
         self,
         data_input: List[Dict[str, Any]],
         data_schema: List[Dict[str, Any]],
-        model_id: Union[int, str],
+        model_id: ModelID,
     ) -> Dict[str, Any]:
         """Submits a task used to run predictions on a list of datapoints using a pre-trained Predictive Model.
 
         Args:
-            - data_input (List[Dict[str, Any]]): Datapoints in the same format described in the submit_model function.
-            - data_schema (List[Dict[str, Any]]): Data schema in the same format described in the submit_model function.
-            - model_id (Union[int, str]): ID of the pre-trained predictive model going to be used to run predictions for the datapoints in the data_input list.
+            data_input (List[Dict[str, Any]]): Datapoints in the same format described in the submit_model function.
+            data_schema (List[Dict[str, Any]]): Data schema in the same format described in the submit_model function.
+            model_id (ModelID): ID of the pre-trained predictive model going to be used to run predictions for the datapoints in the data_input list.
 
         Returns:
             - A Task object with metadata information on the submitted task including its ID for later retrieval.
@@ -490,21 +498,28 @@ class DISCOVERClient():
         batch_size: int,
         batch_number: int = 0,
     ) -> Dict[str, Any]:
-        """Returns the result of a prediction task. If the task is running it will return a task status object. If the
-        task finished it will return the list of datapoints with their prediction.
+        """Returns the result of a prediction task.
+
+        - If the task is running it will return a task status object.
+        - If the task finished it will return the list of datapoints with their prediction.
 
         Args:
-            - task (Any): The task object obtained from submitting a prediction task.
-            - batch_size (int): Number of datapoints to be fetched.
-            - batch_number (int): When providing a batch_size, the full set of datapoints is divided by batches of size batch_size.
-                batch_number is used to tell which batch of batch_size datapoints to fetch. Defaults to the first batch (batch_number=0).
+            task (Any): The task object obtained from submitting a prediction task.
+
+            batch_size (int): Number of datapoints to be fetched.
+
+            batch_number (int): When providing a `batch_size`, the full set of datapoints is divided by batches of \
+                size `batch_size`. \
+                `batch_number` is used to tell which batch of `batch_size` datapoints to fetch. \
+                Defaults to the first batch (batch_number=0).
 
         Returns:
-            - Depending on the status of the submitted task, a task object with task metadata information including its task status will be returned.
+            dict: Depending on the status of the submitted task, a task object with task metadata information \
+                including its task status will be returned. \
                 If the task is complete, it will return the set of datapoints along with their predictions.
         """
-        model_id = task['data']['modelId']
-        task_id = task['data']['id']
+        model_id: ModelID = task['data']['modelId']
+        task_id: TaskID = task['data']['id']
         task_response = self.get_task(task_id=task_id)
         task_status: Dict[str, Any] = task_response['data'][0]['status']
 
@@ -521,6 +536,8 @@ class DISCOVERClient():
 
         return results
 
+    # TODO: Add documentation for `data_schema`, `pretrainedModelIds` and `configs` parameters in
+    #       `submit_multi_objective_optimization` method.
     def submit_multi_objective_optimization(
         self,
         data_input: List[Any],
@@ -630,9 +647,10 @@ class DISCOVERClient():
         response['content'] = json.loads(response['content'])
         return response['content']
 
+    # TODO: Add docstrings for `get_multi_objective_optimization` method.
     def get_multi_objective_optimization(
             self,
-            taskId: str,  # noqa: N803
+            taskId: TaskID,  # noqa: N803
     ) -> Any:
         response = get(
             url=self.get_multi_objective_optimization_url.format(taskId),
@@ -644,19 +662,19 @@ class DISCOVERClient():
 
     def delete_model(
         self,
-        model_id: int,
+        model_id: ModelID,
     ):
         """Deletes a model matching the specified `model_id`.
 
-        Args :
-            model_id (int) :
+        Args:
+            model_id (ModelID):
                 The model id that wants to be deleted.
 
         Returns :
             () :
         """
         body = {
-            "id": str(model_id),
+            'id': str(model_id),
         }
         response = post(url=self.delete_model_url, headers=self.headers, json=body)
         response['content'] = json.loads(response['content'])
@@ -665,13 +683,12 @@ class DISCOVERClient():
 
     def cancel_model(
         self,
-        model_id: int,
+        model_id: ModelID,
     ):
         """Cancels the submission of a model matching the specified `model_id`.
 
-        Args :
-            model_id (int) :
-                The model id that wants to be canceled.
+        Args:
+            model_id (ModelID): The model id that wants to be canceled.
 
         Returns :
             () :
@@ -685,12 +702,12 @@ class DISCOVERClient():
 
     def get_task(
         self,
-        task_id: Union[int, str],
+        task_id: TaskID,
     ) -> Any:
         """Returns the status of a task based on the Task ID.
 
         Args:
-            task_id (int): The task id that wants to be canceled.
+            task_id (TaskID): The task id that wants to be canceled.
 
         Returns: A task object with task metadata including its ID and status.
         """
@@ -701,11 +718,14 @@ class DISCOVERClient():
 
         return json.loads(response['content'])
 
-    def cancel_task(self, task_id: int) -> Any:
+    def cancel_task(
+        self,
+        task_id: TaskID,
+    ) -> Any:
         """Cancels the submission of a task matching the specified `task_id`.
 
         Args:
-            task_id (int): The task id that wants to be canceled.
+            task_id (TaskID): The task id that wants to be canceled.
 
         Returns:
             ():
@@ -793,12 +813,12 @@ class DISCOVERClient():
 
     def _design_crispr_grnas_get_result(
         self,
-        task_id: int,
+        task_id: TaskID,
     ):
         """Gets results from a design_crispr_grnas process.
 
         Args:
-            task_id (int): Process id
+            task_id (TaskID): Process id
 
         Returns:
             dict: status of the process and, if finished, guides information  as described in `design_crispr_grnas`.
