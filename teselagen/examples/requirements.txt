@@ -1,0 +1,8 @@
+# setuptools
+pandas
+seaborn
+# ipython
+jupyter
+jupyter-console
+jupyter_contrib_nbextensions
+fastaparser==1.1

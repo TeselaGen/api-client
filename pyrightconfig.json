@@ -1,0 +1,19 @@
+{
+    "include": [
+        "./teselagen/",
+        "./setup.py",
+        "./conftest.py"
+    ],
+    "exclude": [
+        "**/node_modules",
+        "**/__pycache__",
+        "typestubs",
+        "typings"
+    ],
+    "stubPath": "typings",
+    "typeCheckingMode": "basic",
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": "warning",
+    "pythonVersion": "3.9",
+    "pythonPlatform": "Linux"
+}

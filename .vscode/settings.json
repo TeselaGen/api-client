@@ -1,0 +1,350 @@
+{
+    "autoDocstring.docstringFormat": "google",
+    "autoDocstring.guessTypes": true,
+    "autoDocstring.includeName": false,
+    "autoDocstring.startOnNewLine": false,
+    "debug.inlineValues": true,
+    "debug.terminal.clearBeforeReusing": true,
+    "editor.bracketPairColorization.enabled": true,
+    "editor.codeActionsOnSave": {
+        "source.sortImports": true,
+        "source.organizeImports": true,
+        // "source.fixAll.shellcheck": true,
+    },
+    // "editor.hover.delay": 300,
+    // "editor.quickSuggestionsDelay": 10,
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": false,
+    "editor.guides.bracketPairs": true,
+    "editor.quickSuggestions": {
+        "other": true,
+        "comments": true,
+        "strings": true,
+    },
+    "editor.renderControlCharacters": true,
+    "editor.renderWhitespace": "all",
+    "editor.rulers": [
+        119
+    ],
+    "editor.semanticHighlighting.enabled": true,
+    "editor.smoothScrolling": true,
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "explorer.compactFolders": false,
+    "explorer.sortOrder": "type",
+    "files.associations": {
+        ".bandit": "ini",
+        ".codespellignore": "plaintext",
+        ".codespellrc": "properties",
+        ".coveragerc": "properties",
+        ".editorconfig": "ini",
+        ".flake8": "ini",
+        ".isort.cfg": "properties",
+        ".pydocstyle": "properties",
+        ".style.yapf": "properties",
+        "mypy.ini": "ini",
+        "poetry.lock": "properties",
+        "pylintrc": "properties",
+        "pyproject.toml": "properties",
+        "pytest.ini": "ini",
+        "radon.cfg": "properties",
+        "setup.cfg": "properties",
+        // custom file types
+        ".credentials": "json",
+        ".test_configuration": "json",
+        // generic file types
+        // "*.ini": "ini",
+        // "*.cfg": "properties",
+        // "*.toml": "properties",
+    },
+    "files.encoding": "utf8",
+    "files.eol": "\n",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        // custom
+        ".vscode": false,
+        "**/__pycache__": true,
+        "**/.mypy_cache": true,
+        "**/.pytest_cache": true,
+        "**/*.egg-info": true,
+        "**/*.eggs": true,
+        "**/*.pyc": true,
+        "**/stubs": true,
+        "**/typesheds": true,
+        "**/typestubs": true,
+        "**/typings": true,
+        "**/.coverage": true,
+        // config files
+        "**/.bandit": true,
+        "**/.codespellignore": true,
+        "**/.codespellrc": true,
+        "**/.coveragerc": true,
+        "**/.flake8": true,
+        "**/.isort.cfg": true,
+        "**/.pydocstyle": true,
+        "**/.pylintrc": true,
+        "**/.style.yapf": true,
+        "**/.yamllint.yml": true,
+        "**/bandit.yml": true,
+        "**/cSpell.json": true,
+        "**/mypy.ini": true,
+        "**/pyrightconfig.json": true,
+        "**/radon.cfg": true,
+        "**/sourcery.yaml": true,
+    },
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "git.ignoreLimitWarning": true,
+    "notebook.lineNumbers": "on",
+    // default is "off",  choices are "off", "basic", "strict"
+    "python.analysis.typeCheckingMode": "basic",
+    // default is "Error" choices are "Error", "Information", "Trace", "Warning"
+    // "python.analysis.logLevel": "Trace",
+    "python.formatting.provider": "yapf",
+    "python.languageServer": "Pylance",
+    "python.linting.banditArgs": [
+        "-ll",
+        // "-ii",
+        "--configfile=${workspaceFolder}/bandit.yml",
+        "--ini=${workspaceFolder}/.bandit",
+    ],
+    // flake8 runs bandit since we are using the flake8-bandit plugin
+    "python.linting.banditEnabled": false,
+    "python.linting.enabled": true,
+    "python.linting.flake8Args": [
+        "--config=${workspaceFolder}/.flake8"
+    ],
+    "python.linting.flake8Enabled": true,
+    "python.linting.ignorePatterns": [
+        "**/site-packages/**/*.py",
+        ".vscode/*.py",
+        // customs
+        "**/stubs/**/*.pyi",
+        "**/typings/**/*.pyi",
+    ],
+    "python.linting.lintOnSave": true,
+    "python.linting.mypyArgs": [
+        //
+        "--config-file=${workspaceFolder}/mypy.ini",
+        //
+        // "--follow-imports=silent",
+        // "--ignore-missing-imports",
+        "--show-column-numbers",
+        "--no-pretty",
+    ],
+    "python.linting.mypyEnabled": true,
+    "python.linting.prospectorEnabled": false,
+    "python.linting.pycodestyleEnabled": false,
+    "python.linting.pydocstyleEnabled": false,
+    "python.linting.pylamaEnabled": false,
+    "python.linting.pylintArgs": [
+        "--rcfile=${workspaceFolder}/pylintrc",
+    ],
+    "python.linting.pylintEnabled": true,
+    "python.pythonPath": "/usr/bin/python",
+    "python.sortImports.args": [
+        "--jobs=8",
+        "--settings-path=${workspaceFolder}/.isort.cfg",
+    ],
+    "python.testing.pytestArgs": [
+        "-c=${workspaceFolder}/pytest.ini",
+        // "--numprocesses=1"
+    ],
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/*.code-search": true,
+        // custom
+        // "coverage": true,
+    },
+    "shellcheck.ignorePatterns": {
+        "**/*.xonshrc": true,
+        "**/*.xsh": true,
+        "**/*.zsh": true,
+        "**/*.zshrc": true,
+        "**/zshrc": true,
+        "**/*.zprofile": true,
+        "**/zprofile": true,
+        "**/*.zlogin": true,
+        "**/zlogin": true,
+        "**/*.zlogout": true,
+        "**/zlogout": true,
+        "**/*.zshenv": true,
+        "**/zshenv": true,
+        "**/*.zsh-theme": true,
+        // custom
+        "**/.bandit": true,
+        // "**/*.cfg": true,
+    },
+    "shellformat.useEditorConfig": true,
+    "shellformat.effectLanguages": [
+        "shellscript",
+        "dockerfile",
+        "dotenv",
+        "hosts",
+        "jvmoptions",
+        "ignore",
+        "gitignore",
+        // "properties",
+        // "spring-boot-properties",
+        "azcli",
+        "bats"
+    ],
+    // default is null (-s: simplify the code)
+    // "shellformat.flag": null,
+    // "shellformat.flag": "-s",
+    "todo-tree.filtering.excludeGlobs": [
+        "**/node_modules",
+        // custom
+        "**/__pycache__",
+        "**/.mypy_cache",
+        "**/.pytest_cache",
+        "**/*.csv",
+        "**/*.json",
+        "**/*.pyc",
+        "**/*.pyi",
+        "**/*.txt",
+        "**/pylintrc",
+        "**/settings.json",
+        "**/typings",
+    ],
+    "todo-tree.general.showIconsInsteadOfTagsInStatusBar": true,
+    "todo-tree.general.tagGroups": {},
+    "todo-tree.general.tags": [
+        "BUG",
+        "HACK",
+        "FIXME",
+        "TODO",
+        "XXX",
+    ],
+    "todo-tree.highlights.enabled": true,
+    "todo-tree.highlights.useColourScheme": true,
+    "todo-tree.regex.enableMultiLine": true,
+    "todo-tree.tree.buttons.scanMode": true,
+    "todo-tree.tree.disableCompactFolders": false,
+    "todo-tree.tree.showBadges": true,
+    "todo-tree.tree.showCountsInTree": true,
+    // https://dev.to/rmorabia/how-to-make-visual-studio-code-150-faster-in-large-projects-3eag
+    "typescript.disableAutomaticTypeAcquisition": true,
+    "workbench.editor.highlightModifiedTabs": true,
+    "workbench.editor.wrapTabs": true,
+    "workbench.fontAliasing": "auto",
+    "workbench.list.smoothScrolling": true,
+    //
+    "[plaintext]": {
+        "files.insertFinalNewline": false
+    },
+    //
+    "[markdown]": {
+        "editor.wordWrap": "on",
+        "editor.quickSuggestions": false,
+        // https://github.com/microsoft/vscode/issues/1679
+        "files.trimTrailingWhitespace": false,
+        // "editor.rulers": [
+        //     80
+        // ],
+    },
+    "[shellscript]": {
+        "files.eol": "\n",
+    },
+    "[dockerfile]": {
+        "editor.quickSuggestions": {
+            "strings": true
+        },
+        "editor.defaultFormatter": "ms-azuretools.vscode-docker",
+    },
+    "[json]": {
+        "editor.quickSuggestions": {
+            "strings": true
+        },
+        "editor.suggest.insertMode": "replace",
+        "gitlens.codeLens.scopes": [
+            "document"
+        ],
+        // custom
+        "editor.defaultFormatter": "vscode.json-language-features",
+    },
+    "[jsonc]": {
+        "editor.quickSuggestions": {
+            "strings": true
+        },
+        "editor.suggest.insertMode": "replace",
+        "gitlens.codeLens.scopes": [
+            "document"
+        ],
+        // custom
+        "editor.defaultFormatter": "vscode.json-language-features",
+    },
+    "[yaml]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2,
+        "editor.autoIndent": "keep",
+        "gitlens.codeLens.scopes": [
+            "document"
+        ],
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": true
+        },
+        // custom
+        "editor.defaultFormatter": "redhat.vscode-yaml",
+    },
+    //
+    // // workaround for errors not being displayed in the editor
+    // //   See https://github.com/microsoft/vscode-python/issues/17989#issuecomment-972026138
+    // //
+    // "python.linting.pylintCategorySeverity.convention": "Hint",
+    // "python.linting.pylintCategorySeverity.error": "Hint",
+    // "python.linting.pylintCategorySeverity.fatal": "Hint",
+    // "python.linting.pylintCategorySeverity.refactor": "Hint",
+    // "python.linting.pylintCategorySeverity.warning": "Hint",
+    // //
+    // "python.linting.flake8CategorySeverity.A": "Hint",
+    // "python.linting.flake8CategorySeverity.B": "Hint",
+    // "python.linting.flake8CategorySeverity.C": "Hint",
+    // "python.linting.flake8CategorySeverity.D": "Hint",
+    // "python.linting.flake8CategorySeverity.E": "Hint",
+    // "python.linting.flake8CategorySeverity.F": "Hint",
+    // "python.linting.flake8CategorySeverity.G": "Hint",
+    // "python.linting.flake8CategorySeverity.H": "Hint",
+    // "python.linting.flake8CategorySeverity.I": "Hint",
+    // "python.linting.flake8CategorySeverity.J": "Hint",
+    // "python.linting.flake8CategorySeverity.K": "Hint",
+    // "python.linting.flake8CategorySeverity.L": "Hint",
+    // "python.linting.flake8CategorySeverity.M": "Hint",
+    // "python.linting.flake8CategorySeverity.N": "Hint",
+    // "python.linting.flake8CategorySeverity.O": "Hint",
+    // "python.linting.flake8CategorySeverity.P": "Hint",
+    // "python.linting.flake8CategorySeverity.Q": "Hint",
+    // "python.linting.flake8CategorySeverity.R": "Hint",
+    // "python.linting.flake8CategorySeverity.S": "Hint",
+    // "python.linting.flake8CategorySeverity.T": "Hint",
+    // "python.linting.flake8CategorySeverity.U": "Hint",
+    // "python.linting.flake8CategorySeverity.V": "Hint",
+    // "python.linting.flake8CategorySeverity.W": "Hint",
+    // "python.linting.flake8CategorySeverity.X": "Hint",
+    // "python.linting.flake8CategorySeverity.Y": "Hint",
+    // "python.linting.flake8CategorySeverity.Z": "Hint",
+    // //
+    // "python.linting.mypyCategorySeverity.error": "Hint",
+    // "python.linting.mypyCategorySeverity.note": "Hint",
+    // //
+    // "python.linting.pycodestyleCategorySeverity.E": "Hint",
+    // "python.linting.pycodestyleCategorySeverity.W": "Hint",
+    // //
+    "resmon.show.battery": false,
+    "resmon.show.cpufreq": false,
+    "resmon.show.disk": false,
+    // "terminal.integrated.scrollback": 1000,
+    "terminal.integrated.scrollback": 10000,
+    // "jupyter.jupyterServerType": "local",
+    // "jupyter.jupyterServerType": "remote",
+}

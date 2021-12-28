@@ -1,0 +1,26 @@
+[pydocstyle]
+
+#   http://www.pydocstyle.org/
+
+# choose the basic list of checked errors by specifying an existing convention.
+# Possible conventions: pep257, numpy, google.
+
+convention = google
+
+inherit = false
+
+# check only files that exactly match <pattern> regular expression;
+# default is --match='(?!test_).*\.py' which matches files that
+# don't start with 'test_' but end with '.py'
+
+# match=(?!test_).*\.py
+
+# search only dirs that exactly match <pattern> regular expression;
+# default is --match-dir='[^\.].*', which matches all dirs that
+# don't start with a dot
+
+# match-dir=[^\.].*
+
+ignore =
+    # Missing docstring in public method - Disabling since this is already checked by flake8
+    D102,

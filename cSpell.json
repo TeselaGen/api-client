@@ -1,0 +1,62 @@
+// cSpell Settings
+{
+    // Version of the setting file.  Always 0.2
+    "version": "0.2",
+    // language - current active spelling language
+    "language": "es,en,en-GB,python",
+    // words - list of words to be always considered correct
+    "words": [
+        "cleanpy",
+        "crispr",
+        "DBTL",
+        "deauthorize",
+        "deauthorized",
+        "diegovalenzuelaiturra",
+        "dropna",
+        "fixit",
+        "Fstring",
+        "grna",
+        "grnas",
+        "inplace",
+        "ipython",
+        "isort",
+        "multiomic",
+        "multiomics",
+        "mypy",
+        "ndarray",
+        "noqa",
+        "nproc",
+        "numpy",
+        "openpyxl",
+        "pyclean",
+        "pydocstyle",
+        "pypi",
+        "pyproject",
+        "pytest",
+        "pytested",
+        "seqs",
+        "sourcery",
+        "teselagen",
+        "tgclient",
+        "tolist",
+        "tqdm",
+        "trunc",
+        "tryceratops",
+        "yapf"
+    ],
+    "allowCompoundWords": true,
+    // flagWords - list of words to be always considered incorrect
+    // This is useful for offensive words and common spelling errors.
+    // "flagWords": [],
+    "ignorePaths": [
+        "**/node_modules",
+        ".git",
+        // custom
+        "**/*.csv",
+        "**/*.json",
+        "**/*.toml",
+        "**/*.txt",
+        "**/*.yaml",
+        "**/*.yml"
+    ]
+}

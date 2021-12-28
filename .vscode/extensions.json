@@ -1,0 +1,37 @@
+{
+    "recommendations": [
+        "eamodio.gitlens",
+        "editorconfig.editorconfig",
+        "github.remotehub",
+        "github.vscode-pull-request-github",
+        "gruntfuggly.todo-tree",
+        "ibm.output-colorizer",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        // "ms-toolsai.jupyter-keymap",
+        "ms-toolsai.jupyter-renderers",
+        "njpwerner.autodocstring",
+        "redhat.vscode-yaml",
+        "sourcery.sourcery",
+        //
+        // MARKDOWN
+        // "davidanson.vscode-markdownlint",
+        //
+        // SHELL
+        //      brew install shellcheck
+        // "timonwong.shellcheck",
+        // "foxundermoon.shell-format",
+        // "rogalmic.bash-debug",
+        //
+        // COMMITS
+        // "joshbolduc.commitlint",
+        // "vivaxy.vscode-conventional-commits",
+        //
+        // MONITOR
+        // "mutantdino.resourcemonitor",
+        //
+        // SPELL CHECK
+        // "streetsidesoftware.code-spell-checker",
+        // "streetsidesoftware.code-spell-checker-spanish",
+    ]
+}

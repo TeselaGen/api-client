@@ -1,0 +1,11 @@
+[codespell]
+skip = *.lock,*.ipynb,*.csv,*.txt,bandit.yml
+uri-ignore-words-list=*
+# builtin = clear,rare
+builtin = clear,rare,informal,usage,code,names,en-GB_to_en-US
+ignore-words=.codespellignore
+# quiet-level = 3
+# count =
+# check-filenames =
+# check-hidden =
+# context = 1
