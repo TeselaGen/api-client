@@ -43,6 +43,7 @@ TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Exam
 
 
 class TestTESTClient:
+    """Tests for the TeselaGen Client."""
 
     @pytest.fixture
     def lab_id(

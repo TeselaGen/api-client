@@ -111,6 +111,7 @@ def check_parsed_json_response(
 
 
 class TestDESIGNClient:
+    """Tests for the DESIGN Client."""
 
     def test_get_assembly_report_mock(
             self,
