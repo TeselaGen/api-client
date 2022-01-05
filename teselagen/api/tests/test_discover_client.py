@@ -145,12 +145,12 @@ class TestDISCOVERClient:
         assert api_token_name in client.headers.keys()
         assert isinstance(client.headers[api_token_name], str)
 
-    # TODO: `test_get_models_by_type` test fails for evolutive models
+    # TODO: `test_get_models_by_type` test fails since sometimes the model is not found.
     @pytest.mark.parametrize('model_type', MODEL_TYPES_TO_BE_TESTED)
     def test_get_models_by_type(
             self,
             discover_client: DISCOVERClient,
-            model_type: str | None,
+            model_type: Literal['predictive', 'evolutive', 'generative'] | None,
             submitted_model_name: str,  # pylint: disable=unused-argument # reason: fixture required to create a model
     ):
         response = discover_client.get_models_by_type(model_type=model_type)
