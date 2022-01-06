@@ -332,6 +332,7 @@ class TestBUILDClient:
 
         response = client.get_aliquot(aliquot_id=aliquot_id)
         assert_record(record=response)
+        assert response.get('id', None) == str(aliquot_id), 'Aliquot ID is not as expected.'
 
     def test_get_samples_with_default_query_params(
         self,
@@ -399,3 +400,4 @@ class TestBUILDClient:
 
         response = client.get_sample(sample_id=sample_id)
         assert_record(record=response)
+        assert response.get('id', None) == str(sample_id), 'Sample ID is not as expected.'

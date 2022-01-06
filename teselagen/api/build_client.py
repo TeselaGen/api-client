@@ -309,8 +309,11 @@ class BUILDClient:
             # NOTE: Since when using a method to get a single record, the user only have control over the id parameter,
             #       we can't use the same parameters as for the method to get many records. So, we choose to use the
             #       default parameters for the method to get many records.
+            #       Except for the `gqlFilter` parameter, which is used for efficient querying.
+            get_records = wrapped_partial(self.get_aliquots, gqlFilter=json.dumps({'id': str(aliquot_id)}))
+
             output_aliquot = get_record(
-                get_records=self.get_aliquots,
+                get_records=get_records,
                 record_id=aliquot_id,
             )
 
