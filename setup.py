@@ -7,14 +7,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from typing import List
-
 from setuptools import find_packages
 from setuptools import setup
 
 from teselagen import __version__
 from teselagen.utils.setup_commands import SingleTestCommand
+
+if TYPE_CHECKING:
+    from typing import List
 
 # PATH_ROOT = os.path.dirname(__file__)
 
