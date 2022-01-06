@@ -168,7 +168,7 @@ repos:
         #   - --remove-unused-variables
 
   - repo: https://github.com/pre-commit/mirrors-autopep8
-    rev: v1.5.7
+    rev: v1.6.0
     hooks:
       - id: autopep8
         alias: fix-pep8
@@ -214,7 +214,7 @@ repos:
           - toml>=0.10.2
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.30.0
+    rev: v2.31.0
     hooks:
       - id: pyupgrade
         name: "  [fix]: upgrade syntax (Python) [pyupgrade]"
