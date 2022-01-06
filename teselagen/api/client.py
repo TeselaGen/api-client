@@ -48,7 +48,7 @@ class TeselaGenClient:
         self,
         host_url: str = DEFAULT_HOST_URL,
         api_token_name: str = DEFAULT_API_TOKEN_NAME,
-        module_name: Literal['test', 'discover', 'design', 'build'] = DEFAULT_MODULE_NAME,
+        module_name: Literal['design', 'build', 'test', 'discover'] = DEFAULT_MODULE_NAME,
     ) -> None:
         """A Client to use for communication with the TeselaGen modules.
 
