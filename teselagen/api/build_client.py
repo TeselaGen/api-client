@@ -322,6 +322,7 @@ class BUILDClient:
 
         return output_aliquot
 
+    # NOTE: The Example below is not documented in the BUILD API documentation, so be careful not to remove it.
     def get_aliquots(
         self,
         pageNumber: str | int = '1',  # noqa: N803
@@ -346,6 +347,13 @@ class BUILDClient:
 
         Returns:
             List[AliquotRecord]: List of aliquot records.
+
+        Example:
+            >>> # To query results by a specific field such as an `id`, use the `gqlFilter` parameter.
+            >>> import json
+            >>> aliquot_id: AliquotID = 1  # NOTE: Replace with a valid id.
+            >>> gqlFilter: str = json.dumps({'id': str(aliquot_id)})
+            ...
         """
         params: GetAliquotsQueryParams = {
             'pageNumber': str(pageNumber),
@@ -409,6 +417,7 @@ class BUILDClient:
 
         return output_sample
 
+    # NOTE: The Example below is not documented in the BUILD API documentation, so be careful not to remove it.
     def get_samples(
         self,
         pageNumber: str | int = '1',  # noqa: N803,
@@ -433,6 +442,18 @@ class BUILDClient:
 
         Returns:
             List[SampleRecord]: List of sample records.
+
+        Example:
+            >>> # To query results by a specific field such as an `id`, use the `gqlFilter` parameter.
+            >>> import json
+            >>> sample_id: SampleID = 1  # NOTE: Replace with a valid id.
+            >>> gqlFilter: str = json.dumps({'id': str(sample_id)})
+            ...
+            >>> # To query results by a specific field such as an `name`, use the `gqlFilter` parameter.
+            >>> import json
+            >>> sample_name: str = 'my_sample'  # NOTE: Replace with a valid name.
+            >>> gqlFilter: str = json.dumps({'name': str(sample_name)})
+            ...
         """
         params: GetSamplesQueryParams = {
             'pageNumber': str(pageNumber),
