@@ -344,7 +344,7 @@ def handler(func: F) -> F:
             else:
                 raise Exception(f'Got code : {response.status_code}. Reason : {response.reason}')
 
-        except Exception as e:
+        except Exception as _exc:  # noqa: F841
             raise
 
     return cast(F, wrapper)

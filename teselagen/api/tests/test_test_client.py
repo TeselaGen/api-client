@@ -12,11 +12,11 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from teselagen.api import TESTClient
+from teselagen.api.test_client import TESTClient
 from teselagen.utils import get_project_root
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional
+    from typing import Any, Dict, List, Mapping, Optional
     import typing
 
     from _pytest.fixtures import FixtureRequest
@@ -74,7 +74,7 @@ class TestTESTClient:
     @pytest.fixture
     def experiment_id(
         self,
-        experiment: Dict[str, Any],
+        experiment: Mapping[str, Any],
     ) -> str:
         """Get the experiment id used for testing.
 
@@ -98,11 +98,11 @@ class TestTESTClient:
         request: FixtureRequest,
         logged_client: TeselaGenClient,
         select_laboratory,
-    ) -> typing.Generator[Dict[str, Any], None, None]:
-        client = logged_client.test
+    ) -> typing.Generator[Mapping[str, Any], None, None]:
+        client: TESTClient = logged_client.test
         test_name: str = request.node.name
         experiment_name: str = f'Python Test Client Experiment - Test: {test_name} - Run at: {datetime.now()} '
-        experiment: Dict[str, Any] = client.create_experiment(experiment_name=experiment_name)
+        experiment = client.create_experiment(experiment_name=experiment_name)
 
         yield experiment
 
@@ -114,10 +114,10 @@ class TestTESTClient:
     def assay(
         self,
         logged_client: TeselaGenClient,
-        experiment: Dict[str, Any],
+        experiment: Mapping[str, Any],
         select_laboratory,
-    ) -> Dict[str, Any]:
-        client = logged_client.test
+    ) -> Mapping[str, Any]:
+        client: TESTClient = logged_client.test
         experiment_id: str = experiment['id']
         assay_name: str = 'Python Test Client Assay'
         # TODO : We may need to update this, probably with a parser or parser_id fixture
@@ -232,7 +232,7 @@ class TestTESTClient:
         self,
         client: TeselaGenClient,
         expiration_time: str,
-        api_token_name,
+        api_token_name: str,
     ) -> None:
         # Before login, the client has no tokens
         assert client.auth_token is None
@@ -251,7 +251,7 @@ class TestTESTClient:
 
     def test_create_experiment(
         self,
-        experiment: List[Dict[str, Any]],
+        experiment: Mapping[str, Any],
     ) -> None:
         response = experiment
         assert isinstance(response, dict)
@@ -261,16 +261,16 @@ class TestTESTClient:
     def test_delete_experiment(
         self,
         logged_client: TeselaGenClient,
-        experiment: List[Dict[str, Any]],
+        experiment: Mapping[str, Any],
     ) -> None:
-        client = logged_client.test
+        client: TESTClient = logged_client.test
         experiment_id: str = experiment['id']
         response = client.delete_experiment(experiment_id=experiment_id)
         assert response is None
 
     def test_create_assay(
         self,
-        assay: List[Dict[str, Any]],
+        assay: List[Mapping[str, Any]],
     ) -> None:
         response = assay
         assert isinstance(response, dict)
@@ -282,9 +282,9 @@ class TestTESTClient:
         self,
         logged_client: TeselaGenClient,
         lab_id: int,
-        assay: Dict[str, Any],
+        assay: Mapping[str, Any],
     ) -> None:
-        client = logged_client.test
+        client: TESTClient = logged_client.test
         assay_id = assay['id']
         response = client.delete_assay(assay_id=assay_id)
 
@@ -295,8 +295,8 @@ class TestTESTClient:
         logged_client: TeselaGenClient,
         select_laboratory,
     ) -> None:
-        client = logged_client.test
-        response: List[Dict[str, Any]] = client.get_experiments()
+        client: TESTClient = logged_client.test
+        response = client.get_experiments()
 
         assert isinstance(response, list)
         assert len(response) > 0
@@ -310,11 +310,11 @@ class TestTESTClient:
         logged_client: TeselaGenClient,
         experiment_id: str,
         select_laboratory,
-        assay: List[Dict[str, Any]],
+        assay: List[Mapping[str, Any]],
     ) -> None:
-        client = logged_client.test
+        client: TESTClient = logged_client.test
 
-        response: List[Dict[str, Any]] = client.get_assays(experiment_id=experiment_id)
+        response = client.get_assays(experiment_id=experiment_id)
 
         assert isinstance(response, list)
         # NOTE: It may be an empty list (?)
@@ -332,7 +332,7 @@ class TestTESTClient:
         host_url: str,
         select_laboratory,
     ) -> None:
-        client = logged_client.test
+        client: TESTClient = logged_client.test
         response: List[Dict[str, Any]] = client.get_files_info()
 
         assert isinstance(response, list)
@@ -348,7 +348,7 @@ class TestTESTClient:
         host_url: str,
         select_laboratory,
     ):
-        client = logged_client.test
+        client: TESTClient = logged_client.test
 
         filepath: Path = get_project_root() / Path('teselagen/api/tests/example_file.csv')
         assay_id: Optional[int] = None
@@ -365,7 +365,7 @@ class TestTESTClient:
         host_url: str,
         select_laboratory,
     ):
-        client = logged_client.test
+        client: TESTClient = logged_client.test
         response = client.get_files_info()
         file_id: str = response[0]['id']
         response = client.download_file(file_id=file_id)
@@ -378,7 +378,7 @@ class TestTESTClient:
         host_url: str,
         select_laboratory,
     ):
-        client = logged_client.test
+        client: TESTClient = logged_client.test
 
         filepath: Path = get_project_root() / Path('teselagen/api/tests/example_file.csv')
         upload_response: Dict[str, Any] = client.upload_file(filepath=filepath)
@@ -392,7 +392,7 @@ class TestTESTClient:
     def test_download_assay(
         self,
         logged_client: TeselaGenClient,
-        assay_id,
+        assay_id: str,
         expected_downloaded_assay_length,
         expected_downloaded_assay_row,
     ) -> None:
@@ -429,9 +429,9 @@ class TestTESTClient:
     @pytest.mark.skip(reason="We don't know which experiment and parser IDs to use")
     def test_upload_assays(
         self,
-        logged_client,
+        logged_client: TeselaGenClient,
     ) -> None:
-        client = logged_client
+        client: TESTClient = logged_client.test
 
         # UPLOAD ASSAY
         filename: str = 'test_data.csv'
