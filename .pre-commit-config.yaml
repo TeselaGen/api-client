@@ -25,7 +25,7 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
-minimum_pre_commit_version: "2.15.0"
+minimum_pre_commit_version: "2.16.0"
 
 default_language_version:
   # force all unspecified python hooks to run python3
@@ -168,7 +168,7 @@ repos:
         #   - --remove-unused-variables
 
   - repo: https://github.com/pre-commit/mirrors-autopep8
-    rev: v1.5.7
+    rev: v1.6.0
     hooks:
       - id: autopep8
         alias: fix-pep8
@@ -214,7 +214,7 @@ repos:
           - toml>=0.10.2
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.30.0
+    rev: v2.31.0
     hooks:
       - id: pyupgrade
         name: "  [fix]: upgrade syntax (Python) [pyupgrade]"
@@ -269,7 +269,7 @@ repos:
           - flake8-pytest-style>=1.5.1
           - flake8-quotes>=3.3.1
           - flake8-simplify>=0.14.2
-          - flake8-type-checking>=1.1.1
+          - flake8-type-checking>=1.2.0
           - flake8-typing-imports>=1.12.0
           - flake8-use-pathlib>=0.2.1
           - mccabe>=0.6.1
@@ -278,7 +278,7 @@ repos:
           - pycodestyle>=2.8.0
           - pydocstyle>=6.1.1
           - radon>=5.1.0
-          - tryceratops>=1.0.0
+          - tryceratops>=1.0.1
 
   # - repo: https://github.com/pycqa/flake8
   #   rev: 4.0.1

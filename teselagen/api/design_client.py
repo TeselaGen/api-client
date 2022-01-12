@@ -42,7 +42,7 @@ class DESIGNClient:
         'genbank',
     }
 
-    URL_GET_ASSEMBLY_REPORT = "/assembly-report/export"
+    URL_GET_ASSEMBLY_REPORT = '/assembly-report/export'
 
     def __init__(
         self,
@@ -238,7 +238,7 @@ class DESIGNClient:
         Returns:
             dict: A dict containing designs information
         """
-        response = get(url=f"{self.get_design_url}/{design_id}", headers=self.headers)
+        response = get(url=f'{self.get_design_url}/{design_id}', headers=self.headers)
         # params=args)
 
         return json.loads(response['content'])

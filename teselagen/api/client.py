@@ -23,18 +23,27 @@ from teselagen.utils import put
 from teselagen.utils.utils import ParsedJSONResponse
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, List, Literal, Optional
+    from typing import Dict, List, Literal, Optional, TypedDict
+
+    class Laboratory(TypedDict, total=True):  # noqa: D101, H601
+        id: str
+        name: str
+
+    class CurrentUser(TypedDict, total=True):  # noqa: D101, H601
+        id: str
+        username: str
+        email: str
+        firstName: str  # noqa: N815
+        lastName: str  # noqa: N815
+        roles: List[str]
+
+    # from typing import Any
+    # from typing_extensions import TypeAlias
+    # Laboratory: TypeAlias = Dict[str, Any]
 
 # NOTE : Related to Postman and Python requests
 #           "body" goes into the "json" argument
 #           "Query Params" goes into "params" argument
-
-# from typing import TypedDict
-# class TeselagenClientConfigDict(TypedDict, total=True):
-#     """Teselagen Client Config `TypedDict`."""
-#     host_url: str
-#     api_token_name: str
-#     module_name: str
 
 
 # TODO: Maybe is better to set a default value for expires_in = "30m" instead of "1d" (?) or 8 hours
@@ -48,14 +57,13 @@ class TeselaGenClient:
         self,
         host_url: str = DEFAULT_HOST_URL,
         api_token_name: str = DEFAULT_API_TOKEN_NAME,
-        module_name: Literal['test', 'discover', 'design', 'build'] = DEFAULT_MODULE_NAME,
+        module_name: Literal['design', 'build', 'test', 'discover'] = DEFAULT_MODULE_NAME,
     ) -> None:
         """A Client to use for communication with the TeselaGen modules.
 
         Args:
-            module_name (str) : The module name to use for communication. Available Modules are: \
-                 "test", "discover", "design", "build" (WIP)
-
+            module_name (str) : The module name to use for communication. \
+                Available Modules are: "test", "discover", "design", "build"
 
             host_url (str) : The Host URL of the API. Defaults to "https://platform.teselagen.com"
 
@@ -80,20 +88,16 @@ class TeselaGenClient:
         self.register_url: str = urljoin(self.host_url, f'{_module_name}/register')
         self.login_url: str = urljoin(self.host_url, f'{_module_name}/login')
         self.info_url: str = urljoin(self.host_url, f'{_module_name}/cli-api/info')
-        self.status_url: str = urljoin(
-            self.host_url,
-            f'{_module_name}/cli-api/public/status',
-        )  # f'{api_url_base}/public/status'
-        self.auth_url: str = urljoin(
-            self.host_url,
-            f'{_module_name}/cli-api/public/auth',
-        )  # f'{api_url_base}/public/auth'
+
+        # self.status_url: str = f'{api_url_base}/public/status'
+        self.status_url: str = urljoin(self.host_url, f'{_module_name}/cli-api/public/status')
+
+        # self.auth_url: str = f'{api_url_base}/public/auth'
+        self.auth_url: str = urljoin(self.host_url, f'{_module_name}/cli-api/public/auth')
 
         # Laboratories
-        self.labs_url: str = urljoin(
-            self.host_url,
-            'test/cli-api/laboratories',
-        )  # f'{self.host_url}/test/cli-api/laboratories'
+        # self.labs_url: str = '{self.host_url}/test/cli-api/laboratories'
+        self.labs_url: str = urljoin(self.host_url, 'test/cli-api/laboratories')
 
         # NOTE : The authorization token will be updated with the "login" method.
         self.auth_token: Optional[str] = None
@@ -108,7 +112,6 @@ class TeselaGenClient:
     # These objects are instantiated with the TeselaGen Client object so they share all common functions (such as:
     # login, logout, register, select/unselect lab).
 
-    # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
     def design(self) -> DESIGNClient:
         """This instantiates the client's 'design' property object which provides TeselaGen DESIGN API methods."""
@@ -116,7 +119,6 @@ class TeselaGenClient:
             self._design = DESIGNClient(teselagen_client=self)
         return self._design
 
-    # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
     def build(self) -> BUILDClient:
         """This instantiates the client's 'build' property object which provides TeselaGen BUILD API methods."""
@@ -124,7 +126,6 @@ class TeselaGenClient:
             self._build = BUILDClient(teselagen_client=self)
         return self._build
 
-    # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
     def discover(self) -> DISCOVERClient:
         """This instantiates the client's 'discover' property object which provides TeselaGen DISCOVER API methods."""
@@ -132,7 +133,6 @@ class TeselaGenClient:
             self._discover = DISCOVERClient(teselagen_client=self)
         return self._discover
 
-    # NOTE: A factory pattern may be preferable here, to reduce coupling.
     @property
     def test(self) -> TESTClient:
         """This instantiates the client's 'test' property object which provides TeselaGen TEST API methods."""
@@ -215,7 +215,7 @@ class TeselaGenClient:
 
             password (Optional[str]) : Password. If not provided, it will be prompted.
         """
-        # TODO : Implement a new endpoint to deauthorize a token.
+        # TODO: Implement a new endpoint to deauthorize a token.
 
         # We locally delete the last token.
         self.update_token(token=None)
@@ -247,6 +247,7 @@ class TeselaGenClient:
         Returns:
             str: The current Server Status.
         """
+        # NOTE: Response Schema is text/html
         response = get(
             url=self.status_url,
             params=None,
@@ -287,7 +288,7 @@ class TeselaGenClient:
                 headers=self.headers,
                 json=body,
             )
-        except Exception as e:
+        except Exception as _exc:  # noqa: F841
             # TODO : Use a logger
             print('Connection Refused')
             return None
@@ -351,11 +352,11 @@ class TeselaGenClient:
 
         return response['content']
 
-    def is_authorized(self):
+    def is_authorized(self) -> bool:
         # TODO : Try with get_api_info()
         raise NotImplementedError
 
-    def get_current_user(self):
+    def get_current_user(self):  # -> CurrentUser
         """Gets the current user based on the header token.
 
         Returns:
@@ -369,11 +370,11 @@ class TeselaGenClient:
 
     # Laboratories Endpoints
 
-    def get_laboratories(self) -> List[Dict[str, Any]]:
+    def get_laboratories(self) -> List[Laboratory]:
         """Get all available laboratories for the current user.
 
         Returns :
-            () : A list of laboratories objects.
+            (List[Laboratory]): A list of laboratories objects.
         """
         response = get(url=self.labs_url, headers=self.headers)
 

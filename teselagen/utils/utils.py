@@ -5,15 +5,17 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import date
 from datetime import datetime
 from datetime import time
 from datetime import timedelta
+import functools
 import getpass
 import json
 import math
 from pathlib import Path
-from typing import Any, Callable, cast, Literal, TYPE_CHECKING, TypedDict, TypeVar
+from typing import Any, cast, Literal, TYPE_CHECKING, TypedDict, TypeVar
 
 import pandas as pd
 import requests
@@ -27,16 +29,25 @@ import teselagen
 if TYPE_CHECKING:
     from typing import Dict, List, Optional, Tuple, Union
 
+    from typing_extensions import TypeAlias
+
     from teselagen.api import TeselaGenClient
 
+    # NOTE: https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
+    # _DecoratorType = TypeVar('_DecoratorType', bound=Callable[..., Any])  # noqa: E800
+    # _DecoratorFactoryType = Callable[[_DecoratorType], _DecoratorType]  # noqa: E800
+
+# CONSTANTS
 DEFAULT_HOST_URL: Literal['https://platform.teselagen.com'] = 'https://platform.teselagen.com'
 DEFAULT_API_TOKEN_NAME: Literal['x-tg-cli-token'] = 'x-tg-cli-token'
 
 DEFAULT_MAX_DATAPOINTS: int = 100
 
-TimeUnit = Literal['milliseconds', 'seconds', 'minutes', 'hours', 'days']
+# ANNOTATIONS
+TimeUnit: TypeAlias = Literal['milliseconds', 'seconds', 'minutes', 'hours', 'days']
 
 T = TypeVar('T')
+F = TypeVar('F', bound=Callable[..., Any])
 
 
 class ParsedJSONResponse(TypedDict, total=True):  # noqa: H601
@@ -44,6 +55,52 @@ class ParsedJSONResponse(TypedDict, total=True):  # noqa: H601
     url: str
     status: bool
     content: Optional[str]
+
+
+# https://docs.python.org/3/library/functools.html#functools.singledispatch
+
+
+# UTILS
+@functools.singledispatch
+def get_func_name(func: Callable[..., object]) -> str:
+    """Get the name of a function.
+
+    Args:
+        func (Callable[..., object]): A function.
+
+    Returns:
+        (str) : Name of the function.
+    """
+    # if not callable(func): return str(func)
+
+    if hasattr(func, '__name__'):
+        return func.__name__
+    elif hasattr(func, '__class__'):
+        return func.__class__.__name__
+    else:
+        return '<unknown>'
+
+
+@get_func_name.register(functools.partial)
+def _(func: functools.partial[Any]) -> str:
+    """Get the name of a partial function.
+
+    Args:
+        func (functools.partial[Any]) : Partial function.
+
+    Returns:
+        (str) : Name of the partial function.
+    """
+    # NOTE: partial function has no `__name__` attribute, so we need to get it from its `func` attribute instead.
+    return get_func_name(func.func)
+
+
+def wrapped_partial(func: F, *args: object, **kwargs: object) -> F:
+    """Partial that propagates `__name__` and `__doc__`."""
+    # louistiao.me/posts/adding-__name__-and~
+    partial_func: functools.partial[Any] = functools.partial(func, *args, **kwargs)
+    functools.update_wrapper(partial_func, func)
+    return partial_func
 
 
 def downsample_data(
@@ -254,19 +311,12 @@ def load_credentials_from_file(path_to_credentials_file: str = None) -> Tuple[Op
     return credentials['username'], credentials['password']
 
 
-# NOTE: https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
-
-_DecoratorType = TypeVar('_DecoratorType', bound=Callable[..., Any])
-# _DecoratorFactoryType = Callable[[_DecoratorType], _DecoratorType]
-
-
-def handler(func: _DecoratorType) -> _DecoratorType:
+def handler(func: F) -> F:
     """Decorator to handle the response from a request."""
 
     def wrapper(**kwargs: Any) -> requests.Response:
         if 'url' not in kwargs.keys():
-            message = 'url MUST be specified as keyword argument'
-            raise Exception(message)
+            raise Exception('url MUST be specified as keyword argument')
 
         url: str = kwargs.pop('url')
 
@@ -278,33 +328,26 @@ def handler(func: _DecoratorType) -> _DecoratorType:
 
             elif response.status_code == 400:
                 resp = json.loads(response.content)
-                message: str = f"{response.reason}: {resp['error']}"
-                raise Exception(message)
+                raise Exception(f"{response.reason}: {resp['error']}")
 
             elif response.status_code == 401:
-                message: str = f'URL : {url} access is unauthorized.'
-                raise Exception(message)
+                raise Exception(f'URL : {url} access is unauthorized.')
 
             elif response.status_code == 404:
-                message: str = f'URL : {url} cannot be found.'
-                raise Exception(message)
+                raise Exception(f'URL : {url} cannot be found.')
 
             elif response.status_code == 405:
-                message: str = f'Method not allowed. URL : {url}'
-                raise Exception(message)
+                raise Exception(f'Method not allowed. URL : {url}')
 
             # TODO : Add more exceptions.
 
             else:
-                # reason: str = response.reason
-                message: str = f'Got code : {response.status_code}. Reason : {response.reason}'
-                raise Exception(message)
+                raise Exception(f'Got code : {response.status_code}. Reason : {response.reason}')
 
-        except Exception as e:
+        except Exception as _exc:  # noqa: F841
             raise
 
-    # return wrapper
-    return cast(_DecoratorType, wrapper)
+    return cast(F, wrapper)
 
 
 def parser(func: Callable[..., requests.Response]) -> Callable[..., ParsedJSONResponse | Dict[str, Any]]:
@@ -313,11 +356,9 @@ def parser(func: Callable[..., requests.Response]) -> Callable[..., ParsedJSONRe
     def wrapper(**kwargs: Any) -> Union[ParsedJSONResponse, Dict[str, Any]]:
 
         if 'url' not in kwargs.keys():
-            message = 'url MUST be specified as keyword argument'
-            raise Exception(message)
+            raise Exception('url MUST be specified as keyword argument')
 
         url: str = kwargs['url']
-
         response: requests.Response = func(**kwargs)
 
         # TODO: Should we get/return JSON Serializable values ?

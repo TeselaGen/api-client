@@ -130,7 +130,7 @@ class TestDISCOVERClient:
     def test_login(
         self,
         client: TeselaGenClient,
-        api_token_name,
+        api_token_name: str,
     ):
         # Before login, the client has no tokens
         assert client.auth_token is None
@@ -145,12 +145,12 @@ class TestDISCOVERClient:
         assert api_token_name in client.headers.keys()
         assert isinstance(client.headers[api_token_name], str)
 
-    # TODO: `test_get_models_by_type` test fails for evolutive models
+    # TODO: `test_get_models_by_type` test fails since sometimes the model is not found.
     @pytest.mark.parametrize('model_type', MODEL_TYPES_TO_BE_TESTED)
     def test_get_models_by_type(
             self,
             discover_client: DISCOVERClient,
-            model_type: str | None,
+            model_type: Literal['predictive', 'evolutive', 'generative'] | None,
             submitted_model_name: str,  # pylint: disable=unused-argument # reason: fixture required to create a model
     ):
         response = discover_client.get_models_by_type(model_type=model_type)
@@ -161,7 +161,7 @@ class TestDISCOVERClient:
             'labId',
             'modelType',
             'name',
-            'description',
+            'description',  # NOTE: This is an optional key (that could be None) so we don't check it
             'status',
             'evolveModelInfo',
         ]
@@ -169,19 +169,19 @@ class TestDISCOVERClient:
         for data in response:  # ['data']:
 
             for key in expected_keys:
-                assert key in data.keys()
+                assert key in data.keys() or key == 'description'
 
                 if key == 'evolveModelInfo':
                     assert isinstance(data[key], dict)
 
-                    expected_evolveModelInfokeys: list[str] = [
+                    expected_evolveModelInfokeys: list[str] = [  # noqa: N806
                         'microserviceQueueId',
                         'dataSchema',
                         'modelStats',
                     ]
                     assert all(k in data[key].keys() for k in expected_evolveModelInfokeys)
 
-                elif key == 'labId':
+                elif key in {'labId', 'description'}:
                     assert isinstance(data[key], str) or data[key] is None
 
                 else:
@@ -198,7 +198,7 @@ class TestDISCOVERClient:
         with open(seq_filepath) as fasta_file:
             parser = fastaparser.Reader(fasta_file)
             for seq in parser:
-                fasta_seq = cast(FastaSequence, seq).sequence_as_string()
+                fasta_seq: str = cast(FastaSequence, seq).sequence_as_string()
                 break
 
         # Call method to be tested
@@ -213,9 +213,9 @@ class TestDISCOVERClient:
         assert len(res['guides']) == 7
 
     def test_design_crispr_grnas_mock(
-        self,
-        discover_client: DISCOVERClient,
-        requests_mock,
+            self,
+            discover_client: DISCOVERClient,
+            requests_mock,  # noqa: F811
     ):
         expected_url = discover_client.crispr_guide_rnas_url
         sequence = 'AGTCAGGTACGGTACGGTACGGTATGGCAAAAGGACGGATGGACAGGCT'
@@ -263,15 +263,17 @@ class TestDISCOVERClient:
         }
 
         res_cancel = discover_client.cancel_model(new_model[0]['id'])
-        assert 'id' in res_cancel and res_cancel['id'] == new_model[0]['id']
+        assert 'id' in res_cancel
+        assert res_cancel['id'] == new_model[0]['id']
 
         res_delete = discover_client.delete_model(new_model[0]['id'])
-        assert 'id' in res_delete and res_delete['id'] == new_model[0]['id']
+        assert 'id' in res_delete
+        assert res_delete['id'] == new_model[0]['id']
 
     def test_submit_model_mock(
-        self,
-        discover_client: DISCOVERClient,
-        requests_mock,
+            self,
+            discover_client: DISCOVERClient,
+            requests_mock,  # noqa: F811
     ):
         expected_url = discover_client.submit_model_url
         endpoint_output = {
@@ -312,7 +314,7 @@ class TestDISCOVERClient:
             ],
             'model_type': 'predictive',
             'configs': {},
-            'description': '',
+            'description': 'This is a model created by PyTest.',
         }
 
         result = discover_client.submit_model(**params)

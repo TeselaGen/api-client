@@ -24,19 +24,179 @@ if TYPE_CHECKING:
 
     from teselagen.api import TeselaGenClient
 
+    class ExperimentRecord(TypedDict, total=True):
+        """The experiment the Assay Subject belongs to.
+
+        Attributes:
+            id (str): ID of the Assay Subject experiment.
+
+            name (str): Name of the Assay Subject experiment.
+        """
+        id: str
+        name: str
+
+    class AssayRecord(TypedDict, total=True):
+        """The assay the Assay Subject has been involved in.
+
+        Attributes:
+            id (str): ID of the Assay Subject assay.
+
+            name (str): Name of the Assay Subject assay.
+        """
+        id: str
+        name: str
+
+    class ExperimentAssayRecord(TypedDict, total=True):
+        """Experiment object.
+
+        Attributes:
+            id (str): ID of the assay's experiment
+
+            name (str): Name of the assay's experiment
+
+            experiment (ExperimentRecord): Experiment object.
+        """
+        id: str
+        name: str
+        experiment: ExperimentRecord
+
+    class AssaySubjectClass(TypedDict, total=True):
+        """Assay Subject Class.
+
+        Attributes:
+            id (str): ID of the Assay Subject Class.
+
+            name (str): Name of the Assay Subject Class.
+        """
+        id: str
+        name: str
+
+    class AssaySubjectGroup(TypedDict, total=True):
+        """Assay Subject's group.
+
+        Attributes:
+            id (str): ID of the Assay Subject Group.
+
+            name (str): Name of the Assay Subject Group.
+        """
+        id: str
+        name: str
+
+    class Descriptor(TypedDict, total=True):
+        """Assay Subject's descriptor.
+
+        Attributes:
+            value (str): Descriptor value of the Assay Subject.
+
+            descriptorType (str): Descriptor type name of the Assay Subject.
+        """
+        value: str
+        descriptorType: str  # noqa: N815
+
+    class NewAssaySubjectRecord(TypedDict, total=True):
+        """New Assay subject record.
+
+        Attributes:
+            id (str): ID of the new Assay Subject.
+
+            name (str): Name of the new Assay Subject.
+        """
+        id: str
+        name: str
+        # assaySubjectClass: AssaySubjectClass  # TODO(diegovalenzuelaiturra): Check this.
+
+    # https://mypy.readthedocs.io/en/stable/more_types.html?highlight=typeddict#mixing-required-and-non-required-items
+    class AssaySubjectRecordBase(TypedDict, total=True):
+        """Assay subject record - required fields.
+
+        Attributes:
+            id (str): ID of the Assay Subject (summarized and full).
+
+            name (str): Name of the Assay Subject (summarized and full).
+
+            assaySubjectClass (AssaySubjectClass): A JSON with assay subject class information (summarized and full).
+        """
+        id: str
+        name: str
+        assaySubjectClass: AssaySubjectClass  # noqa: N815
+
+    class AssaySubjectRecord(AssaySubjectRecordBase, total=False):
+        """Assay record - required and optional fields.
+
+        Attributes:
+            id (str): ID of the Assay Subject (summarized and full).
+
+            name (str): Name of the Assay Subject (summarized and full).
+
+            assaySubjectClass (AssaySubjectClass): A JSON with assay subject class information (summarized and full).
+
+            descriptors (List[Descriptor]): A list of JSON records with the assay subject descriptors information \
+                (full).
+
+            assaySubjectGroups (List[AssaySubjectGroup]): A list of JSON records with the assay subject groups \
+                information (full).
+
+            experiments (List[ExperimentRecord]): A list of JSON records with the assay subject experiments \
+                information (full).
+
+            assays (List[AssayRecord]): A list of JSON records with the assay subject assays information (full).
+        """
+        # id: str  # noqa: E800
+        # name: str  # noqa: E800
+        # assaySubjectClass: AssaySubjectClass  # noqa: E800
+        descriptors: List[Descriptor]
+        assaySubjectGroups: List[AssaySubjectGroup]  # noqa: N815
+        experiments: List[ExperimentRecord]
+        assays: List[AssayRecord]
+
+    # ----------------------------------------------------------------------------------------------------------------
+    # NOTE(diegovalenzuelaiturra): WIP for type annotations for the following methods
+    #       `get_assay_results_import_status`
+    #       `get_assay_subjects_descriptor_import_status`
+    class AssaySubjectDescriptorImportJobStatus(TypedDict, total=True):
+        """Status of an assay result import.
+
+        Attrubutes:
+            code (str): Status code.
+
+            description (str): Status description.
+        """
+        code: str
+        description: str
+
+    class AssaySubjectDescriptorImportJob(TypedDict, total=False):
+        """Status of an assay subjects descriptors import job.
+
+        Attributes:
+            importId (str): ID of an assay result import.
+
+            assayId (str): ID of the assay.
+
+            status (AssaySubjectDescriptorImportJobStatus): Object with a 'code' and a 'description' key with \
+                the status of an assay result import.
+
+            message (str): Additional information on the import status.
+        """
+        importId: str  # noqa: N815
+        assayId: str  # noqa: N815
+        status: AssaySubjectDescriptorImportJobStatus
+        message: str
+
+    # ----------------------------------------------------------------------------------------------------------------
+
 # NOTE : Related to Postman and Python requests
 #           "body" goes into the "json" argument
 #           "Query Params" goes into "params" argument
 
 
-class IAssayResults(TypedDict):
+class IAssayResults(TypedDict, total=True):
     assayId: str  # noqa: N815
     fileId: str  # noqa: N815
     data: Union[pd.DataFrame, List[Dict[str, Any]]]
 
 
 DEFAULT_PAGE_SIZE: Literal[200] = 200
-IMPORTED_FILE_STATUSES: List[str] = [
+IMPORTED_FILE_STATUSES: List[Literal['FINISHED', 'FINISHED-DISCARDED']] = [
     'FINISHED',
     'FINISHED-DISCARDED',
 ]
@@ -54,7 +214,7 @@ class TESTClient:
         Args:
             teselagen_client (TeselaGenClient): A TeselaGenClient instance.
         """
-        module_name: str = 'test'
+        module_name: Literal['test'] = 'test'
 
         self.host_url = teselagen_client.host_url
         self.headers = teselagen_client.headers
@@ -110,8 +270,13 @@ class TESTClient:
             self,
             name: str,
             assaySubjectClassId: int,  # noqa: N803
-    ):
-        body = [{'name': name, 'assaySubjectClassId': str(assaySubjectClassId)}]
+    ) -> NewAssaySubjectRecord:
+        body = [
+            {
+                'name': name,
+                'assaySubjectClassId': str(assaySubjectClassId),
+            },
+        ]
 
         response = post(url=self.create_assay_subjects_url, headers=self.headers, json=body)
         response['content'] = json.loads(response['content'])
@@ -122,19 +287,23 @@ class TESTClient:
         self,
         assay_subject_ids: Optional[Union[int, List[int]]] = None,
         summarized: bool = True,
-    ):
-        """This function fetches one or many assay subject records from TEST. It receives either an integer ID or a
-        list of integer IDs through the 'assay_subject_ids' argument, which correspond to the the assay subject IDs.
+    ) -> List[AssaySubjectRecord]:
+        """This function fetches one or many assay subject records from TEST.
+
+        It receives either an integer ID or a list of integer IDs through the 'assay_subject_ids' argument, which \
+        correspond to the the assay subject IDs.
 
         Args:
-            assay_subject_ids(Optional[Union[int, List[int]]]): Either an integer, a list of integers or None. When integers are passed,
-                these are treated as the assay subject IDs used to query the database, if None, all assay subjects are returned.
+            assay_subject_ids(Optional[Union[int, List[int]]]): Either an integer, a list of integers or None. \
+                When integers are passed, these are treated as the assay subject IDs used to query the database, \
+                if None, all assay subjects are returned.
 
-            summarized (bool): Flag indicating whether the returned assay subject records should be summarized or if full assay subject objects
-                should be returned. Default is True.
+            summarized (bool): Flag indicating whether the returned assay subject records should be summarized or if \
+                full assay subject objects should be returned. Default is True.
 
         Returns:
-            - A list of assay subject records (summarized or fully detailed). Depending on the summarized parameter each property in the list is listed below:
+            - A list of assay subject records (summarized or fully detailed). \
+              Depending on the summarized parameter each property in the list is listed below:
 
             Assay Subject record structure:
                 - id (str): ID of the Assay Subject (summarized and full).
@@ -146,7 +315,10 @@ class TESTClient:
                 - assays (List[dict]): A list of JSON records with the assay subject assays information (full).
         """
         url: str = ''
-        params: Dict[str, Any] = {'summarized': str(summarized).lower()}
+        params: Dict[str, Any] = {
+            'summarized': str(summarized).lower(),
+        }
+
         if isinstance(assay_subject_ids, list):
             url = self.get_assay_subjects_url
             params['ids[]'] = assay_subject_ids
@@ -157,6 +329,7 @@ class TESTClient:
         else:
             raise TypeError(
                 f"Argument 'assay_subject_ids' must of type int or List[int]. Not type: {type(assay_subject_ids)}")
+
         response = get(
             url=url,
             params=params,
@@ -168,23 +341,26 @@ class TESTClient:
 
         return response['content']
 
+    # TODO(diegovalenzuelaiturra): Verify if returned value is an array of IDs of the Assay Subjects deleted
+    #       (List[str]), or a list of dictionaries with keys id and name, or something else.
     def delete_assay_subjects(
         self,
         assay_subject_ids: Union[int, List[int]],
     ):
         """This function deletes one or many assay subject records from TEST.
 
-        It receives an int ID or a list of int IDs through the 'assay_subject_ids' argument, which correspond to the
+        It receives an int ID or a list of int IDs through the 'assay_subject_ids' argument, which correspond to the \
         the assay subject IDs.
         """
         params = {}
+
         if isinstance(assay_subject_ids, list):
             params['ids[]'] = assay_subject_ids
         elif isinstance(assay_subject_ids, int):
             params['ids[]'] = [assay_subject_ids]
         else:
             raise TypeError(
-                f"Argument 'assay_subject_ids' must of type int or List[int]. Not type: {type(assay_subject_ids)}",)
+                f"Argument 'assay_subject_ids' must be of type int or List[int]. Got type: {type(assay_subject_ids)}")
 
         response = delete(
             url=self.delete_assay_subject_url.format(''),
@@ -201,19 +377,26 @@ class TESTClient:
             filepath: Optional[str] = None,
             createSubjectsFromFile: Optional[bool] = False,  # noqa: N803
     ):
-        """Calls Teselagen TEST API endpoint: `PUT /assay-subjects/descriptors`. The data can be passed via a local
-        filepath or either the file ID after already uploading it.
+        """Calls Teselagen TEST API endpoint: `PUT /assay-subjects/descriptors`.
+
+        The data can be passed via a local filepath or either the file ID after already uploading it.
 
         Args:
-            mapper (List[dict]): This is the JSON mapper used by the endpoint to understand each of the file columns. This mapper
-                should be a list of Python Dictionary representing each structured header with a 'name', 'class' and 'subClassId' key.
+            mapper (List[dict]): This is the JSON mapper used by the endpoint to understand each of the file \
+                columns. \
+                This mapper should be a list of Python Dictionary representing each structured header with \
+                a 'name', 'class' and 'subClassId' key. \
                 For more information on the mappers structure refer to https://api-docs.teselagen.com/#operation/SubjectsPutAssaySubjectDecriptors
+
             file_id (Optional[int]) : File identifier.
+
             filepath (Optional[str]) : Local location of the file.
+
             createSubjectsFromFile (bool) : Flag that indicates whether to create new Assay Subject found in the file.
 
-        Returns: a JSON object with a success status, the number of results inserted, and whether new assay subjects
-            were created during the insert.
+        Returns:
+            a JSON object with a success status, the number of results inserted, and whether new assay subjects were \
+            created during the insert.
         """
         # Implements the ability to do the file upload behind the scenes.
         if file_id is None:
@@ -246,6 +429,28 @@ class TESTClient:
             filepath: Optional[str] = None,
             createSubjectsFromFile: Optional[bool] = False,  # noqa: N803
     ):
+        # """Submits an assay subject descriptor import job with the information provided as tabular data in the \
+        # referenced attachment file.
+        #
+        # It will return an importId that can be used to check the status of the import via the \
+        # `GET assay-subjects/imports/:importId` endpoint.
+        #
+        # Args:
+        #     file_id (str): Reference ID of the File containing the Assay Subject Descriptor Information.
+        #
+        #     mapper (List[dict]): JSON Mapper explaning the File's columns.
+        #
+        #     parser_id (str): Parser ID of an already available parser design for the provided attachment tabular \
+        #         schema. Defaults to True.
+        #
+        #     createSubjectsFromFile (bool): Flag to enable the creation of assay subject from the file.
+        #
+        #     createMeasurementTargetsFromFile (bool): Flag to enable the creation of measurement targets from the \
+        #         file. Defaults to True.
+        #
+        # Returns:
+        #     (): A JSON Object {"importId": str} containing the Reference ID of the assay results import task.
+        # """
         # Implements the ability to do the file upload behind the scenes.
         if file_id is None:
             if filepath is None or not (Path(filepath).exists()):
@@ -274,6 +479,7 @@ class TESTClient:
 
         return response['content']
 
+    # -> AssaySubjectDescriptorImportJob
     def get_assay_subjects_descriptor_import_status(
             self,
             importId: str,  # noqa: N803
@@ -303,13 +509,13 @@ class TESTClient:
 
     # Experiments Endpoints
 
-    def get_experiments(self) -> List[Dict[str, Any]]:
-        """Fetches all experiments from the Laboratory selected with the select_laboratory function.
+    def get_experiments(self) -> List[ExperimentRecord]:
+        """Fetches all experiments from the Laboratory selected with the `select_laboratory` function.
 
         Args :
 
         Returns :
-            () : A list of experiments objects.
+            (List[Experiment]): A list of experiments objects.
 
         ```json
             [
@@ -328,18 +534,24 @@ class TESTClient:
 
         return response['content']
 
+    # TODO(diegovalenzuelaiturra): Can there be multiple experiments with the same name?
+    # TODO(diegovalenzuelaiturra): Check if the returned `Experiment` object differs from the `Experiment` object
+    #       obtained with `get_experiments` method.
+    #       If so, we may want to make the difference between `Experiment` and ExperimentRecord`
     def create_experiment(
         self,
         experiment_name: str,
-    ) -> Dict[str, Any]:
-        experiment: List[Any] = []
+    ) -> ExperimentRecord:
+        experiment: List[ExperimentRecord] = []
         exp_response: Dict[str, Any] = {}
 
-        experiments = self.get_experiments()
+        experiments: List[ExperimentRecord] = self.get_experiments()
         experiment = list(filter(lambda x: x['name'] == experiment_name, experiments))
 
         if len(experiment) != 1:
-            body = {'name': experiment_name}
+            body = {
+                'name': experiment_name,
+            }
             response = post(url=self.create_experiment_url, headers=self.headers, json=body)
             exp_response = json.loads(response['content'])[0]
 
@@ -349,16 +561,17 @@ class TESTClient:
                 self.get_experiments(),
             ))
 
-        if len(experiment) == 0:
+        if len(experiment) == 0:  # sourcery skip: simplify-len-comparison
             raise OSError(f"Error while looking for new id {exp_response['id']}")
 
         return experiment[0]
 
     def delete_experiment(
         self,
-        experiment_id: int,
+        experiment_id: str | int,
     ) -> None:
         """Deletes an experiment with ID=`experiment_id`."""
+        # The requests.Response response object contains a string with the id of the experiment deleted.
         response = delete(  # noqa: F841
             url=self.delete_experiment_url.format(experiment_id),
             headers=self.headers,
@@ -371,9 +584,10 @@ class TESTClient:
     def get_assays(
         self,
         experiment_id: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
-        """Fetches all assays from the experiment specified in `experiment_id`. If no `experiment_id` is passed, all
-        assays from the selected Laboratory are returned.
+    ) -> List[ExperimentAssayRecord]:
+        """Fetches all assays from the experiment specified in `experiment_id`.
+
+        If no `experiment_id` is passed, all assays from the selected Laboratory are returned.
 
         Args :
             experiment_id (int): Experiment identifier.
@@ -416,7 +630,7 @@ class TESTClient:
         experiment_id: str,
         assay_name: str,
         parser_id: Optional[int] = None,
-    ) -> Dict[str, Any]:
+    ) -> ExperimentAssayRecord:
         body = {
             'name': assay_name,
             'parserId': str(parser_id) if parser_id else None,
@@ -428,17 +642,19 @@ class TESTClient:
                 headers=self.headers,
                 json=body,
             )
-        except Exception as e:
+        except Exception as _exc:  # noqa: F841
             # TODO : Use a logger
             raise
 
-        assay_res = json.loads(response['content'])[0]
+        # A dictionary {id: str} with the ID of the new Assay.
+        assay_res: List[Dict[str, str]] = json.loads(response['content'])[0]
 
         # Retrieve the created object
-        assay = list(filter(
-            lambda x: x['id'] == assay_res['id'],
-            self.get_assays(experiment_id=experiment_id),
-        ))
+        assay: List[ExperimentAssayRecord] = list(
+            filter(
+                lambda x: x['id'] == assay_res['id'],
+                self.get_assays(experiment_id=experiment_id),
+            ))
 
         if len(assay) == 0:
             raise OSError(f"Can't find new id {assay_res['id']}")
@@ -448,21 +664,22 @@ class TESTClient:
     def delete_assay(
         self,
         assay_id: str,
-    ) -> Any:
+    ) -> Dict[str, str]:
         """Deletes an Assay with ID=`assay_id`."""
         response = delete(
             url=self.delete_assay_url.format(assay_id),
             headers=self.headers,
         )
 
+        # A dictionary {id: str} with the ID of the deleted Assay.
         return json.loads(response['content'])
 
     def delete_assays(
         self,
         assay_ids: List[str],
-    ) -> List[Any]:
+    ) -> List[Dict[str, str]]:
         """Deletes assays referenced by the IDs in the assay_ids list."""
-        response: List[Any] = []
+        response: List[Dict[str, str]] = []
         for assay_id in assay_ids:
             res = self.delete_assay(assay_id=assay_id)
             response.append(res)
@@ -622,6 +839,7 @@ class TESTClient:
 
         return response['content']
 
+    # -> AssaySubjectDescriptorImportJob
     def get_assay_results_import_status(
             self,
             importId: str,  # noqa: N803
@@ -716,7 +934,7 @@ class TESTClient:
                     file_ids = list(map(
                         lambda x: x['id'],
                         assay_imported_files,
-                    ),)
+                    ))
                 else:
                     raise Exception(f'Assay with ID={assay_id} has none successfully imported data files.')
 
