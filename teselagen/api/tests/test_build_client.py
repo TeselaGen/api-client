@@ -311,6 +311,7 @@ class TestBUILDClient:
         assert_records(records=response)
         assert len(response) <= int(pageSize)
 
+    # TODO: It would be better to dynamically define IDs, so to not be restricted to a specific instance
     @pytest.mark.parametrize(
         'aliquot_id',
         [
@@ -379,6 +380,7 @@ class TestBUILDClient:
         assert_records(records=response)
         assert len(response) <= int(pageSize)
 
+    # TODO: It would be better to dynamically define IDs, so to not be restricted to a specific instance
     @pytest.mark.parametrize(
         'sample_id',
         [
