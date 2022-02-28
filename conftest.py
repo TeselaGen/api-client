@@ -15,6 +15,8 @@ from teselagen.api.client import TeselaGenClient
 from teselagen.utils import get_test_configuration_path
 from teselagen.utils import load_from_json
 
+TEST_API_TOKEN_EXPIRATION_TIME = '30m'
+
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union
     import typing
@@ -56,8 +58,7 @@ if TYPE_CHECKING:
 # https://pypi.org/project/pytest-xdist/#making-session-scoped-fixtures-execute-only-once
 
 
-@pytest.fixture(scope='session')
-def test_configuration() -> dict[str, str]:
+def get_test_configuration() -> dict[str, str]:
     """Loads test configuration and updates with it the default conf.
 
     Default configuration is defined here (see source code below) and it will look for CLI endpoints at a local port.
@@ -113,26 +114,16 @@ def test_configuration() -> dict[str, str]:
     return configuration
 
 
-@pytest.fixture(scope='session')
-def host_url(test_configuration: dict[str, str]) -> str:
-    """Returns the host URL."""
-    return test_configuration['host_url'].strip('/')
+def get_host_url(_test_configuration: dict[str, str]) -> str:
+    return _test_configuration['host_url'].strip('/')
 
 
-@pytest.fixture(scope='session')
-def api_token_name(test_configuration: dict[str, str]) -> str:
+def get_api_token_name(_test_configuration: dict[str, str]) -> str:
     """Returns the name of the token to be used in the API calls."""
-    return test_configuration['api_token_name']
+    return _test_configuration['api_token_name']
 
 
-@pytest.fixture(scope='session')
-def expiration_time() -> str:
-    """Expiration time for API tokens."""
-    return '30m'
-
-
-@pytest.fixture
-def client(
+def get_client(
     host_url: str,
     api_token_name: str,
 ) -> TeselaGenClient:
@@ -148,6 +139,56 @@ def client(
     )
 
 
+def get_logged_client(
+    client: TeselaGenClient,
+    expiration_time: str,
+) -> TeselaGenClient:
+    """A logged TEST client instance.
+
+    Returns:
+        (TeselaGenClient) : An instance of the TEST client.
+    """
+    # set-up
+    client.login(expiration_time=expiration_time)
+    return client
+
+
+@pytest.fixture(scope='session')
+def test_configuration() -> dict[str, str]:
+    return get_test_configuration()
+
+
+@pytest.fixture(scope='session')
+def host_url(test_configuration: dict[str, str]) -> str:
+    """Returns the host URL."""
+    return get_host_url(_test_configuration=test_configuration)
+
+
+@pytest.fixture(scope='session')
+def api_token_name(test_configuration: dict[str, str]) -> str:
+    """Returns the name of the token to be used in the API calls."""
+    return get_api_token_name(_test_configuration=test_configuration)
+
+
+@pytest.fixture(scope='session')
+def expiration_time() -> str:
+    """Expiration time for API tokens."""
+    return TEST_API_TOKEN_EXPIRATION_TIME
+
+
+@pytest.fixture
+def client(
+    host_url: str,
+    api_token_name: str,
+) -> TeselaGenClient:
+    """A TeselaGen client instance.
+
+    Returns:
+        (TeselaGenClient) : An instance of TeselaGen client.
+    """
+    return get_client(host_url=host_url, api_token_name=api_token_name)
+
+
 @pytest.fixture
 def logged_client(
     client: TeselaGenClient,
@@ -159,7 +200,7 @@ def logged_client(
         (TeselaGenClient) : An instance of the TEST client.
     """
     # set-up
-    client.login(expiration_time=expiration_time)
+    client = get_logged_client(client=client, expiration_time=expiration_time)
 
     # yield
     yield client
@@ -170,8 +211,11 @@ def logged_client(
 
 def clean_test_module_used_for_testing() -> None:
     """Cleanup files and assays."""
-    client: TeselaGenClient = TeselaGenClient()
-    client.login(expiration_time='30m')
+    _test_configuration: dict[str, str] = get_test_configuration()
+    client: TeselaGenClient = get_logged_client(client=get_client(
+        host_url=get_host_url(_test_configuration),
+        api_token_name=get_api_token_name(_test_configuration=_test_configuration)),
+                                                expiration_time=TEST_API_TOKEN_EXPIRATION_TIME)
 
     LAB_NAME: str = 'The Test Lab'  # noqa: N806
     client.select_laboratory(lab_name=LAB_NAME)

@@ -292,7 +292,7 @@ class TeselaGenClient:
             # TODO : Use a logger
             print('Connection Refused')
             return None
-        print('Connection Accepted')
+        print(f'Connection Accepted at {self.host_url}')
 
         del username, password, body
 
