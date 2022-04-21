@@ -597,7 +597,7 @@ class DESIGNClient:
 
     def export_aa_sequence(
         self,
-        aa_sequence_id: int,
+        aa_sequence_id: str,
         format: str = 'JSON',
     ):
         """This functions exports one amino acid sequence from TeselaGen DESIGN Module.
@@ -629,9 +629,9 @@ class DESIGNClient:
                 - uniprotId: UniProt ID for the amino acid sequence (optional).
                 - tags: any TeselaGen tags with which the amino acid sequence has been tagged (optional).
         """
-        if not isinstance(aa_sequence_id, int):
+        if not isinstance(aa_sequence_id, str):
             raise ValueError(
-                f"Argument 'aa_sequence_id' must be of type 'int', but received type '{type(aa_sequence_id)}'.")
+                f"Argument 'aa_sequence_id' must be of type 'str', but received type '{type(aa_sequence_id)}'.")
 
         if format not in SUPPORTED_AA_EXPORT_FORMATS:
             raise ValueError("Argument 'format' can only be one of this three strings: JSON, FASTA or GENBANK.")
@@ -680,7 +680,7 @@ class DESIGNClient:
 
     def export_aa_sequences(
         self,
-        aa_sequence_ids: Union[int, np.ndarray, List[int]],
+        aa_sequence_ids: Union[str, np.ndarray, List[str]],
         format: str = 'JSON',
     ):
         """This functions exports one or many amino acid sequences from TeselaGen DESIGN Module. It requires one or a
@@ -712,22 +712,22 @@ class DESIGNClient:
                 - uniprotId: UniProt ID for the amino acid sequence (optional).
                 - tags: any TeselaGen tags with which the amino acid sequence has been tagged (optional).
         """
-        _sequence_ids: List[int] = []
+        _sequence_ids: List[str] = []
 
-        if isinstance(aa_sequence_ids, int):
+        if isinstance(aa_sequence_ids, str):
             _sequence_ids.append(aa_sequence_ids)
 
         if isinstance(aa_sequence_ids, np.ndarray):
-            if all(isinstance(x, int) for x in cast(np.ndarray, aa_sequence_ids)):
+            if all(isinstance(x, str) for x in cast(np.ndarray, aa_sequence_ids)):
                 _sequence_ids.extend(cast(np.ndarray, aa_sequence_ids).tolist())
             else:
                 raise ValueError("All elements in list argument 'aa_sequence_ids' must be of type int.")
 
         if isinstance(aa_sequence_ids, list):
-            if all(isinstance(x, int) for x in aa_sequence_ids):
+            if all(isinstance(x, str) for x in aa_sequence_ids):
                 _sequence_ids.extend(aa_sequence_ids)
             else:
-                raise ValueError("All elements in list argument 'aa_sequence_ids' must be of type int.")
+                raise ValueError("All elements in list argument 'aa_sequence_ids' must be of type string")
         else:
             raise ValueError(
                 "Argument 'aa_sequence_ids' must either be of type int, List[int] or numpy array of int elements.")
