@@ -471,3 +471,17 @@ class BUILDClient:
         assert response['content'] is not None, 'No content in response'
 
         return cast(List[SampleRecord], json.loads(response['content']))
+
+    # TODO
+    def get_plates(
+        self,
+        pageNumber: str | int = '1',  # noqa: N803,
+        pageSize: str | int = DEFAULT_PAGE_SIZE,
+        sort: str = '-updatedAt',
+        gqlFilter: str = '',
+    ) -> List[SampleRecord]:
+        raise NotImplementedError()
+
+    # TODO
+    def get_plate(self, id: str) -> List[SampleRecord]:
+        raise NotImplementedError()
