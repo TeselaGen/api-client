@@ -45,31 +45,31 @@ TEST_FILE_CONTENTS: str = r"""Line,Teselagen Example Descriptor 1,Teselagen Exam
 class TestTESTClient:
     """Tests for the TeselaGen Client."""
 
-    @pytest.fixture
-    def lab_id(
-        self,
-        client: TeselaGenClient,
-    ) -> int:
-        """Get the lab id used for testing.
+    # @pytest.fixture
+    # def lab_id(
+    #     self,
+    #     client: TeselaGenClient,
+    # ) -> int:
+    #     """Get the lab id used for testing.
 
-        Returns:
-            (int) : The laboratory identifier used for testing.
-        """
-        available_labs = client.get_laboratories()
-        # _lab_id: int = 1
+    #     Returns:
+    #         (int) : The laboratory identifier used for testing.
+    #     """
+    #     available_labs = client.get_laboratories()
+    #     # _lab_id: int = 1
+    #     client.select_laboratory("The Test Lab")
 
-        return available_labs[0]['id']
+    #     return available_labs[0]['id']
 
     @pytest.fixture
     def select_laboratory(
         self,
         client: TeselaGenClient,
-        lab_id: int,
     ) -> None:
         """A selected lab to work on."""
         # available_labs = client.get_laboratories()
         # lab_id: int = available_labs[0]['id']
-        client.select_laboratory(lab_id=lab_id)
+        client.select_laboratory(lab_name="The Test Lab")
 
     @pytest.fixture
     def experiment_id(
@@ -281,7 +281,7 @@ class TestTESTClient:
     def test_delete_assay(
         self,
         logged_client: TeselaGenClient,
-        lab_id: int,
+        select_laboratory,
         assay: Mapping[str, Any],
     ) -> None:
         client: TESTClient = logged_client.test
