@@ -10,6 +10,15 @@ import json
 from typing import cast, List, TYPE_CHECKING, TypedDict
 import warnings
 
+from teselagen.api.build_client_models import AliquotNotFoundError
+from teselagen.api.build_client_models import AliquotRecord
+from teselagen.api.build_client_models import GetAliquotsQueryParams
+from teselagen.api.build_client_models import GetPlatesQueryParams
+from teselagen.api.build_client_models import GetSamplesQueryParams
+from teselagen.api.build_client_models import PlateLibraryRecord
+from teselagen.api.build_client_models import PlateRecord
+from teselagen.api.build_client_models import RecordNotFoundError
+from teselagen.api.build_client_models import SampleRecord
 from teselagen.utils import delete  # noqa: F401 # pylint: disable=unused-import
 from teselagen.utils import get  # pylint: disable=unused-import
 from teselagen.utils import get_func_name
@@ -40,119 +49,6 @@ if TYPE_CHECKING:
 # NOTE : Related to Postman and Python requests
 #           "body" goes into the "json" argument
 #           "Query Params" goes into "params" argument
-
-
-class Error(Exception):  # noqa: H601
-    """Base class for exceptions in this module."""
-
-
-class NotFoundError(Error):  # noqa: H601
-    """Exception raised when something is not found."""
-
-
-class AliquotNotFoundError(NotFoundError):  # noqa: H601
-    """Exception raised when an aliquot is not found."""
-
-
-class SampleNotFoundError(NotFoundError):  # noqa: H601
-    """Exception raised when a sample is not found."""
-
-
-class Record(TypedDict, total=True):  # noqa: H601
-    """Record `TypedDict`."""
-    id: str
-
-
-class User(TypedDict, total=True):  # noqa: H601
-    """User `TypedDict`."""
-    id: str
-    username: str
-    __typename: Literal['user']
-
-
-class Material(TypedDict, total=True):  # noqa: H601
-    """Material `TypedDict`."""
-    id: str
-    name: str
-    __typename: Literal['material']
-
-
-class Sample(TypedDict, total=True):  # noqa: H601
-    """Sample `TypedDict`."""
-    id: str
-    name: str
-    material: Material
-    __typename: Literal['sample']
-
-
-class AliquotRecord(TypedDict, total=False):  # noqa: H601
-    """Aliquot record `TypedDict`."""
-    id: str
-    user: User
-    concentration: int | float | None
-    concentrationUnitCode: str  # noqa: N815
-    volume: int | float | None
-    volumetricUnitCode: str | None  # noqa: N815
-    mass: int | float | None
-    massUnitCode: Any  # None  # noqa: N815
-    createdAt: str  # noqa: N815  # Example: '2020-08-05T15:24:35.291Z'
-    updatedAt: str  # noqa: N815  # Example: '2020-08-06T19:16:00.195Z'
-    sample: Sample
-    batch: Any  # None
-    lab: Any  # None
-    aliquotType: str  # noqa: N815
-    taggedItems: list[Any]  # noqa: N815
-    __typename: Literal['aliquot']
-
-
-class SampleType(TypedDict, total=True):  # noqa: H601
-    """SampleType `TypedDict`."""
-    code: str
-    name: str
-    __typename: Literal['sampleType']
-
-
-class SampleRecord(TypedDict, total=False):  # noqa: H601
-    """Sample record `TypedDict`."""
-    id: str
-    name: str
-    status: Any  # None
-    sampleTypeCode: str  # noqa: N815
-    sampleType: SampleType  # noqa: N815
-    sampleFormulations: list[Any]  # noqa: N815
-    updatedAt: str  # noqa: N815
-    createdAt: str  # noqa: N815
-    taggedItems: list[Any]  # noqa: N815
-    material: Material
-    batch: Any  # None
-    lab: Any  # None
-    user: User
-    __typename: Literal['sample']
-
-
-class GetRecordsQueryParams(TypedDict, total=True):  # noqa: H601
-    """Get records query parameters `TypedDict`."""
-    pageNumber: str  # noqa: N815
-    pageSize: str  # noqa: N815
-    sort: str
-    gqlFilter: str  # noqa: N815
-
-
-class GetSamplesQueryParams(TypedDict, total=True):  # noqa: H601
-    """Get samples query parameters `TypedDict`."""
-    pageNumber: str  # noqa: N815
-    pageSize: str  # noqa: N815
-    sort: str
-    gqlFilter: str  # noqa: N815
-
-
-class GetAliquotsQueryParams(TypedDict, total=True):  # noqa: H601
-    """Get aliquots query parameters `TypedDict`."""
-    pageNumber: str  # noqa: N815
-    pageSize: str  # noqa: N815
-    sort: str
-    gqlFilter: str  # noqa: N815
-
 
 DEFAULT_PAGE_SIZE: Literal[100] = 100
 
@@ -277,6 +173,9 @@ class BUILDClient:
         self.samples_url: str = f'{api_url_base}/samples'
         self.sample_url: str = f'{api_url_base}/samples' + '/{}'
 
+        self.plates_url: str = f'{api_url_base}/plates'
+        self.plate_url: str = f'{api_url_base}/plates' + '/{}'
+
     def get_aliquot(
         self,
         aliquot_id: AliquotID,
@@ -385,7 +284,7 @@ class BUILDClient:
             SampleRecord: Sample record.
 
         Raises:
-            SampleNotFoundError: If the sample record is not found.
+            RecordNotFoundError: If the sample record is not found.
         """
         output_sample: SampleRecord | None = None
 
@@ -413,7 +312,7 @@ class BUILDClient:
             )
 
             if output_sample is None:
-                raise SampleNotFoundError(f'Sample {sample_id} not found.') from _exc
+                raise RecordNotFoundError(f'Sample {sample_id} not found.') from _exc
 
         return output_sample
 
@@ -479,9 +378,75 @@ class BUILDClient:
         pageSize: str | int = DEFAULT_PAGE_SIZE,
         sort: str = '-updatedAt',
         gqlFilter: str = '',
-    ) -> List[SampleRecord]:
-        raise NotImplementedError()
+    ) -> List[PlateLibraryRecord]:
+        """This paged entrypoint returns sets of plates.
+
+        Args:
+            pageNumber (str): 1 based paging parameter. Default: `"1"`.
+
+            pageSize (str): Number of records to return in a page. Default: `"100"`.
+
+            sort (str): sort column, default is id. Default: `"-updatedAt"`.
+
+            gqlFilter (str): A `graphql` filter to apply to the data. Example:
+
+        ```GraphQL
+                { "name" : ["Plate1", "Plate2"] } or { "id": ["1", "10", "22"]}
+        ```
+
+        Returns:
+            List[PlateLibraryRecord]: List of plate records.
+
+        Example:
+            >>> # To query results by a specific field such as an `id`, use the `gqlFilter` parameter.
+            >>> import json
+            >>> plate_id: PlateID = "...."  # NOTE: Replace with a valid id.
+            >>> gqlFilter: str = json.dumps({'id': str(plate_id)})
+            ...
+            >>> # To query results by a specific field such as an `name`, use the `gqlFilter` parameter.
+            >>> import json
+            >>> plate_name: str = 'my_plate'  # NOTE: Replace with a valid name.
+            >>> gqlFilter: str = json.dumps({'name': str(plate_name)})
+            ...
+        """
+        params: GetPlatesQueryParams = {
+            'pageNumber': str(pageNumber),
+            'pageSize': str(pageSize),
+            'sort': sort,
+            'gqlFilter': gqlFilter,
+        }
+
+        response = get(
+            url=self.plates_url,
+            headers=self.headers,
+            params=params,
+        )
+
+        assert response['content'] is not None, 'No content in response'
+
+        return cast(List[PlateLibraryRecord], json.loads(response['content']))
 
     # TODO
-    def get_plate(self, id: str) -> List[SampleRecord]:
-        raise NotImplementedError()
+    def get_plate(self, plate_id: str) -> PlateRecord:
+        """This function returns a single plate by id.
+
+        Args:
+            plate_id (PlateID): The id of the plate to return.
+
+        Returns:
+            PlateRecord: Plate record.
+
+        Raises:
+            RecordNotFoundError: If the plate record is not found.
+        """
+        output_plate: PlateRecord | None = None
+
+        url: str = self.plate_url.format(plate_id)
+        response: ResponseDict = get(
+            url=url,
+            headers=self.headers,
+        )
+        assert response['content'] is not None  # noqa: S101
+        output_plate = cast(PlateRecord, json.loads(response['content']))
+
+        return output_plate
