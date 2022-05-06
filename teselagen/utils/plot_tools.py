@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 import json
 from typing import TYPE_CHECKING
 import uuid
@@ -49,18 +50,23 @@ def plot_plasmid_features(
     """
     # Define random color palette
     if palette is None:
-        palette = Palette('material')
+        palette = Palette("material")
+    colors = palette.cycle()
 
-    colors = palette.random(no_of_colors=len(features))
+    # From 'forward' create a 'strand' field if does not exist
+    if 'strand' not in features[0]:
+        features = deepcopy(features)
+        for feat in features:
+            feat.update({'strand': 1 * feat['forward']})
 
     # Create feat objects
     plot_feats = [
         GraphicFeature(
             start=feat['start'],
             end=feat['end'],
-            strand=1 * feat['forward'],
+            strand=feat['strand'],
             label=feat['name'],
-            color=colors[i],
+            color=next(colors),
         ) for i, feat in enumerate(features)
     ]
 

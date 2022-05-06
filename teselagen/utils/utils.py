@@ -223,7 +223,9 @@ def load_from_json(filepath: Path) -> Any:
     """
     absolute_path: Path = filepath.absolute()
 
-    return json.loads(absolute_path.read_text())
+    with open(absolute_path) as json_file:
+        data = json.load(json_file)
+    return data
 
 
 def get_project_root() -> Path:
