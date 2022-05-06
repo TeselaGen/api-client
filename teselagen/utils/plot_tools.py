@@ -50,9 +50,8 @@ def plot_plasmid_features(
     """
     # Define random color palette
     if palette is None:
-        palette = Palette('material')
-
-    colors = palette.random(no_of_colors=len(features))
+        palette = Palette("material")
+    colors = palette.cycle()
 
     # From 'forward' create a 'strand' field if does not exist
     if 'strand' not in features[0]:
@@ -67,7 +66,7 @@ def plot_plasmid_features(
             end=feat['end'],
             strand=feat['strand'],
             label=feat['name'],
-            color=colors[i],
+            color=next(colors),
         ) for i, feat in enumerate(features)
     ]
 
