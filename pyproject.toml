@@ -71,7 +71,7 @@ examples = ["fastaparser", "jupyter_contrib_nbextensions", "jupyter-console", "j
 [tool.poetry.dev-dependencies]
 seaborn = "^0.11.2"
 # TODO(diegovalenzuelaiturra): Check if required for testing jupyter notebooks. Check if fixing versions is is still required.
-notebook = "^6.4.0"
+notebook = "^6.4.12"
 nglview = "^3.0.3"
 nbconvert = "5.6.1" # Temporarily pinned for avoiding https://github.com/jupyter/jupyter_client/issues/637
 jupyter-client = "6.1.12" # Temporarily pinned for avoiding https://github.com/jupyter/jupyter_client/issues/637
