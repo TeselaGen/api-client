@@ -17,6 +17,8 @@ import pytest
 
 from teselagen.api.build_client import get_documents
 from teselagen.api.build_client import get_record
+from teselagen.api.build_client_models import AliquotRecord
+from teselagen.api.build_client_models import SampleRecord
 
 if TYPE_CHECKING:
     from typing import Any, Callable, ContextManager, Dict, List, Mapping, TypeVar, Union
@@ -270,15 +272,32 @@ class TestBUILDClient:
         # logged_client.logout()
         assert logged_client.headers == logged_client.build.headers
 
-    def test_get_aliquots_with_default_query_params(
+    @pytest.fixture
+    def aliquots(
         self,
         logged_build_client: BUILDClient,
-    ) -> None:
+    ) -> List[AliquotRecord]:
         """Default query parameters should always work."""
         client = logged_build_client
 
-        response = client.get_aliquots()
-        assert_records(records=response)
+        return client.get_aliquots()
+
+    @pytest.fixture
+    def samples(
+        self,
+        logged_build_client: BUILDClient,
+    ) -> List[SampleRecord]:
+        """Test getting samples with default query parameters."""
+        client = logged_build_client
+
+        return client.get_samples()
+
+    def test_get_aliquots_with_default_query_params(
+        self,
+        aliquots,
+    ) -> None:
+        """Default query parameters should always work."""
+        assert_records(records=aliquots)
 
     @pytest.mark.parametrize(
         ('pageNumber', 'pageSize', 'sort', 'gqlFilter'),
@@ -311,25 +330,15 @@ class TestBUILDClient:
         assert_records(records=response)
         assert len(response) <= int(pageSize)
 
-    # TODO: It would be better to dynamically define IDs, so to not be restricted to a specific instance
-    @pytest.mark.parametrize(
-        'aliquot_id',
-        [
-            '13758',  # Lab Group: Common
-            '13760',  # Lab Group: Common
-        ],
-        ids=[
-            'one_aliquot',
-            'another_aliquot',
-        ],
-    )
     def test_get_aliquot_by_id(
         self,
-        aliquot_id: str,
+        aliquots: List[AliquotRecord],
         logged_build_client: BUILDClient,
     ) -> None:
         """Test getting aliquots by id."""
         client = logged_build_client
+        aliquot_id = aliquots[0].get('id', None)
+        assert aliquot_id is not None, "Sample returned no id"
 
         response = client.get_aliquot(aliquot_id=aliquot_id)
         assert_record(record=response)
@@ -337,13 +346,10 @@ class TestBUILDClient:
 
     def test_get_samples_with_default_query_params(
         self,
-        logged_build_client: BUILDClient,
+        samples: List[SampleRecord],
     ) -> None:
         """Test getting samples with default query parameters."""
-        client = logged_build_client
-
-        response = client.get_samples()
-        assert_records(records=response)
+        assert_records(records=samples)
 
     @pytest.mark.parametrize(
         ('pageNumber', 'pageSize', 'sort', 'gqlFilter'),
@@ -380,26 +386,40 @@ class TestBUILDClient:
         assert_records(records=response)
         assert len(response) <= int(pageSize)
 
-    # TODO: It would be better to dynamically define IDs, so to not be restricted to a specific instance
-    @pytest.mark.parametrize(
-        'sample_id',
-        [
-            '19152',  # Lab Group: Common
-            '16457',  # Lab Group: Common
-        ],
-        ids=[
-            'one_sample',
-            'another_sample',
-        ],
-    )
     def test_get_sample_by_id(
         self,
-        sample_id: str,
+        samples: List[SampleRecord],
         logged_build_client: BUILDClient,
     ) -> None:
         """Test getting samples by id."""
         client = logged_build_client
+        sample_id = samples[0].get('id', None)
+        assert sample_id is not None, "Sample returned no id"
 
         response = client.get_sample(sample_id=sample_id)
         assert_record(record=response)
         assert response.get('id', None) == str(sample_id), 'Sample ID is not as expected.'
+
+    def test_get_plates(
+        self,
+        logged_build_client: BUILDClient,
+    ) -> None:
+        """Test getting plates with default query parameters."""
+        client = logged_build_client
+
+        response = client.get_plates()
+        assert_records(records=response)
+
+    def test_get_plate_by_id(
+        self,
+        logged_build_client: BUILDClient,
+    ) -> None:
+        """Test getting a plate by its id"""
+        client = logged_build_client
+
+        # First get an ID to be queried
+        response_plates = client.get_plates()
+        plate_id = response_plates[0]['id']
+
+        response = client.get_plate(plate_id=plate_id)
+        assert_record(record=response)

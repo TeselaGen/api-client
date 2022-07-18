@@ -109,7 +109,7 @@ def get_test_configuration() -> dict[str, str]:
         # Update values
         configuration.update(file_conf)
         if configuration['host_url'] != DEFAULT_CONFIGURATION['host_url']:
-            warnings.warn(f"Host URL was set to: {configuration['host_url']}")
+            print(f"Host URL was set to: {configuration['host_url']}")
 
     return configuration
 
