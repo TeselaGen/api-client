@@ -245,7 +245,11 @@
     //
     "[markdown]": {
         "editor.wordWrap": "on",
-        "editor.quickSuggestions": false,
+        "editor.quickSuggestions": {
+            "comments": "off",
+            "strings": "off",
+            "other": "off"
+        },
         // https://github.com/microsoft/vscode/issues/1679
         "files.trimTrailingWhitespace": false,
         // "editor.rulers": [

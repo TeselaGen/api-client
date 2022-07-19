@@ -7,11 +7,12 @@ from __future__ import annotations
 
 import itertools
 import json
-from typing import cast, List, TYPE_CHECKING, TypedDict
+from typing import cast, List, Literal, TYPE_CHECKING, TypedDict
 import warnings
 
 from teselagen.api.build_client_models import AliquotNotFoundError
 from teselagen.api.build_client_models import AliquotRecord
+from teselagen.api.build_client_models import GetAliquotsFormatType
 from teselagen.api.build_client_models import GetAliquotsQueryParams
 from teselagen.api.build_client_models import GetPlatesQueryParams
 from teselagen.api.build_client_models import GetSamplesQueryParams
@@ -223,12 +224,12 @@ class BUILDClient:
 
     # NOTE: The Example below is not documented in the BUILD API documentation, so be careful not to remove it.
     def get_aliquots(
-        self,
-        pageNumber: str | int = '1',  # noqa: N803
-        pageSize: str | int = DEFAULT_PAGE_SIZE,
-        sort: str = '-updatedAt',
-        gqlFilter: str = '',
-    ) -> List[AliquotRecord]:
+            self,
+            pageNumber: str | int = '1',  # noqa: N803
+            pageSize: str | int = DEFAULT_PAGE_SIZE,
+            sort: str = '-updatedAt',
+            gqlFilter: str = '',
+            format: GetAliquotsFormatType = "minimal") -> List[AliquotRecord]:
         """This is a paged entrypoint for returning many aliquot records.
 
         Args:
@@ -257,8 +258,9 @@ class BUILDClient:
         params: GetAliquotsQueryParams = {
             'pageNumber': str(pageNumber),
             'pageSize': str(pageSize),
-            'sort': str(sort),
-            'gqlFilter': str(gqlFilter),
+            'sort': sort,
+            'gqlFilter': gqlFilter,
+            'format': format
         }
 
         response = get(

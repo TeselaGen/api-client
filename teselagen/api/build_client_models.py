@@ -10,6 +10,8 @@ from typing import Any, List, Literal, Optional, TypedDict, Union
 
 numeric = Union[int, float, complex]
 
+GetAliquotsFormatType = Literal["minimal", "expanded"]
+
 
 class Error(Exception):  # noqa: H601
     """Base class for exceptions in this module."""
@@ -121,6 +123,7 @@ class GetAliquotsQueryParams(TypedDict, total=True):  # noqa: H601
     pageSize: str  # noqa: N815
     sort: str
     gqlFilter: str  # noqa: N815
+    format: GetAliquotsFormatType
 
 
 class GetPlatesQueryParams(TypedDict, total=True):  # noqa: H601

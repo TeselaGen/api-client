@@ -1,5 +1,5 @@
 # >>> CUSTOM <<<
-_*/
+_*
 .test*
 *.credentials*
 *.test_configuration
