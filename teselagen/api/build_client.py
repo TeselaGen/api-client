@@ -10,6 +10,11 @@ import json
 from typing import cast, List, Literal, TYPE_CHECKING, TypedDict
 import warnings
 
+from tenacity import retry
+from tenacity.retry import retry_if_exception_type
+from tenacity.stop import stop_after_delay
+from tenacity.wait import wait_fixed
+
 from teselagen.api.build_client_models import AliquotNotFoundError
 from teselagen.api.build_client_models import AliquotRecord
 from teselagen.api.build_client_models import GetAliquotsFormatType
@@ -177,6 +182,11 @@ class BUILDClient:
         self.plates_url: str = f'{api_url_base}/plates'
         self.plate_url: str = f'{api_url_base}/plates' + '/{}'
 
+    @retry(
+        wait=wait_fixed(1),
+        stop=stop_after_delay(5),
+        retry=retry_if_exception_type(Exception),
+    )
     def get_aliquot(
         self,
         aliquot_id: AliquotID,
@@ -194,33 +204,33 @@ class BUILDClient:
         """
         output_aliquot: AliquotRecord | None = None
 
-        try:
-            url: str = self.aliquot_url.format(str(aliquot_id))
-            response: ResponseDict = get(
-                url=url,
-                headers=self.headers,
-            )
-            assert response['content'] is not None  # noqa: S101
-            output_aliquot = cast(AliquotRecord, json.loads(response['content']))
+        # try:
+        url: str = self.aliquot_url.format(str(aliquot_id))
+        response: ResponseDict = get(
+            url=url,
+            headers=self.headers,
+        )
+        assert response['content'] is not None  # noqa: S101
+        return cast(AliquotRecord, json.loads(response['content']))
 
-        except Exception as _exc:
-            # fallback to bruteforce if an error occurs
+        # except Exception as _exc:
+        #     # fallback to bruteforce if an error occurs
 
-            # NOTE: Since when using a method to get a single record, the user only have control over the id parameter,
-            #       we can't use the same parameters as for the method to get many records. So, we choose to use the
-            #       default parameters for the method to get many records.
-            #       Except for the `gqlFilter` parameter, which is used for efficient querying.
-            get_records = wrapped_partial(self.get_aliquots, gqlFilter=json.dumps({'id': str(aliquot_id)}))
+        #     # NOTE: Since when using a method to get a single record, the user only have control over the id parameter,
+        #     #       we can't use the same parameters as for the method to get many records. So, we choose to use the
+        #     #       default parameters for the method to get many records.
+        #     #       Except for the `gqlFilter` parameter, which is used for efficient querying.
+        #     get_records = wrapped_partial(self.get_aliquots, gqlFilter=json.dumps({'id': str(aliquot_id)}))
 
-            output_aliquot = get_record(
-                get_records=get_records,
-                record_id=aliquot_id,
-            )
+        #     output_aliquot = get_record(
+        #         get_records=get_records,
+        #         record_id=aliquot_id,
+        #     )
 
-            if output_aliquot is None:
-                raise AliquotNotFoundError(f'Aliquot {aliquot_id} not found.') from _exc
+        #     if output_aliquot is None:
+        #         raise AliquotNotFoundError(f'Aliquot {aliquot_id} not found.') from _exc
 
-        return output_aliquot
+        # return output_aliquot
 
     # NOTE: The Example below is not documented in the BUILD API documentation, so be careful not to remove it.
     def get_aliquots(
@@ -290,33 +300,33 @@ class BUILDClient:
         """
         output_sample: SampleRecord | None = None
 
-        try:
-            url: str = self.sample_url.format(str(sample_id))
-            response: ResponseDict = get(
-                url=url,
-                headers=self.headers,
-            )
-            assert response['content'] is not None  # noqa: S101
-            output_sample = cast(SampleRecord, json.loads(response['content']))
+        # try:
+        url: str = self.sample_url.format(str(sample_id))
+        response: ResponseDict = get(
+            url=url,
+            headers=self.headers,
+        )
+        assert response['content'] is not None  # noqa: S101
+        return cast(SampleRecord, json.loads(response['content']))
 
-        except Exception as _exc:
-            # fallback to bruteforce if an error occurs
+        # except Exception as _exc:
+        #     # fallback to bruteforce if an error occurs
 
-            # NOTE: Since when using a method to get a single record, the user only have control over the id parameter,
-            #       we can't use the same parameters as for the method to get many records. So, we choose to use the
-            #       default parameters for the method to get many records.
-            #       Except for the `gqlFilter` parameter, which is used for efficient querying.
-            get_records = wrapped_partial(self.get_samples, gqlFilter=json.dumps({'id': str(sample_id)}))
+        #     # NOTE: Since when using a method to get a single record, the user only have control over the id parameter,
+        #     #       we can't use the same parameters as for the method to get many records. So, we choose to use the
+        #     #       default parameters for the method to get many records.
+        #     #       Except for the `gqlFilter` parameter, which is used for efficient querying.
+        #     get_records = wrapped_partial(self.get_samples, gqlFilter=json.dumps({'id': str(sample_id)}))
 
-            output_sample = get_record(
-                get_records=get_records,
-                record_id=sample_id,
-            )
+        #     output_sample = get_record(
+        #         get_records=get_records,
+        #         record_id=sample_id,
+        #     )
 
-            if output_sample is None:
-                raise RecordNotFoundError(f'Sample {sample_id} not found.') from _exc
+        #     if output_sample is None:
+        #         raise RecordNotFoundError(f'Sample {sample_id} not found.') from _exc
 
-        return output_sample
+        # return output_sample
 
     # NOTE: The Example below is not documented in the BUILD API documentation, so be careful not to remove it.
     def get_samples(
