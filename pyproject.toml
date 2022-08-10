@@ -73,7 +73,7 @@ seaborn = "^0.11.2"
 # TODO(diegovalenzuelaiturra): Check if required for testing jupyter notebooks. Check if fixing versions is is still required.
 notebook = "^6.4.0"
 nglview = "^3.0.3"
-nbconvert = "5.6.1" # Temporarily pinned for avoiding https://github.com/jupyter/jupyter_client/issues/637
+nbconvert = "6.3.0" # Temporarily pinned for avoiding https://github.com/jupyter/jupyter_client/issues/637
 jupyter-client = "6.1.12" # Temporarily pinned for avoiding https://github.com/jupyter/jupyter_client/issues/637
 # testing, formaters, fixers, linters, etc.
 autoflake = "^1.4"
