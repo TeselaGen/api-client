@@ -351,7 +351,9 @@ class TestBUILDClient:
         )
         # TODO: Add ASSERTION FOR SPECIAL DATA
         assert_records(records=response)
-        assert len(response) <= int(pageSize)
+        assert len(response) <= pageSize
+        assert "aliquotContainer" in response[0]
+        assert "replicateAliquots" in response[0]
 
     def test_get_aliquot_by_id(
         self,
