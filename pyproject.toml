@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "teselagen"
-version = "0.4.5"
+version = "0.4.6"
 description = "Teselagen Biotechnology API client"
 authors = ["Your Name <you@example.com>"]
 license = "MIT"

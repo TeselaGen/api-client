@@ -213,25 +213,6 @@ class BUILDClient:
         assert response['content'] is not None  # noqa: S101
         return cast(AliquotRecord, json.loads(response['content']))
 
-        # except Exception as _exc:
-        #     # fallback to bruteforce if an error occurs
-
-        #     # NOTE: Since when using a method to get a single record, the user only have control over the id parameter,
-        #     #       we can't use the same parameters as for the method to get many records. So, we choose to use the
-        #     #       default parameters for the method to get many records.
-        #     #       Except for the `gqlFilter` parameter, which is used for efficient querying.
-        #     get_records = wrapped_partial(self.get_aliquots, gqlFilter=json.dumps({'id': str(aliquot_id)}))
-
-        #     output_aliquot = get_record(
-        #         get_records=get_records,
-        #         record_id=aliquot_id,
-        #     )
-
-        #     if output_aliquot is None:
-        #         raise AliquotNotFoundError(f'Aliquot {aliquot_id} not found.') from _exc
-
-        # return output_aliquot
-
     # NOTE: The Example below is not documented in the BUILD API documentation, so be careful not to remove it.
     def get_aliquots(
             self,
@@ -308,25 +289,6 @@ class BUILDClient:
         )
         assert response['content'] is not None  # noqa: S101
         return cast(SampleRecord, json.loads(response['content']))
-
-        # except Exception as _exc:
-        #     # fallback to bruteforce if an error occurs
-
-        #     # NOTE: Since when using a method to get a single record, the user only have control over the id parameter,
-        #     #       we can't use the same parameters as for the method to get many records. So, we choose to use the
-        #     #       default parameters for the method to get many records.
-        #     #       Except for the `gqlFilter` parameter, which is used for efficient querying.
-        #     get_records = wrapped_partial(self.get_samples, gqlFilter=json.dumps({'id': str(sample_id)}))
-
-        #     output_sample = get_record(
-        #         get_records=get_records,
-        #         record_id=sample_id,
-        #     )
-
-        #     if output_sample is None:
-        #         raise RecordNotFoundError(f'Sample {sample_id} not found.') from _exc
-
-        # return output_sample
 
     # NOTE: The Example below is not documented in the BUILD API documentation, so be careful not to remove it.
     def get_samples(
