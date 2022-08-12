@@ -1,6 +1,6 @@
 # TeselaGen Python API Client
 
-The _TeselaGen Python API Client_ runs on Python 3.
+The _TeselaGen Python API Client_ runs on Python **3.9+**
 
 **NOTE :** All the following commands are supposed to be run on the _base_ directory, unless specified.
 

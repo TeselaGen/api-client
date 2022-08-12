@@ -330,6 +330,31 @@ class TestBUILDClient:
         assert_records(records=response)
         assert len(response) <= int(pageSize)
 
+    def test_get_aliquots_with_details(
+        self,
+        logged_build_client: BUILDClient,
+        #pageNumber: str,  # noqa: N803
+        #pageSize: str,
+        #sort: str,
+        #gqlFilter: str,
+    ) -> None:
+        """Custom query params."""
+        client = logged_build_client
+        pageSize = 1
+
+        response = client.get_aliquots(
+            pageNumber=1,
+            pageSize=pageSize,
+            #sort=sort,
+            #gqlFilter="",
+            format="expanded",
+        )
+        # TODO: Add ASSERTION FOR SPECIAL DATA
+        assert_records(records=response)
+        assert len(response) <= pageSize
+        assert "aliquotContainer" in response[0]
+        assert "replicateAliquots" in response[0]
+
     def test_get_aliquot_by_id(
         self,
         aliquots: List[AliquotRecord],
