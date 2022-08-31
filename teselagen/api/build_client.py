@@ -230,6 +230,9 @@ class BUILDClient:
 
             sort (str): field to sort on, default is id. Default: `"-updatedAt"`.
 
+            format (GetAliquotsFormatType): Use "expanded" to get full detail, as
+                in `get_aliquot`. Default: "minimal"
+
             gqlFilter (str): A `graphql` filter to apply to the data. Example:
 
         ```GraphQL
