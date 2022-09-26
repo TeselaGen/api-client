@@ -231,7 +231,7 @@ class TESTClient:
         self.get_assay_subject_url: str = join(api_url_base, 'assay-subjects') + '/{}'
         self.create_assay_subjects_url: str = f'{api_url_base}/assay-subjects'
         self.delete_assay_subject_url: str = join(api_url_base, 'assay-subjects') + '/{}'
-        self.put_assay_subject_descriptors_url: str = f'{api_url_base}/assay-subjects/descriptors'
+        self.post_assay_subject_descriptors_url: str = f'{api_url_base}/assay-subjects/descriptors'
         # Two endpoints for posting and getting an import job (specially useful for long running imports)
         self.post_assay_subjects_descriptors_import_url: str = f'{api_url_base}/assay-subjects/imports'
         self.get_assay_subjects_descriptors_import_url: str = join(api_url_base, 'assay-subjects/imports') + '/{}'
@@ -412,8 +412,8 @@ class TESTClient:
             'createSubjectsFromFile': createSubjectsFromFile,
         }
 
-        response = put(
-            url=self.put_assay_subject_descriptors_url,
+        response = post(
+            url=self.post_assay_subject_descriptors_url,
             headers=self.headers,
             json=body,
         )
