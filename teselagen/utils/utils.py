@@ -57,6 +57,12 @@ class ParsedJSONResponse(TypedDict, total=True):  # noqa: H601
     content: Optional[str]
 
 
+class Session(TypedDict, total=True):  # noqa: H601
+    """Parsed JSON response."""
+    host_url: str
+    token: str
+
+
 # https://docs.python.org/3/library/functools.html#functools.singledispatch
 
 
@@ -238,6 +244,11 @@ def get_credentials_path() -> Path:
     return get_project_root() / '.credentials'
 
 
+def get_session_path() -> Path:
+    """Returns path to where credentials file should be."""
+    return get_project_root() / '.session'
+
+
 def get_test_configuration_path() -> Path:
     """Returns path to where test configuration file should be."""
     return get_project_root() / '.test_configuration'
@@ -280,6 +291,37 @@ def get_credentials(
 
     # End
     return username, password
+
+
+def load_session_file(session_filepath: Optional[str] = None) -> Session:
+
+    if session_filepath is None:
+        session_filepath = str(get_session_path())
+
+    if not Path(session_filepath).is_file():
+        return None
+
+    session: Session = load_from_json(filepath=Path(session_filepath))
+
+    return session
+
+
+def save_session_file(session_dict: Session, session_filepath: Optional[str] = None) -> None:
+
+    if session_filepath is None:
+        session_filepath = str(get_session_path())
+
+    with open(session_filepath, 'w') as f:
+        json.dump(session_dict, f)
+
+
+def delete_session_file(session_filepath: Optional[str] = None) -> None:
+
+    if session_filepath is None:
+        session_filepath = str(get_session_path())
+
+    if Path(session_filepath).is_file():
+        Path(session_filepath).unlink()
 
 
 def load_credentials_from_file(path_to_credentials_file: str = None) -> Tuple[Optional[str], Optional[str]]:
