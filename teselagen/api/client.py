@@ -116,6 +116,17 @@ class TeselaGenClient:
         if session is not None:
             if session['host_url'] == self.host_url:
                 self.update_token(token=session['token'], save_to_storage=False)
+                #TODO: Check permissions are ok
+                api_info = self.get_api_info()
+                if 'unauthorized' in api_info.lower():
+                    # We locally delete the last token.
+                    self.update_token(token=None)
+                    # Removed any stored session token
+                    delete_session_file()
+                else:
+                    print(f'Session active at {self.host_url}')
+                    return
+        print("Client ready. Please login")
 
     # The next four properties are TG Module Classes providing a series of functions that interact with their
     # corresponding TG API endpoints.

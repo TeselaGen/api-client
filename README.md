@@ -16,6 +16,33 @@ To install it locally,
     pip3 install teselagen
     ```
 
+##  Use and login
+
+Import the `teselagen` library:
+```
+from teselagen.api import TeselaGenClient
+```
+
+Create an instance of the client:
+
+```
+client = TeselaGenClient(host_url="https://<INSTANCE NAME>.teselagen.com/")
+```
+
+Then, login by using your user email and One Time Password (OTP). You can get one from `Settings`-> `API Password` 
+within the application. Alternatively ,you can use your application password.
+
+```
+client.login(username="my@email.com", password="<OTP OR PASSWORD>")
+```
+
+Once you have logged in, you don't need to do it everytime. By default login token lasts for 1 day, but you can
+change the duration by specifying an expiration time:
+
+```
+client.login(username="my@email.com", password="<OTP OR PASSWORD>", expiration_time="1w")
+```
+
 ## Examples
 
 To be able to run the `examples`, you need to (after installing the library)
