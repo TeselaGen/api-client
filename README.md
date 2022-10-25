@@ -8,44 +8,43 @@ The _TeselaGen Python API Client_ runs on Python **3.9+**
 
 This library contains the TeselaGen Python API Client.
 
-To install it locally,
+To install it locally with pip:
 
-1. Install it with pip
-
-    ```bash
-    pip3 install teselagen
-    ```
+```bash
+pip3 install teselagen
+```
 
 ##  Use and login
 
 Import the `teselagen` library:
-```
+```python
 from teselagen.api import TeselaGenClient
 ```
 
 Create an instance of the client:
 
-```
+```python
 client = TeselaGenClient(host_url="https://<INSTANCE NAME>.teselagen.com/")
 ```
 
 Then, login by using your user email and One Time Password (OTP). You can get one from `Settings`-> `API Password` 
 within the application. Alternatively ,you can use your application password.
 
-```
+```python
 client.login(username="my@email.com", password="<OTP OR PASSWORD>")
 ```
 
-Once you have logged in, you don't need to do it everytime. By default login token lasts for 1 day, but you can
-change the duration by specifying an expiration time:
+Once you have logged in, you don't need to do it everytime. By default login token lasts for 1 week, but you can
+change the duration on creation by specifying an expiration time:
 
-```
-client.login(username="my@email.com", password="<OTP OR PASSWORD>", expiration_time="1w")
+```python
+client.login(username="my@email.com", password="<OTP OR PASSWORD>", expiration_time="1d")
 ```
 
 ## Examples
 
-To be able to run the `examples`, you need to (after installing the library)
+Check out the [provided examples](https://github.com/TeselaGen/api-client/tree/master/teselagen/examples). To be able
+to run them:
 
 1. Clone or download `teselagen/examples`
 

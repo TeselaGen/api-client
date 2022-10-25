@@ -188,7 +188,7 @@ class TeselaGenClient:
         username: Optional[str] = None,
         password: Optional[str] = None,
         apiKey: Optional[str] = None,  # noqa: N803
-        expiration_time: str = '1d',
+        expiration_time: str = '1w',
     ) -> None:
         """Login to the CLI with the username used to login through the UI.
 
@@ -198,10 +198,10 @@ class TeselaGenClient:
             username (Optional[str]) : A valid username (usually their email) to authenticate. If not provided, it \
                 will be prompted. Default : None
 
-            password (Optional[str]) : A password for the user. If not provided it will be prompted. Default: None
+            password (Optional[str]) : A password or One Time Passwrod (OTP). If not provided it will be prompted. \
+                Default: None
 
-            apiKey (Optional[str]) : An exclusive API password obtained from the TeselaGen Browser Application \
-                Settings. It has 1 day expiration. Default: None
+            apiKey (Optional[str]) : This will be deprecated. Use `password` instead. Default: None
 
             expiration_time (Optional[str]) : Expiration time for the authentication (token), in zeit/ms format. \
                 Default = "1d"
