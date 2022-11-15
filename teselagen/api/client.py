@@ -16,11 +16,15 @@ from teselagen.api.discover_client import DISCOVERClient
 from teselagen.api.test_client import TESTClient
 from teselagen.utils import DEFAULT_API_TOKEN_NAME
 from teselagen.utils import DEFAULT_HOST_URL
+from teselagen.utils import delete_session_file
 from teselagen.utils import get
 from teselagen.utils import get_credentials
+from teselagen.utils import load_session_file
 from teselagen.utils import post
 from teselagen.utils import put
+from teselagen.utils import save_session_file
 from teselagen.utils.utils import ParsedJSONResponse
+from teselagen.utils.utils import Session
 
 if TYPE_CHECKING:
     from typing import Dict, List, Literal, Optional, TypedDict
@@ -107,6 +111,23 @@ class TeselaGenClient:
             'Content-Type': 'application/json',
         }
 
+        # Load token from file if exists
+        session = load_session_file()
+        if session is not None:
+            if session['host_url'] == self.host_url:
+                self.update_token(token=session['token'], save_to_storage=False)
+                #TODO: Check permissions are ok
+                api_info = self.get_api_info()
+                if 'unauthorized' in api_info.lower():
+                    # We locally delete the last token.
+                    self.update_token(token=None)
+                    # Removed any stored session token
+                    delete_session_file()
+                else:
+                    print(f'Session active at {self.host_url}')
+                    return
+        print("Client ready. Please login")
+
     # The next four properties are TG Module Classes providing a series of functions that interact with their
     # corresponding TG API endpoints.
     # These objects are instantiated with the TeselaGen Client object so they share all common functions (such as:
@@ -167,7 +188,7 @@ class TeselaGenClient:
         username: Optional[str] = None,
         password: Optional[str] = None,
         apiKey: Optional[str] = None,  # noqa: N803
-        expiration_time: str = '1d',
+        expiration_time: str = '1w',
     ) -> None:
         """Login to the CLI with the username used to login through the UI.
 
@@ -177,15 +198,16 @@ class TeselaGenClient:
             username (Optional[str]) : A valid username (usually their email) to authenticate. If not provided, it \
                 will be prompted. Default : None
 
-            password (Optional[str]) : A password for the user. If not provided it will be prompted. Default: None
+            password (Optional[str]) : A password or One Time Passwrod (OTP). If not provided it will be prompted. \
+                Default: None
 
-            apiKey (Optional[str]) : An exclusive API password obtained from the TeselaGen Browser Application \
-                Settings. It has 1 day expiration. Default: None
+            apiKey (Optional[str]) : This will be deprecated. Use `password` instead. Default: None
 
             expiration_time (Optional[str]) : Expiration time for the authentication (token), in zeit/ms format. \
                 Default = "1d"
         """
         # NOTE: the apiKey is obtained as an alternative password with 1 day expiration.
+
         _password = apiKey if apiKey is not None else password
         username, password = get_credentials(
             username=username,
@@ -233,6 +255,9 @@ class TeselaGenClient:
         )
 
         del username, password
+
+        # Removed any stored session token
+        delete_session_file()
 
         # We wait (a few seconds) for the (temporary) token to expire
         time.sleep(3)
@@ -307,10 +332,7 @@ class TeselaGenClient:
         return token
 
     # TODO: Rename this to update_class_token() or update_auth_token()
-    def update_token(
-        self,
-        token: Optional[str],
-    ) -> None:
+    def update_token(self, token: Optional[str], save_to_storage=True) -> None:
         """Update the authorization token in the class headers and class attributes.
 
         Args:
@@ -322,6 +344,8 @@ class TeselaGenClient:
         if self.auth_token is not None:
             # If a new token is provided, we update the headers
             self.headers[self.api_token_name] = self.auth_token
+            if save_to_storage:
+                save_session_file(session_dict={"host_url": self.host_url, "token": self.auth_token})
         else:
             # If the token provided is None, we remove the last token from the headers.
             _ = self.headers.pop(self.api_token_name) if self.api_token_name in self.headers.keys() else None

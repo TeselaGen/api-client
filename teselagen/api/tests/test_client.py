@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import patch
 from urllib.parse import urljoin
@@ -15,7 +16,9 @@ from teselagen.api import TeselaGenClient
 from teselagen.api.client import DEFAULT_API_TOKEN_NAME
 from teselagen.api.client import DEFAULT_HOST_URL
 from teselagen.api.client import get
+from teselagen.utils import delete_session_file
 from teselagen.utils import get_credentials_path
+from teselagen.utils import get_session_path
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Literal
@@ -197,7 +200,7 @@ class TestTeselaGenClient:
     def test_client_instantiation(
         self,
         client: TeselaGenClient,
-        module_name: str,
+        #module_name: str,
         test_configuration,
     ) -> None:
         assert client.auth_token is None
@@ -207,21 +210,22 @@ class TestTeselaGenClient:
     def test_get_server_status(
         self,
         client: TeselaGenClient,
-        module_name: str,
+        #module_name: str,
     ) -> None:
         # We verify that the server is operational.
         server_status: str = client.get_server_status()
-        expected_server_status: str = 'Teselagen CLI API is operational.'
+        expected_server_status: str = 'TeselaGen CLI API is operational.'
         assert server_status == expected_server_status
 
     @pytest.mark.parametrize('module_name', MODULES_TO_BE_TESTED)
     def test_get_api_info_deauthorized(
         self,
         client: TeselaGenClient,
-        module_name: str,
+        #module_name: str,
     ) -> None:
         # The client should only be instantiated but not authorized.
         # with pytest.raises(AssertionError, match=r".*unauthorized.*"):
+        delete_session_file()
         api_info = client.get_api_info()
         assert 'unauthorized' in api_info.lower()
 
@@ -229,7 +233,7 @@ class TestTeselaGenClient:
     def test_login(
         self,
         client: TeselaGenClient,
-        module_name: str,
+        #module_name: str,
         expiration_time: str,
         test_configuration,
     ) -> None:
@@ -256,12 +260,18 @@ class TestTeselaGenClient:
         current_user = client.get_current_user()
         assert isinstance(current_user['content']['username'], str)
 
+        # Check that session file was saved
+        assert Path(get_session_path()).is_file()
+
         # LOGOUT
         # We logout the user from the CLI.
         client.logout(
             # username=credentials['test_user'],
             # password=credentials['test_password']
         )
+
+        # Check session file no longer exist
+        assert not Path(get_session_path()).is_file()
 
         # We check the client is not authorized.
         api_info = client.get_api_info()

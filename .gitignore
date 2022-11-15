@@ -3,6 +3,7 @@ _*
 .test*
 *.credentials*
 *.test_configuration
+*.session
 
 *.pyi
 
