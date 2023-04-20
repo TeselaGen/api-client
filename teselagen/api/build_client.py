@@ -23,6 +23,7 @@ from teselagen.api.build_client_models import GetPlatesQueryParams
 from teselagen.api.build_client_models import GetSamplesQueryParams
 from teselagen.api.build_client_models import PlateLibraryRecord
 from teselagen.api.build_client_models import PlateRecord
+from teselagen.api.build_client_models import WorkflowRunRecord
 from teselagen.api.build_client_models import RecordNotFoundError
 from teselagen.api.build_client_models import SampleRecord
 from teselagen.utils import delete  # noqa: F401 # pylint: disable=unused-import
@@ -428,16 +429,15 @@ class BUILDClient:
 
         return output_plate
 
-    def get_plate_workflow_run(self, plate_id: str) -> WorkflowRuns:
+    def get_plate_workflow_run(self, plate_id: str) -> List[WorkflowRunRecord]:
         """This function returns workflow runs that output a certain plate based on plate id.
 
         Args:
             plate_id (PlateID): Get workflow runs that output a certain plate based on plate id.
 
         Returns:
-            WorkflowRuns: Workflow run records.
+            List[WorkflowRunRecord]: List of workflow run records.
         """
-        output_workflow_runs: WorkflowRuns | None = None
 
         url: str = self.plate_url.format(plate_id)
         response: ResponseDict = get(
@@ -445,6 +445,4 @@ class BUILDClient:
             headers=self.headers,
         )
         assert response['content'] is not None
-        output_workflow_runs = cast(WorkflowRuns, json.loads(response['content']))
-
-        return output_workflow_runs
+        return cast(List[WorkflowRunRecord], json.loads(response['content']))
