@@ -427,3 +427,24 @@ class BUILDClient:
         output_plate = cast(PlateRecord, json.loads(response['content']))
 
         return output_plate
+
+    def get_plate_workflow_run(self, plate_id: str) -> WorkflowRuns:
+        """This function returns workflow runs that output a certain plate based on plate id.
+
+        Args:
+            plate_id (PlateID): Get workflow runs that output a certain plate based on plate id.
+
+        Returns:
+            WorkflowRuns: Workflow run records.
+        """
+        output_workflow_runs: WorkflowRuns | None = None
+
+        url: str = self.plate_url.format(plate_id)
+        response: ResponseDict = get(
+            url=url,
+            headers=self.headers,
+        )
+        assert response['content'] is not None
+        output_workflow_runs = cast(WorkflowRuns, json.loads(response['content']))
+
+        return output_workflow_runs
