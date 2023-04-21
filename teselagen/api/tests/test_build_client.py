@@ -448,3 +448,17 @@ class TestBUILDClient:
 
         response = client.get_plate(plate_id=plate_id)
         assert_record(record=response)
+
+    def test_get_plate_workflow_runs(
+        self,
+        logged_build_client: BUILDClient,
+    ) -> None:
+        """Test getting workflow runs that output a certain plate based on plate id"""
+        client = logged_build_client
+
+        # First get an ID to be queried
+        response_plates = client.get_plates()
+        plate_id = response_plates[0]['id']
+
+        response = client.get_plate_workflow_run(plate_id=plate_id)
+        assert_record(record=response)

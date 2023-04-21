@@ -196,3 +196,9 @@ class PlateRecord(TypedDict, total=True):  # noqa: H601
     barcode: Optional[Any]
     user: UserRecord
     aliquotContainers: List[AliquotContainer]
+
+class WorkflowRunRecord(TypedDict, total=True):  # noqa: H601
+    """Workflow runs on get_plate_workflow_run `TypedDict`."""
+    id: str
+    name: str
+    workflowDefinition: Optional[Any]

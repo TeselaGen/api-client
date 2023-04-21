@@ -294,6 +294,7 @@ class TestTESTClient:
         self,
         logged_client: TeselaGenClient,
         select_laboratory,
+        experiment
     ) -> None:
         client: TESTClient = logged_client.test
         response = client.get_experiments()

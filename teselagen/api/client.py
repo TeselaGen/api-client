@@ -321,7 +321,11 @@ class TeselaGenClient:
 
         del username, password, body
 
-        response['content'] = json.loads(response['content'])
+        try:
+            response['content'] = json.loads(response['content'])
+        except Exception as e:
+            print(f"Response is not ok. Response: {response}")
+            raise e
 
         # TODO: We could log the expiration Date
         # expiration_date: str = content['expirationDate']
