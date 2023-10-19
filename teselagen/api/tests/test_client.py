@@ -27,7 +27,6 @@ if TYPE_CHECKING:
 MODULES_TO_BE_TESTED: List[Literal['design', 'build', 'test', 'evolve']] = [
     'design',
     'build',
-    # 'test',
     'evolve',  # NOTE: 'evolve' module is now called 'discovery', but the API path is still 'evolve'
 ]
 

@@ -1357,7 +1357,6 @@ class TESTClient:
             raise Exception("Please provide a valid 'experiment_id'.")
 
         assays = self.get_assays()
-        print(assays)
         assay = list(
             filter(lambda x: x['name'] == assay_name and x['experiment'] and x['experiment']['id'] == experiment_id,
                    assays))

@@ -101,7 +101,7 @@ class TeselaGenClient:
 
         # Laboratories
         # self.labs_url: str = '{self.host_url}/test/cli-api/laboratories'
-        self.labs_url: str = urljoin(self.host_url, 'design/cli-api/laboratories')
+        self.labs_url: str = urljoin(self.host_url, f'{_module_name}/cli-api/laboratories')
 
         # NOTE : The authorization token will be updated with the "login" method.
         self.auth_token: Optional[str] = None
