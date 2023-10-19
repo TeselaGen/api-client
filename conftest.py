@@ -340,7 +340,7 @@ def pytest_sessionfinish(
     References:
         https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_sessionfinish
     """
-    # clean_test_module_used_for_testing()
+    clean_test_module_used_for_testing()
 
     print()  # noqa: T001
     print('run status code:', exitstatus)  # noqa: T001
