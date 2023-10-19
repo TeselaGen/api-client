@@ -101,7 +101,7 @@ class TeselaGenClient:
 
         # Laboratories
         # self.labs_url: str = '{self.host_url}/test/cli-api/laboratories'
-        self.labs_url: str = urljoin(self.host_url, 'test/cli-api/laboratories')
+        self.labs_url: str = urljoin(self.host_url, f'{_module_name}/cli-api/laboratories')
 
         # NOTE : The authorization token will be updated with the "login" method.
         self.auth_token: Optional[str] = None
@@ -111,21 +111,6 @@ class TeselaGenClient:
             'Content-Type': 'application/json',
         }
 
-        # Load token from file if exists
-        session = load_session_file()
-        if session is not None:
-            if session['host_url'] == self.host_url:
-                self.update_token(token=session['token'], save_to_storage=False)
-                #TODO: Check permissions are ok
-                api_info = self.get_api_info()
-                if 'unauthorized' in api_info.lower():
-                    # We locally delete the last token.
-                    self.update_token(token=None)
-                    # Removed any stored session token
-                    delete_session_file()
-                else:
-                    print(f'Session active at {self.host_url}')
-                    return
         print("Client ready. Please login")
 
     # The next four properties are TG Module Classes providing a series of functions that interact with their
@@ -208,6 +193,11 @@ class TeselaGenClient:
         """
         # NOTE: the apiKey is obtained as an alternative password with 1 day expiration.
 
+        # We first attempt to restore token
+        # from session
+        if self.login_from_stored_session():
+            return None
+
         _password = apiKey if apiKey is not None else password
         username, password = get_credentials(
             username=username,
@@ -224,6 +214,24 @@ class TeselaGenClient:
         # It will update the auth token and headers.
         self.update_token(token=auth_token)
         return None
+
+    def login_from_stored_session(self) -> bool:
+        # Load token from file if exists
+        session = load_session_file()
+        if session is not None:
+            if session['host_url'] == self.host_url:
+                self.update_token(token=session['token'], save_to_storage=False)
+                #TODO: Check permissions are ok
+                api_info = self.get_api_info()
+                if 'unauthorized' in api_info.lower():
+                    # We locally delete the last token.
+                    self.update_token(token=None)
+                    # Removed any stored session token
+                    delete_session_file()
+                else:
+                    print(f'Session active at {self.host_url}')
+                    return True
+        return False
 
     def logout(
         self,
@@ -315,7 +323,7 @@ class TeselaGenClient:
             )
         except Exception as _exc:  # noqa: F841
             # TODO : Use a logger
-            print('Connection Refused')
+            print(f'Connection Refused at {self.auth_url} with username: {username}')
             return None
         print(f'Connection Accepted at {self.host_url}')
 

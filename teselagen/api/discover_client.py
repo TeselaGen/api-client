@@ -107,10 +107,10 @@ class DISCOVERClient():
         """
         if content_dict['message'] != 'Submission success.':
             message = content_dict['message']
-            raise OSError(f'A problem occurred with query: {message}')
+            raise IOError(f'A problem occurred with query: {message}')
 
         if 'data' not in content_dict:
-            raise OSError(f"Can`t found 'data' key in response: {content_dict}")
+            raise IOError(f"Can`t found 'data' key in response: {content_dict}")
 
         return content_dict['data']
 

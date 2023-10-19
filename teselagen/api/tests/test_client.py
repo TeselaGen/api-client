@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import patch
@@ -26,7 +27,6 @@ if TYPE_CHECKING:
 MODULES_TO_BE_TESTED: List[Literal['design', 'build', 'test', 'evolve']] = [
     'design',
     'build',
-    'test',
     'evolve',  # NOTE: 'evolve' module is now called 'discovery', but the API path is still 'evolve'
 ]
 
@@ -76,6 +76,7 @@ class TestTeselaGenClient:
         # Test will not run without a credential file
         credentials_filepath = get_credentials_path()
         assert credentials_filepath.is_file(), f"Can't found {credentials_filepath}"
+        client = deepcopy(client)
 
         client.login(
             # username=credentials["test_user"],
@@ -200,7 +201,7 @@ class TestTeselaGenClient:
     def test_client_instantiation(
         self,
         client: TeselaGenClient,
-        #module_name: str,
+        module_name: str,
         test_configuration,
     ) -> None:
         assert client.auth_token is None

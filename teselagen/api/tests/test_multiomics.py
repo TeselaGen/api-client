@@ -46,7 +46,6 @@ def client_with_lab(
     client = TeselaGenClient(
         api_token_name=api_token_name,
         host_url=host_url,
-        module_name='test',
     )
     client.login(expiration_time=expiration_time)
     client.select_laboratory(lab_name='The Test Lab')
