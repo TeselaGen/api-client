@@ -214,7 +214,7 @@ class TESTClient:
         Args:
             teselagen_client (TeselaGenClient): A TeselaGenClient instance.
         """
-        module_name: Literal['test'] = 'test'
+        module_name: Literal['test'] = 'build'
 
         self.host_url = teselagen_client.host_url
         self.headers = teselagen_client.headers
@@ -1357,7 +1357,10 @@ class TESTClient:
             raise Exception("Please provide a valid 'experiment_id'.")
 
         assays = self.get_assays()
-        assay = list(filter(lambda x: x['name'] == assay_name and x['experiment']['id'] == experiment_id, assays))
+        print(assays)
+        assay = list(
+            filter(lambda x: x['name'] == assay_name and x['experiment'] and x['experiment']['id'] == experiment_id,
+                   assays))
         assay_id = assay[0]['id'] if len(assay) > 0 else self.create_assay(
             experiment_id=experiment_id,
             assay_name=assay_name,

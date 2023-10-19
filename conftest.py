@@ -135,7 +135,6 @@ def get_client(
     return TeselaGenClient(
         api_token_name=api_token_name,
         host_url=host_url,
-        module_name='test',
     )
 
 
@@ -211,6 +210,7 @@ def logged_client(
 
 def clean_test_module_used_for_testing() -> None:
     """Cleanup files and assays."""
+    print("Starting clean_test_module_used_for_testing")
     _test_configuration: dict[str, str] = get_test_configuration()
     client: TeselaGenClient = get_logged_client(client=get_client(
         host_url=get_host_url(_test_configuration),
@@ -263,7 +263,7 @@ def clean_test_module_used_for_testing() -> None:
     assays: Assays = client.test.get_assays()
 
     assay_names_to_remove: Set[str] = {
-        'Wild Type External Metabolites',
+        'Wild Type External Metabolites', 'Wild Type Optical Density', 'Wild Type Transcriptomics'
     }
 
     if assays is not None and len(assays) > 0:
@@ -292,7 +292,8 @@ def clean_test_module_used_for_testing() -> None:
     # MODELS
     # NOTE: Do not remove `Teselagen Example Evolutive Model` evolutive model.
     model_type: str = 'predictive'
-    models = client.discover.get_models_by_type(model_type=model_type)
+    models = None
+    # models = client.discover.get_models_by_type(model_type=model_type) #TODO: Something is wrong at the API
 
     if models is not None and len(models) > 0:
         # map model ids to model names, to show their names if needed when removing them by id
@@ -321,6 +322,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
         https://pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_sessionstart
     """
     clean_test_module_used_for_testing()
+    pass
 
 
 def pytest_sessionfinish(
@@ -338,7 +340,7 @@ def pytest_sessionfinish(
     References:
         https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_sessionfinish
     """
-    clean_test_module_used_for_testing()
+    # clean_test_module_used_for_testing()
 
     print()  # noqa: T001
     print('run status code:', exitstatus)  # noqa: T001

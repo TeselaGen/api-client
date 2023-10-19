@@ -64,10 +64,10 @@ class DESIGNClient:
 
         # GET
         # /export/sequence/{format}/{sequenceId}
-        self.export_dna_sequence_url: str = f'{api_url_base}/export/sequence/'
+        self.export_dna_sequence_url: str = f'{api_url_base}/sequence/'
         # GET
         # /export/sequences/{format}/
-        self.export_dna_sequences_url: str = f'{api_url_base}/export/sequences/json'
+        self.export_dna_sequences_url: str = f'{api_url_base}/sequences/'
         # GET
         # /export/aminoacids/{format}/{sequenceId}
         # self.export_aminoacid_sequence_url: str = f'{api_url_base}/export/aminoacids'

@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     # _DecoratorFactoryType = Callable[[_DecoratorType], _DecoratorType]  # noqa: E800
 
 # CONSTANTS
-DEFAULT_HOST_URL: Literal['https://platform.teselagen.com'] = 'https://platform.teselagen.com'
+DEFAULT_HOST_URL: Literal['https://rc.teselagen.com'] = 'https://rc.teselagen.com'
 DEFAULT_API_TOKEN_NAME: Literal['x-tg-cli-token'] = 'x-tg-cli-token'
 
 DEFAULT_MAX_DATAPOINTS: int = 100
@@ -375,7 +375,10 @@ def handler(func: F) -> F:
                 raise Exception(f"{response.reason}: {resp['error']}")
 
             elif response.status_code == 401:
-                raise Exception(f'URL : {url} access is unauthorized.')
+                raise Exception(f'URL : {url} access is unauthorized for  {kwargs}.')
+
+            elif response.status_code == 403:
+                raise Exception(f'URL : {url} access is unauthorized for  {kwargs}.')
 
             elif response.status_code == 404:
                 raise Exception(f'URL : {url} cannot be found.')
