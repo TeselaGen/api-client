@@ -14,11 +14,13 @@ from teselagen.api.build_client import BUILDClient
 from teselagen.api.design_client import DESIGNClient
 from teselagen.api.discover_client import DISCOVERClient
 from teselagen.api.test_client import TESTClient
+
+# from teselagen.utils import DEFAULT_HOST_URL
 from teselagen.utils import DEFAULT_API_TOKEN_NAME
-from teselagen.utils import DEFAULT_HOST_URL
 from teselagen.utils import delete_session_file
 from teselagen.utils import get
 from teselagen.utils import get_credentials
+from teselagen.utils import get_default_host_url
 from teselagen.utils import load_session_file
 from teselagen.utils import post
 from teselagen.utils import put
@@ -59,7 +61,7 @@ class TeselaGenClient:
 
     def __init__(
         self,
-        host_url: str = DEFAULT_HOST_URL,
+        host_url: Optional[str] = None,
         api_token_name: str = DEFAULT_API_TOKEN_NAME,
         module_name: Literal['design', 'build', 'test', 'discover'] = DEFAULT_MODULE_NAME,
     ) -> None:
@@ -73,6 +75,9 @@ class TeselaGenClient:
 
             api_token_name (str) : The name of the API token to use. Defaults to "x-tg-cli-token"
         """
+        if not host_url:
+            host_url = get_default_host_url()
+
         self._design: Optional[DESIGNClient] = None
         self._test: Optional[TESTClient] = None
         self._discover: Optional[DISCOVERClient] = None

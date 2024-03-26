@@ -12,10 +12,15 @@ import warnings
 import pytest
 
 from teselagen.api.client import TeselaGenClient
+from teselagen.utils import get_test_configuration
 from teselagen.utils import get_test_configuration_path
 from teselagen.utils import load_from_json
 
 TEST_API_TOKEN_EXPIRATION_TIME = '30m'
+
+import os
+
+os.environ["RUNNING_PYTEST"] = "True"
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union
@@ -55,63 +60,9 @@ if TYPE_CHECKING:
     Files = Union[List[File], List[Dict[str, Any]]]
     Assays = Union[List[Assay], List[AssayWithExperiment], List[Dict[str, Any]]]
 
+# Change default
+
 # https://pypi.org/project/pytest-xdist/#making-session-scoped-fixtures-execute-only-once
-
-
-def get_test_configuration() -> dict[str, str]:
-    """Loads test configuration and updates with it the default conf.
-
-    Default configuration is defined here (see source code below) and it will look for CLI endpoints at a local port.
-
-    The configuration file should be a json file with name ".test_configuration" at the lib root folders.
-
-    Examples of configuration files:
-
-    ```json
-    {
-        "host_url": "http://host.docker.internal:3000",
-        "api_token_name": "x-tg-cli-token"
-    }
-    ```
-
-    ```json
-    {
-        "host_url": "http://platform.teselagen.com",
-        "api_token_name": "x-tg-cli-token"
-    }
-    ```
-
-    ```json
-    {
-        "host_url": "http://platform.teselagen.com",
-    }
-    ```
-    """
-    DEFAULT_CONFIGURATION: dict[str, str] = {
-        'host_url': 'http://host.docker.internal:3000',
-        'api_token_name': 'x-tg-cli-token',
-    }
-    DEFAULT_CONFIGURATION['host_url'] = DEFAULT_CONFIGURATION['host_url'].strip('/')
-
-    configuration = DEFAULT_CONFIGURATION.copy()
-
-    # Update if file is found
-    configuration_filepath = get_test_configuration_path()
-    if configuration_filepath.is_file():
-        # Load file
-        file_conf: dict = load_from_json(filepath=configuration_filepath.absolute())
-        assert isinstance(file_conf, dict), 'Configuration file should be a JSON file.'
-
-        # Check keys are ok
-        assert all(
-            key in configuration for key in file_conf), f'One or more of these keys are wrong: {file_conf.keys()}'
-
-        # Update values
-        configuration.update(file_conf)
-        if configuration['host_url'] != DEFAULT_CONFIGURATION['host_url']:
-            print(f"Host URL was set to: {configuration['host_url']}")
-
-    return configuration
 
 
 def get_host_url(_test_configuration: dict[str, str]) -> str:

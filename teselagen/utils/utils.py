@@ -14,7 +14,9 @@ import functools
 import getpass
 import json
 import math
+import os
 from pathlib import Path
+import sys
 from typing import Any, cast, Literal, TYPE_CHECKING, TypedDict, TypeVar
 
 import pandas as pd
@@ -586,3 +588,69 @@ def wait_for_status(
         return result
 
     return _wait_for_status(method=method, validate=validate, **method_kwargs)
+
+
+def get_test_configuration() -> dict[str, str]:
+    """Loads test configuration and updates with it the default conf.
+
+    Default configuration is defined here (see source code below) and it will look for CLI endpoints at a local port.
+
+    The configuration file should be a json file with name ".test_configuration" at the lib root folders.
+
+    Examples of configuration files:
+
+    ```json
+    {
+        "host_url": "http://host.docker.internal:3000",
+        "api_token_name": "x-tg-cli-token"
+    }
+    ```
+
+    ```json
+    {
+        "host_url": "http://platform.teselagen.com",
+        "api_token_name": "x-tg-cli-token"
+    }
+    ```
+
+    ```json
+    {
+        "host_url": "http://platform.teselagen.com",
+    }
+    ```
+    """
+    DEFAULT_CONFIGURATION: dict[str, str] = {
+        'host_url': 'http://host.docker.internal:3000',
+        'api_token_name': 'x-tg-cli-token',
+    }
+    DEFAULT_CONFIGURATION['host_url'] = DEFAULT_CONFIGURATION['host_url'].strip('/')
+
+    configuration = DEFAULT_CONFIGURATION.copy()
+
+    # Update if file is found
+    configuration_filepath = get_test_configuration_path()
+    if configuration_filepath.is_file():
+        # Load file
+        file_conf: dict = load_from_json(filepath=configuration_filepath.absolute())
+        assert isinstance(file_conf, dict), 'Configuration file should be a JSON file.'
+
+        # Check keys are ok
+        assert all(
+            key in configuration for key in file_conf), f'One or more of these keys are wrong: {file_conf.keys()}'
+
+        # Update values
+        configuration.update(file_conf)
+        if configuration['host_url'] != DEFAULT_CONFIGURATION['host_url']:
+            print(f"Host URL was set to: {configuration['host_url']}")
+
+    return configuration
+
+
+def get_default_host_url():
+    # If we are running a test we try to get host from test configuration (this is required for testing notebooks)
+
+    if "pytest" in sys.modules or os.environ.get("RUNNING_PYTEST", None) == "True":
+        test_conf = get_test_configuration()
+        return test_conf['host_url']
+
+    return DEFAULT_HOST_URL

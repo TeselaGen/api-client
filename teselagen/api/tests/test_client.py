@@ -15,7 +15,6 @@ import pytest
 
 from teselagen.api import TeselaGenClient
 from teselagen.api.client import DEFAULT_API_TOKEN_NAME
-from teselagen.api.client import DEFAULT_HOST_URL
 from teselagen.api.client import get
 from teselagen.utils import delete_session_file
 from teselagen.utils import get_credentials_path
@@ -108,7 +107,6 @@ class TestTeselaGenClient:
         assert all(hasattr(TeselaGenClient, attribute) for attribute in attributes)
 
         assert isinstance(DEFAULT_API_TOKEN_NAME, str)
-        assert isinstance(DEFAULT_HOST_URL, str)
 
     @pytest.mark.parametrize('module_name', MODULES_TO_BE_TESTED)
     def test_instance_attributes(
