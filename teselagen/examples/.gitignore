@@ -1,2 +1,6 @@
 *.csv
 */_*.*
+.*
+*.env
+example_data/
+*.json
