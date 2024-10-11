@@ -10,10 +10,11 @@ import logging
 from pathlib import Path
 from typing import Dict
 
-from teselagen.api.client import DEFAULT_HOST_URL
+
 from teselagen.utils import get_credentials_path
 from teselagen.utils import get_project_root
 from teselagen.utils import get_test_configuration_path
+from teselagen.utils import get_default_host_name
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +47,10 @@ if input("login credentials ? [yes|no] : ").lower() in ["y", "yes"]:
 if input("test configuration ? [yes|no] : ").lower() in ["y", "yes"]:
 
     # test configuration
-    host_url: str = input(f"host_url [default: {DEFAULT_HOST_URL}] : ")
+    default_host_name = get_default_host_name()
+    host_url: str = input(f"host_url [default: {default_host_name}] : ")
     configuration: Dict[str, str] = {
-        "host_url": host_url if host_url != "" else DEFAULT_HOST_URL,
+        "host_url": host_url if host_url != "" else default_host_name,
     }
 
     print(f"Saving test configuration to : {configuration_path.absolute()}")

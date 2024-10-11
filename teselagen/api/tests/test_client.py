@@ -15,11 +15,12 @@ import pytest
 
 from teselagen.api import TeselaGenClient
 from teselagen.api.client import DEFAULT_API_TOKEN_NAME
-from teselagen.api.client import DEFAULT_HOST_URL
+
 from teselagen.api.client import get
 from teselagen.utils import delete_session_file
 from teselagen.utils import get_credentials_path
 from teselagen.utils import get_session_path
+from teselagen.utils import get_default_host_name
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Literal
@@ -47,7 +48,6 @@ class TestTeselaGenClient:
     @pytest.fixture
     def client(
         self,
-        module_name: str,
         host_url: str,
         api_token_name: str,
     ) -> TeselaGenClient:
@@ -57,7 +57,6 @@ class TestTeselaGenClient:
             (TESTClient) : An instance of the TEST client.
         """
         return TeselaGenClient(
-            module_name=module_name,
             host_url=host_url,
             api_token_name=api_token_name,
         )
@@ -101,20 +100,15 @@ class TestTeselaGenClient:
             'unselect_laboratory',
         ]
 
-        # static_methods: List[str] = [""]
-        # attributes: List[str] = [*methods, *static_methods]
         attributes: List[str] = methods
 
         assert all(hasattr(TeselaGenClient, attribute) for attribute in attributes)
 
         assert isinstance(DEFAULT_API_TOKEN_NAME, str)
-        assert isinstance(DEFAULT_HOST_URL, str)
 
-    @pytest.mark.parametrize('module_name', MODULES_TO_BE_TESTED)
     def test_instance_attributes(
         self,
         client: TeselaGenClient,
-        module_name: str,
     ) -> None:
         attributes: List[str] = [
             'host_url',
@@ -137,45 +131,12 @@ class TestTeselaGenClient:
         assert 'Content-Type' in client.headers.keys()
         assert isinstance(client.headers['Content-Type'], str)
 
-    # # There's another login test below
-    # @pytest.mark.parametrize("module_name", MODULES_TO_BE_TESTED)
-    # def test_03_post_to_login_endpoint(
-    #     self,
-    #     module_name,
-    # ):
-    #     host_url: str = HOST_URL
-
-    #     api_url: str = f"{host_url}/{module_name}/login"
-    #     headers: Dict[str, str] = {
-    #         "Content-type": "application/json",
-    #     }
-    #     request: Dict[str, str] = {
-    #         "email": credentials["test_user"],
-    #         "password": credentials["test_password"],
-    #     }
-
-    #     response = post(url=api_url, headers=headers, json=request)
-    #     del request
-
-    #     assert isinstance(response, dict)
-
-    #     expected_keys: List[str] = ["content", "status", "url"]
-
-    #     assert all(expected_key in response.keys() for expected_key in expected_keys)
-    #     assert isinstance(response["status"], bool)
-    #     assert isinstance(response["url"], str)
-    #     assert isinstance(response["content"], str) or response["content"] is None
-
-    @pytest.mark.parametrize('module_name', MODULES_TO_BE_TESTED)
     def test_get(
         self,
-        module_name: str,
         host_url: str,
         headers: Dict[str, str],
     ) -> None:
-        base_url: str = host_url
-        path: str = f'/{module_name}/cli-api/public/status'
-        api_url: str = urljoin(base_url, path)  # Example: https://platform.teselagen.com/test/cli-api/public/status
+        api_url: str = urljoin(host_url, "tg-api/public/status")
 
         response = get(url=api_url, headers=headers)
 
@@ -197,32 +158,26 @@ class TestTeselaGenClient:
     def test_put(self) -> None:
         pass
 
-    @pytest.mark.parametrize('module_name', MODULES_TO_BE_TESTED)
     def test_client_instantiation(
         self,
         client: TeselaGenClient,
-        module_name: str,
         test_configuration,
     ) -> None:
         assert client.auth_token is None
         assert test_configuration['api_token_name'] not in client.headers.keys()
 
-    @pytest.mark.parametrize('module_name', MODULES_TO_BE_TESTED)
     def test_get_server_status(
         self,
         client: TeselaGenClient,
-        #module_name: str,
     ) -> None:
         # We verify that the server is operational.
         server_status: str = client.get_server_status()
-        expected_server_status: str = 'TeselaGen CLI API is operational.'
+        expected_server_status: str = 'TeselaGen API is operational.'
         assert server_status == expected_server_status
 
-    @pytest.mark.parametrize('module_name', MODULES_TO_BE_TESTED)
     def test_get_api_info_deauthorized(
         self,
         client: TeselaGenClient,
-        #module_name: str,
     ) -> None:
         # The client should only be instantiated but not authorized.
         # with pytest.raises(AssertionError, match=r".*unauthorized.*"):
@@ -230,11 +185,9 @@ class TestTeselaGenClient:
         api_info = client.get_api_info()
         assert 'unauthorized' in api_info.lower()
 
-    @pytest.mark.parametrize('module_name', MODULES_TO_BE_TESTED)
     def test_login(
         self,
         client: TeselaGenClient,
-        #module_name: str,
         expiration_time: str,
         test_configuration,
     ) -> None:
@@ -242,8 +195,6 @@ class TestTeselaGenClient:
         # LOGIN
         # We login the user with the CLI.
         client.login(
-            # username=credentials['test_user'],
-            # passwd=credentials['test_password'],
             expiration_time=expiration_time)
 
         # We verify the client is authorized.
@@ -267,8 +218,6 @@ class TestTeselaGenClient:
         # LOGOUT
         # We logout the user from the CLI.
         client.logout(
-            # username=credentials['test_user'],
-            # password=credentials['test_password']
         )
 
         # Check session file no longer exist
@@ -278,7 +227,6 @@ class TestTeselaGenClient:
         api_info = client.get_api_info()
         assert 'unauthorized' in api_info.lower()
 
-    @pytest.mark.parametrize('module_name', MODULES_TO_BE_TESTED)
     def test_get_laboratories(
         self,
         logged_client: TeselaGenClient,
@@ -292,7 +240,6 @@ class TestTeselaGenClient:
         assert all(isinstance(element, dict) for element in response)
         assert all(key in element.keys() for element in response for key in ['id', 'name'])
 
-    @pytest.mark.parametrize('module_name', [MODULES_TO_BE_TESTED[0]])
     def test_select_lab_by_name(
         self,
         logged_client: TeselaGenClient,

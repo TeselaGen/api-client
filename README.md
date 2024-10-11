@@ -14,9 +14,10 @@ To install it locally with pip:
 pip3 install teselagen
 ```
 
-##  Use and login
+## Use and login
 
 Import the `teselagen` library:
+
 ```python
 from teselagen.api import TeselaGenClient
 ```
@@ -27,7 +28,7 @@ Create an instance of the client:
 client = TeselaGenClient(host_url="https://<INSTANCE NAME>.teselagen.com/")
 ```
 
-Then, login by using your user email and One Time Password (OTP). You can get one from `Settings`-> `API Password` 
+Then, login by using your user email and One Time Password (OTP). You can get one from `Settings`-> `API Password`
 within the application. Alternatively ,you can use your application password.
 
 ```python
@@ -55,23 +56,22 @@ to run them:
 You can use the provided docker environment that contains a ready to use installation of all required packages to run
 the notebooks. Here are the instructions according to your OS
 
-### Linux/MacOS
-
-1. After clone/download, run the build script with `bash build.sh`
-
-1. Run the container with `bash run.sh`
-
-1. Open your browser and set the address: `http://localhost:8888`. From there you can explore all example notebooks
-
 ## Development (Linux/MacOS)
 
-### Docker environment
+### Poetry virtual environment
+
+For development you can just use the virtual environment created by poetry. To install the project within a virtual
+environment, use at the project's root folder:
+
+`poetry install`
+
+### Docker environment (OLD)
 
 1. Build the docker environment with command `bash build.sh`
 
 1. Run the container as a developer with the command `bash run_dev.sh`.
-  With this command the `teselagen` library will be installed in
-  [editable](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs) mode.
+   With this command the `teselagen` library will be installed in
+   [editable](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs) mode.
 
 ### Dependencies
 
@@ -95,47 +95,47 @@ It is the equivalent to make an install after deleting the `lock` file.
 
 1. Add your credentials
 
-    To run the tests, you must create a `.credentials` file containing the test _username_ and _password_, in the
-    _root_ folder.
+   To run the tests, you must create a `.credentials` file containing the test _username_ and _password_, in the
+   _root_ folder.
 
-    The content of `.credentials` file should look similar to the following:
+   The content of `.credentials` file should look similar to the following:
 
-    ```JSON
-        {
-            "username" : "ReplaceWithYourUsername",
-            "password" : "ReplaceWithYourPassword"
-        }
-    ````
+   ```JSON
+       {
+           "username" : "ReplaceWithYourUsername",
+           "password" : "ReplaceWithYourPassword"
+       }
+   ```
 
-    - **NOTE**: It should be a valid `JSON`  file. `JSON with Comments` (`JSONC` ) format is not supported.
+   - **NOTE**: It should be a valid `JSON` file. `JSON with Comments` (`JSONC` ) format is not supported.
 
-    ```diff
-    - DO NOT COMMIT THIS FILE : .credentials
-    ```
+   ```diff
+   - DO NOT COMMIT THIS FILE : .credentials
+   ```
 
 1. Modify configuration
 
-    You may modify some test configuration parameters by creating a `.test_configuration` file.
-    This is a `JSON` formatted file, where you can edit the server name used for tests.
-    This file must be stored next to `.credentials` file. Here is an example
+   You may modify some test configuration parameters by creating a `.test_configuration` file.
+   This is a `JSON` formatted file, where you can edit the server name used for tests.
+   This file must be stored next to `.credentials` file. Here is an example
 
-    ```JSON
-    {
-      "host_url" : "https://platform.teselagen.com"
-    }
-    ```
+   ```JSON
+   {
+     "host_url" : "https://platform.teselagen.com"
+   }
+   ```
 
-    - **NOTE**: It should be a valid `JSON`  file. `JSON with Comments` (`JSONC` ) format is not supported.
+   - **NOTE**: It should be a valid `JSON` file. `JSON with Comments` (`JSONC` ) format is not supported.
 
 1. Run the tests
 
-    ```bash
-    cd /home && python3 setup.py test
-    ```
+   ```bash
+   cd /home && python3 setup.py test
+   ```
 
-    You may use the docker environment for testing. For that, first build the environment with `bash build.sh`.
-    Then just run the container with `bash run_dev.sh`.
-    Once inside (`docker exec -ti tgclient bash`), go to `home/` and you are ready to run the test command shown above.
+   You may use the docker environment for testing. For that, first build the environment with `bash build.sh`.
+   Then just run the container with `bash run_dev.sh`.
+   Once inside (`docker exec -ti tgclient bash`), go to `home/` and you are ready to run the test command shown above.
 
 ### Publishing
 

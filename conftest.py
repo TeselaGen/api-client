@@ -70,14 +70,14 @@ def get_test_configuration() -> dict[str, str]:
     ```json
     {
         "host_url": "http://host.docker.internal:3000",
-        "api_token_name": "x-tg-cli-token"
+        "api_token_name": "x-tg-api-token"
     }
     ```
 
     ```json
     {
         "host_url": "http://platform.teselagen.com",
-        "api_token_name": "x-tg-cli-token"
+        "api_token_name": "x-tg-api-token"
     }
     ```
 
@@ -89,7 +89,7 @@ def get_test_configuration() -> dict[str, str]:
     """
     DEFAULT_CONFIGURATION: dict[str, str] = {
         'host_url': 'http://host.docker.internal:3000',
-        'api_token_name': 'x-tg-cli-token',
+        'api_token_name': 'x-tg-api-token',
     }
     DEFAULT_CONFIGURATION['host_url'] = DEFAULT_CONFIGURATION['host_url'].strip('/')
 
