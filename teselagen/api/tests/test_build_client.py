@@ -383,7 +383,7 @@ class TestBUILDClient:
             ('2', '10', 'id', ''),
             # A basic GQL Filter (string) to filter by sample name: '{"name": "pA06046"}'
             # NOTE: names are not unique, so this could return multiple samples
-            ('1', '10', 'id', json.dumps({'name': 'pA06046'})),
+            ('1', '10', 'id', json.dumps({'name': 'Sample 00'})),
         ],
         ids=[
             'one_page_number',

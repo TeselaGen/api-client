@@ -126,7 +126,7 @@ class TestDESIGNClient:
         TEST_REPORT_ID = 1023
 
         # Create Mock
-        api_url_base = f'{logged_client.host_url}/design/cli-api'
+        api_url_base = f'{logged_client.host_url}/tg-api'
         url = f'{api_url_base}{logged_client.design.URL_GET_ASSEMBLY_REPORT}/{TEST_REPORT_ID}'
 
         requests_mock.get(url, content=b'estoesunarchivobinario')
@@ -264,7 +264,7 @@ class TestDESIGNClient:
         logged_client: TeselaGenClient,
     ):
         """Hits a mock CLI API endpoint, it tests that its correctly calling it with the expected mock response."""
-        api_url_base = f'{logged_client.host_url}/design/cli-api'
+        api_url_base = logged_client.api_url_base
         mock_url = f'{api_url_base}/mock/rbs-calculator/jobs'
 
         res = get(url=mock_url, headers=logged_client.headers)
@@ -286,7 +286,7 @@ class TestDESIGNClient:
         self,
         logged_client: TeselaGenClient,
     ):
-        api_url_base = f'{logged_client.host_url}/design/cli-api'
+        api_url_base = logged_client.api_url_base
         mock_url = f'{api_url_base}/mock/rbs-calculator/organisms'
 
         res = get(url=mock_url, headers=logged_client.headers)
@@ -303,7 +303,7 @@ class TestDESIGNClient:
         self,
         logged_client: TeselaGenClient,
     ):
-        api_url_base = f'{logged_client.host_url}/design/cli-api'
+        api_url_base = logged_client.api_url_base
         mock_url = f'{api_url_base}/mock/rbs-calculator/jobs/{JOB_ID_ONE}'
 
         res = get(url=mock_url, headers=logged_client.headers)
@@ -338,7 +338,7 @@ class TestDESIGNClient:
         self,
         logged_client: TeselaGenClient,
     ):
-        api_url_base = f'{logged_client.host_url}/design/cli-api'
+        api_url_base = logged_client.api_url_base
         mock_url = f'{api_url_base}/mock/rbs-calculator/submit'
         params = json.dumps({
             'algorithm': 'ReverseRBS',

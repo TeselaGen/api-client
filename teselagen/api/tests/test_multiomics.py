@@ -57,32 +57,32 @@ def client_with_lab(
     client.logout()
 
 
-@pytest.fixture(scope='module')
-def wild_type_experiment(client_with_lab: TeselaGenClient) -> typing.Generator[Dict[str, Any], None, None]:
-    """Creates an experiment for "Wild Type" data and destroys it when finished."""
-    # set-up
-    experiment_name = 'Test multiomics data for WT Strain'
-    experiment = client_with_lab.test.create_experiment(experiment_name=experiment_name)
+# @pytest.fixture(scope='module')
+# def wild_type_experiment(client_with_lab: TeselaGenClient) -> typing.Generator[Dict[str, Any], None, None]:
+#     """Creates an experiment for "Wild Type" data and destroys it when finished."""
+#     # set-up
+#     experiment_name = 'Test multiomics data for WT Strain'
+#     experiment = client_with_lab.test.create_experiment(experiment_name=experiment_name)
 
-    # yield
-    yield experiment
+#     # yield
+#     yield experiment
 
-    # tear-down
-    client_with_lab.test.delete_experiment(experiment['id'])
+#     # tear-down
+#     client_with_lab.test.delete_experiment(experiment['id'])
 
 
-@pytest.fixture(scope="module")
-def bio_engineered_experiment(client_with_lab: TeselaGenClient) -> typing.Generator[Dict[str, Any], None, None]:
-    """Creates an experiment for "Bio Engineered" data and destroys it when finished."""
-    # set-up
-    experiment_name = 'Test multiomics data for BE Strain'
-    experiment = client_with_lab.test.create_experiment(experiment_name=experiment_name)
+# @pytest.fixture(scope="module")
+# def bio_engineered_experiment(client_with_lab: TeselaGenClient) -> typing.Generator[Dict[str, Any], None, None]:
+#     """Creates an experiment for "Bio Engineered" data and destroys it when finished."""
+#     # set-up
+#     experiment_name = 'Test multiomics data for BE Strain'
+#     experiment = client_with_lab.test.create_experiment(experiment_name=experiment_name)
 
-    # yield
-    yield experiment
+#     # yield
+#     yield experiment
 
-    # tear-down
-    client_with_lab.test.delete_experiment(experiment['id'])
+#     # tear-down
+#     client_with_lab.test.delete_experiment(experiment['id'])
 
 
 @pytest.fixture(scope='module')
@@ -535,6 +535,7 @@ class TestTESTClientMultiomicsData:
             assert 'importId' in response
             assert 'message' in response
 
+    @pytest.mark.skip(reason="Experiments are currently disabled, we should implement this without them")
     def test_optical_density_upload(
         self,
         optical_density_upload,
@@ -549,6 +550,7 @@ class TestTESTClientMultiomicsData:
         ]
         assert len(filtered_assays) == 1, 'Expecting just one assay for this assertion'
 
+    @pytest.mark.skip(reason="Experiments are currently disabled, we should implement this without them")
     def test_upload_external_metabolites(
         self,
         upload_external_metabolites,
@@ -563,6 +565,7 @@ class TestTESTClientMultiomicsData:
         ]
         assert len(filtered_assays) == 1, 'Expecting just one assay for this assertion'
 
+    @pytest.mark.skip(reason="Experiments are currently disabled, we should implement this without them")
     def test_upload_transcriptomics(
         self,
         upload_transcriptomics,
@@ -577,6 +580,7 @@ class TestTESTClientMultiomicsData:
         ]
         assert len(filtered_assays) == 1, 'Expecting just one assay for this assertion'
 
+    @pytest.mark.skip(reason="Experiments are currently disabled, we should implement this without them")
     def test_download_data(
         self,
         upload_transcriptomics,
@@ -609,6 +613,7 @@ class TestTESTClientMultiomicsData:
     # @pytest.mark.skip(reason=("These endpoints are under maintenance on the platform. "
     #                           "This should be solved in the following updates. "
     #                           "Please, contact the TeselaGen team for more information. "))
+    @pytest.mark.skip(reason="Experiments are currently disabled, we should implement this without them")
     def test_download_file(
         self,
         optical_density_upload,

@@ -58,16 +58,16 @@ class DESIGNClient:
         self.host_url = teselagen_client.host_url
         self.headers = teselagen_client.headers
         # Here we define the Base CLI URL.
-        api_url_base: str = f'{self.host_url}/{module_name}/cli-api'
+        api_url_base: str = teselagen_client.api_url_base
 
         # EXPORT
 
         # GET
         # /export/sequence/{format}/{sequenceId}
-        self.export_dna_sequence_url: str = f'{api_url_base}/sequence/'
+        self.export_dna_sequence_url: str = f'{api_url_base}sequence/'
         # GET
         # /export/sequences/{format}/
-        self.export_dna_sequences_url: str = f'{api_url_base}/sequences/'
+        self.export_dna_sequences_url: str = f'{api_url_base}sequences/'
         # GET
         # /export/aminoacids/{format}/{sequenceId}
         # self.export_aminoacid_sequence_url: str = f'{api_url_base}/export/aminoacids'
@@ -83,36 +83,36 @@ class DESIGNClient:
 
         # GET
         # /designs/{id}
-        self.get_design_url: str = f'{api_url_base}/designs'
+        self.get_design_url: str = f'{api_url_base}designs'
         # DEL
         # /designs/{id}
         # self.delete_design_url: str = f'{api_url_base}/designs'
         # GET
         # /designs
-        self.get_designs_url: str = f'{api_url_base}/designs'
+        self.get_designs_url: str = f'{api_url_base}designs'
         # POST
         # /designs
-        self.post_designs_url: str = f'{api_url_base}/designs'
+        self.post_designs_url: str = f'{api_url_base}designs'
         # POST
         # /codon-optimization-jobs
-        self.post_codon_op: str = f'{api_url_base}/codon-optimization-jobs'
+        self.post_codon_op: str = f'{api_url_base}codon-optimization-jobs'
         # GET
         # /codon-optimization-jobs
-        self.get_codon_op_result: str = f'{api_url_base}/codon-optimization-jobs'
+        self.get_codon_op_result: str = f'{api_url_base}codon-optimization-jobs'
 
         # GET
         # /codon-optimization-jobs
-        self.get_assembly_report_url: str = f'{api_url_base}/assembly-report/export' + '/{}'
+        self.get_assembly_report_url: str = f'{api_url_base}assembly-report/export' + '/{}'
 
         # RBS Calculator API Tesealgen Integration endpoints
 
         # GET
         # /rbs-calculator/status
-        self.rbs_calculator_status_url: str = f'{api_url_base}/rbs-calculator/status'
+        self.rbs_calculator_status_url: str = f'{api_url_base}rbs-calculator/status'
 
         # POST
         # /rbs-calculator/submit
-        self.rbs_calculator_submit_url: str = f'{api_url_base}/rbs-calculator/submit'
+        self.rbs_calculator_submit_url: str = f'{api_url_base}rbs-calculator/submit'
 
         # GET
         # /rbs-calculator/jobs/
@@ -124,11 +124,11 @@ class DESIGNClient:
 
         # GET
         # /rbs-calculator/organisms
-        self.rbs_calculator_organisms_url: str = f'{api_url_base}/rbs-calculator/organisms'
+        self.rbs_calculator_organisms_url: str = f'{api_url_base}rbs-calculator/organisms'
 
         # POST
         # /import/aminoacids
-        self.import_aa_url: str = f'{api_url_base}/import/aminoacids'
+        self.import_aa_url: str = f'{api_url_base}import/aminoacids'
 
         # GET
         # /export/aminoacids/:format/:sequenceId

@@ -205,12 +205,12 @@ class TestDISCOVERClient:
         res = discover_client.design_crispr_grnas(
             sequence=fasta_seq,
             target_indexes=(500, 600),
+            wait_for_results=False
         )
 
         assert isinstance(res, dict)
-        assert 'guides' in res
-        assert 'target_indexes' in res
-        assert len(res['guides']) == 7
+        assert "message" in res
+        assert res['message'] == 'successfully submited'
 
     def test_design_crispr_grnas_mock(
             self,

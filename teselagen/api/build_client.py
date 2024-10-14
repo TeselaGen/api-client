@@ -168,7 +168,7 @@ class BUILDClient:
         self.headers = teselagen_client.headers
 
         # Here we define the Base CLI URL.
-        api_url_base: str = f'{self.host_url}/{module_name}/cli-api'
+        api_url_base: str = teselagen_client.api_url_base
 
         # Here we define the client endpoints
         # Example :

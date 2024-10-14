@@ -12,7 +12,7 @@ import warnings
 import pytest
 
 from teselagen.api.client import TeselaGenClient
-from teselagen.utils import get_test_configuration_path
+from teselagen.utils import get_test_configuration_path, get_default_host_name
 from teselagen.utils import load_from_json
 
 TEST_API_TOKEN_EXPIRATION_TIME = '30m'
@@ -70,14 +70,14 @@ def get_test_configuration() -> dict[str, str]:
     ```json
     {
         "host_url": "http://host.docker.internal:3000",
-        "api_token_name": "x-tg-cli-token"
+        "api_token_name": "x-tg-api-token"
     }
     ```
 
     ```json
     {
         "host_url": "http://platform.teselagen.com",
-        "api_token_name": "x-tg-cli-token"
+        "api_token_name": "x-tg-api-token"
     }
     ```
 
@@ -88,8 +88,8 @@ def get_test_configuration() -> dict[str, str]:
     ```
     """
     DEFAULT_CONFIGURATION: dict[str, str] = {
-        'host_url': 'http://host.docker.internal:3000',
-        'api_token_name': 'x-tg-cli-token',
+        'host_url': get_default_host_name(),
+        'api_token_name': 'x-tg-api-token',
     }
     DEFAULT_CONFIGURATION['host_url'] = DEFAULT_CONFIGURATION['host_url'].strip('/')
 
@@ -103,8 +103,8 @@ def get_test_configuration() -> dict[str, str]:
         assert isinstance(file_conf, dict), 'Configuration file should be a JSON file.'
 
         # Check keys are ok
-        assert all(
-            key in configuration for key in file_conf), f'One or more of these keys are wrong: {file_conf.keys()}'
+        for key in file_conf:
+            assert key in configuration, f'The key {key} should not be in the test configuration file.'
 
         # Update values
         configuration.update(file_conf)
@@ -218,6 +218,7 @@ def clean_test_module_used_for_testing() -> None:
                                                 expiration_time=TEST_API_TOKEN_EXPIRATION_TIME)
 
     LAB_NAME: str = 'The Test Lab'  # noqa: N806
+
     client.select_laboratory(lab_name=LAB_NAME)
 
     # FILES

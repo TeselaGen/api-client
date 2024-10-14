@@ -24,17 +24,6 @@ if TYPE_CHECKING:
 
     from teselagen.api import TeselaGenClient
 
-    class ExperimentRecord(TypedDict, total=True):
-        """The experiment the Assay Subject belongs to.
-
-        Attributes:
-            id (str): ID of the Assay Subject experiment.
-
-            name (str): Name of the Assay Subject experiment.
-        """
-        id: str
-        name: str
-
     class AssayRecord(TypedDict, total=True):
         """The assay the Assay Subject has been involved in.
 
@@ -45,20 +34,6 @@ if TYPE_CHECKING:
         """
         id: str
         name: str
-
-    class ExperimentAssayRecord(TypedDict, total=True):
-        """Experiment object.
-
-        Attributes:
-            id (str): ID of the assay's experiment
-
-            name (str): Name of the assay's experiment
-
-            experiment (ExperimentRecord): Experiment object.
-        """
-        id: str
-        name: str
-        experiment: ExperimentRecord
 
     class AssaySubjectClass(TypedDict, total=True):
         """Assay Subject Class.
@@ -136,9 +111,6 @@ if TYPE_CHECKING:
             assaySubjectGroups (List[AssaySubjectGroup]): A list of JSON records with the assay subject groups \
                 information (full).
 
-            experiments (List[ExperimentRecord]): A list of JSON records with the assay subject experiments \
-                information (full).
-
             assays (List[AssayRecord]): A list of JSON records with the assay subject assays information (full).
         """
         # id: str  # noqa: E800
@@ -146,7 +118,6 @@ if TYPE_CHECKING:
         # assaySubjectClass: AssaySubjectClass  # noqa: E800
         descriptors: List[Descriptor]
         assaySubjectGroups: List[AssaySubjectGroup]  # noqa: N815
-        experiments: List[ExperimentRecord]
         assays: List[AssayRecord]
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -220,7 +191,7 @@ class TESTClient:
         self.headers = teselagen_client.headers
 
         # Here we define the Base CLI URL.
-        api_url_base: str = f'{self.host_url}/{module_name}/cli-api'
+        api_url_base: str = teselagen_client.api_url_base
 
         # Here we define the client endpoints
         # Example :
@@ -236,16 +207,10 @@ class TESTClient:
         self.post_assay_subjects_descriptors_import_url: str = f'{api_url_base}/assay-subjects/imports'
         self.get_assay_subjects_descriptors_import_url: str = join(api_url_base, 'assay-subjects/imports') + '/{}'
 
-        # Experiments
-        self.get_experiments_url: str = f'{api_url_base}/experiments'
-        self.create_experiment_url: str = f'{api_url_base}/experiments'
-        self.delete_experiment_url: str = join(api_url_base, 'experiments') + '/{}'
-
         # Assays
         self.get_assays_url: str = f'{api_url_base}/assays'
-        self.get_assays_by_experiment_url: str = join(api_url_base, 'experiments') + '/{}/assays'
 
-        self.create_assay_url: str = join(api_url_base, 'experiments') + '/{}/assays'
+        self.create_assay_url: str = join(api_url_base, 'assays')
         self.delete_assay_url: str = join(api_url_base, 'assays') + '/{}'
         self.assay_results_url: str = join(api_url_base, 'assays') + '/{}/results'
         # Two endpoints for posting and getting an import job (specially useful for long running imports)
@@ -258,7 +223,6 @@ class TESTClient:
         self.delete_file_url: str = join(api_url_base, 'files') + '/{}'
         self.upload_file_url: str = join(api_url_base, 'files')
         self.upload_file_into_assay_url: str = join(api_url_base, 'assays') + '/{}/files'
-        self.upload_file_into_experiment_url: str = join(api_url_base, 'experiments') + '/{}/files'
 
         # Metadata
         self.get_metadata_url: str = join(api_url_base, 'metadata') + '/{}'
@@ -311,7 +275,6 @@ class TESTClient:
                 - assaySubjectClass (dict): A JSON with assay subject class information (summarized and full).
                 - descriptors (List[dict]): A list of JSON records with the assay subject descriptors information (full).
                 - assaySubjectGroups (List[dict]): A list of JSON records with the assay subject groups information (full).
-                - experiments (List[dict]): A list of JSON records with the assay subject experiments information (full).
                 - assays (List[dict]): A list of JSON records with the assay subject assays information (full).
         """
         url: str = ''
@@ -507,90 +470,16 @@ class TESTClient:
 
         return response
 
-    # Experiments Endpoints
-
-    def get_experiments(self) -> List[ExperimentRecord]:
-        """Fetches all experiments from the Laboratory selected with the `select_laboratory` function.
-
-        Args :
-
-        Returns :
-            (List[Experiment]): A list of experiments objects.
-
-        ```json
-            [
-                {"id": "1", "name": "Experiment 1"},
-                {"id": "2", "name": "Experiment 2"}
-            ]
-        ```
-        """
-        response = get(
-            url=self.get_experiments_url,
-            headers=self.headers,
-        )
-
-        # response['content'] = [{'id' : str, 'name': str}, ...]
-        response['content'] = json.loads(response['content'])
-
-        return response['content']
-
-    # TODO(diegovalenzuelaiturra): Can there be multiple experiments with the same name?
-    # TODO(diegovalenzuelaiturra): Check if the returned `Experiment` object differs from the `Experiment` object
-    #       obtained with `get_experiments` method.
-    #       If so, we may want to make the difference between `Experiment` and ExperimentRecord`
-    def create_experiment(
-        self,
-        experiment_name: str,
-    ) -> ExperimentRecord:
-        experiment: List[ExperimentRecord] = []
-        exp_response: Dict[str, Any] = {}
-
-        experiments: List[ExperimentRecord] = self.get_experiments()
-        experiment = list(filter(lambda x: x['name'] == experiment_name, experiments))
-
-        if len(experiment) != 1:
-            body = {
-                'name': experiment_name,
-            }
-            response = post(url=self.create_experiment_url, headers=self.headers, json=body)
-            exp_response = json.loads(response['content'])[0]
-
-            # Now we GET experiments from db in order to return the complete experiment to the user
-            experiment = list(filter(
-                lambda x: x['id'] == exp_response['id'],
-                self.get_experiments(),
-            ))
-
-        if len(experiment) == 0:  # sourcery skip: simplify-len-comparison
-            raise OSError(f"Error while looking for new id {exp_response['id']}")
-
-        return experiment[0]
-
-    def delete_experiment(
-        self,
-        experiment_id: str | int,
-    ) -> None:
-        """Deletes an experiment with ID=`experiment_id`."""
-        # The requests.Response response object contains a string with the id of the experiment deleted.
-        response = delete(  # noqa: F841
-            url=self.delete_experiment_url.format(experiment_id),
-            headers=self.headers,
-        )
-
-        return None
-
     # Assay Endpoints
 
     def get_assays(
         self,
-        experiment_id: Optional[str] = None,
-    ) -> List[ExperimentAssayRecord]:
-        """Fetches all assays from the experiment specified in `experiment_id`.
+    ) -> List[AssayRecord]:
+        """Fetches all assays.
 
-        If no `experiment_id` is passed, all assays from the selected Laboratory are returned.
+        All assays from the selected Laboratory are returned.
 
         Args :
-            experiment_id (int): Experiment identifier.
 
         Returns :
             (List[Dict[str, Any]]):  A list of assays objects.
@@ -599,25 +488,20 @@ class TESTClient:
             [
                 {
                     "id"         : "1",
-                    "name"       : "Assay 1",
-                    "experiment" : {
-                                        "id"   : "1",
-                                        "name" : "Experiment 1"
-                                    }
+                    "name"       : "Assay 1"
+
                 },
                 {
                     "id"         : "2",
-                    "name"       : "Assay 2",
-                    "experiment" : {
-                                        "id"   : "1",
-                                        "name" : "Experiment 1"
-                                    }
+                    "name"       : "Assay 2"
+
                 },
             ]
         ```
         """
+        # TODO: Make endpoint searchable!
         response = get(
-            url=self.get_assays_by_experiment_url.format(experiment_id) if experiment_id else self.get_assays_url,
+            url=self.get_assays_url,
             headers=self.headers,
         )
 
@@ -627,10 +511,9 @@ class TESTClient:
 
     def create_assay(
         self,
-        experiment_id: str,
         assay_name: str,
         parser_id: Optional[int] = None,
-    ) -> ExperimentAssayRecord:
+    ) -> dict:
         body = {
             'name': assay_name,
             'parserId': str(parser_id) if parser_id else None,
@@ -638,7 +521,7 @@ class TESTClient:
 
         try:
             response = post(
-                url=self.create_assay_url.format(experiment_id),
+                url=self.create_assay_url,
                 headers=self.headers,
                 json=body,
             )
@@ -647,19 +530,12 @@ class TESTClient:
             raise
 
         # A dictionary {id: str} with the ID of the new Assay.
-        assay_res: List[Dict[str, str]] = json.loads(response['content'])[0]
+        assay_res: Dict[str, str] = json.loads(response['content'])[0]
 
-        # Retrieve the created object
-        assay: List[ExperimentAssayRecord] = list(
-            filter(
-                lambda x: x['id'] == assay_res['id'],
-                self.get_assays(experiment_id=experiment_id),
-            ))
+        if not assay_res:
+            raise OSError(f"Creation failed. Result: {assay_res}")
 
-        if len(assay) == 0:
-            raise OSError(f"Can't find new id {assay_res['id']}")
-
-        return assay[0]
+        return assay_res
 
     def delete_assay(
         self,
@@ -693,7 +569,6 @@ class TESTClient:
         file_id: Optional[Union[int, str]] = None,
         filepath: Optional[Union[str, Path]] = None,
         assay_name: Optional[str] = None,
-        experiment_id: Optional[Union[str, int]] = None,
         createSubjectsFromFile: Optional[bool] = True,  # noqa: N803
         createMeasurementTargetsFromFile: Optional[bool] = True,
     ):
@@ -715,7 +590,6 @@ class TESTClient:
 
             assay_name (str): Name of the assay into which insert the assay results.
 
-            experiment_id (number): Experiment identifier. Only used when passed and 'assay_name' an no 'assay_id'.
 
             createSubjectsFromFile (bool): Flag that indicates whether to create new Assay Subject found in the file.
 
@@ -726,10 +600,9 @@ class TESTClient:
             and/or measurement targets were created during the insert.
         """
         if assay_id is None and assay_name is not None:
-            # Supports creating a new assay by providing an assay name and an experiment ID.
+            # Supports creating a new assay by providing an assay name
             assay_id = self.get_or_create_assay(
-                assay_name=assay_name,
-                experiment_id=str(experiment_id),
+                assay_name=assay_name
             )
         else:
             raise Exception("Please provide a valid 'assay_id' or 'assay_name'.")
@@ -774,7 +647,6 @@ class TESTClient:
         file_id: Optional[Union[int, str]] = None,
         filepath: Optional[Union[str, Path]] = None,
         assay_name: Optional[str] = None,
-        experiment_id: Optional[Union[str, int]] = None,
     ):
         """Calls Teselagen TEST API endpoint: `POST /assays/results/importer`.
 
@@ -794,7 +666,6 @@ class TESTClient:
 
             assay_name (str) : Name of the assay into which insert the assay results.
 
-            experiment_id (number) : Experiment identifier. Only used when passed and 'assay_name' an no 'assay_id'.
 
         Returns:
             (): a JSON object with a status and an import process ID. Which can be used to check the status of the \
@@ -804,10 +675,9 @@ class TESTClient:
             raise Exception("Please provide a valid 'assay_id' or 'assay_name'.")
 
         if assay_id is None and assay_name is not None:
-            # Supports creating a new assay by providing an assay name and an experiment ID.
+            # Supports creating a new assay by providing an assay name
             assay_id = self.get_or_create_assay(
                 assay_name=assay_name,
-                experiment_id=str(experiment_id),
             )
 
         # Implements the ability to do the file upload behind the scenes.
@@ -1116,14 +986,10 @@ class TESTClient:
 
     def get_files_info(
         self,
-        experiment_id: Optional[str] = None,
         assay_id: Optional[str] = None,
         file_id: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """Fetches all files from the selected Laboratory.
-
-        You can also filter the results by experiment, by assay or by file, using the 'experiment_id', 'assay_id' \
-        and/or 'file_id' arguments.
 
         Returns:
             (): A list of assays objects.
@@ -1136,18 +1002,15 @@ class TESTClient:
                     "id": "1",
                     "name": "Assay 1"
                 },
-                "experiment": {...}
             },
             {
                 "id": "2",
                 "name": "File 2",
                 "assay": null,
-                "experiment": {...}
             }]
         ```
         """
         params = {
-            'experimentId': experiment_id,
             'assayId': assay_id,
         }
 
@@ -1170,7 +1033,6 @@ class TESTClient:
     def upload_file(
         self,
         filepath: Union[str, Path],
-        experiment_id: Optional[int] = None,
         assay_id: Optional[str] = None,
     ):
         """Uploads a file. The request body is of type "multipart/form-data".
@@ -1182,7 +1044,6 @@ class TESTClient:
         Args:
             filepath (str): Path to the file to be uploaded.
 
-            experiment_id (Optional[int]): Experiment identifier.
 
             assay_id (Optional[int]): Assay identifier.
 
@@ -1200,8 +1061,7 @@ class TESTClient:
         del headers['Content-Type']
 
         upload_file_url = self.upload_file_into_assay_url.format(
-            assay_id) if assay_id else self.upload_file_into_experiment_url.format(
-                experiment_id) if experiment_id else self.upload_file_url
+            assay_id) if assay_id else self.upload_file_url
 
         response = post(
             url=upload_file_url,
@@ -1348,20 +1208,15 @@ class TESTClient:
     def get_or_create_assay(
         self,
         assay_name: str,
-        experiment_id: str,
     ) -> str:
-        """Supports creating a new assay by providing an assay name and an experiment ID."""
+        """Supports creating a new assay by providing an assay name """
         assay_id = None
-
-        if experiment_id is None:
-            raise Exception("Please provide a valid 'experiment_id'.")
 
         assays = self.get_assays()
         assay = list(
-            filter(lambda x: x['name'] == assay_name and x['experiment'] and x['experiment']['id'] == experiment_id,
+            filter(lambda x: x['name'] == assay_name,
                    assays))
         assay_id = assay[0]['id'] if len(assay) > 0 else self.create_assay(
-            experiment_id=experiment_id,
             assay_name=assay_name,
         )['id']
 
