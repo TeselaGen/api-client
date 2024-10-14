@@ -33,5 +33,4 @@ session.headers.update(
 
 response = session.get(url = f'{HOST_URL}/sequences')
 results = response.json()
-results
 # %%
