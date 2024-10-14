@@ -169,7 +169,10 @@ class DISCOVERClient():
         response['content'] = json.loads(response['content'])
 
         # Check output
-        return self._get_data_from_content(response['content'])
+        try:
+            return self._get_data_from_content(response['content'])
+        except Exception as e:
+            return ValueError(f"Found problem while gettig model of id {model_id}")
 
     def get_models_by_type(
         self,
