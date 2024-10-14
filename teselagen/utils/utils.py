@@ -103,8 +103,8 @@ def _(func: functools.partial[Any]) -> str:
 
 def get_default_host_name()->str:
     cred_data = load_credentials_from_file()
-    if cred_data is not None and cred_data.host is not None:
-        return cred_data.host
+    if cred_data is not None and cred_data.host_url is not None:
+        return cred_data.host_url
     return DEFAULT_HOST_URL
 
 def wrapped_partial(func: F, *args: object, **kwargs: object) -> F:
@@ -333,7 +333,7 @@ def delete_session_file(session_filepath: Optional[str] = None) -> None:
 class Credentials():
     username: Optional[str]
     password: Optional[str]
-    host: Optional[str]
+    host_url: Optional[str]
 
 def load_credentials_from_file(path_to_credentials_file: Optional[str] = None) -> Optional[Credentials]:
     """Load credentials from json credentials file.
@@ -366,7 +366,7 @@ def load_credentials_from_file(path_to_credentials_file: Optional[str] = None) -
     return Credentials(
             username=credentials['username'],
             password=credentials['password'],
-            host=credentials['host'])
+            host_url=credentials['host_url'])
 
 
 def handler(func: F) -> F:

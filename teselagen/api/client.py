@@ -208,9 +208,12 @@ class TeselaGenClient:
             password=password,
             expiration_time=expiration_time,
         )
+
+        if auth_token is None:
+            raise ValueError('Login failed. Please check your credentials.')
+
         del username, password
-        # else:
-        #     auth_token = apiKey
+
         # It will update the auth token and headers.
         self.update_token(token=auth_token)
         return None
