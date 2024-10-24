@@ -15,7 +15,6 @@ from teselagen.api.design_client import DESIGNClient
 from teselagen.api.discover_client import DISCOVERClient
 from teselagen.api.test_client import TESTClient
 from teselagen.utils import DEFAULT_API_TOKEN_NAME
-from teselagen.utils import DEFAULT_HOST_URL
 from teselagen.utils import delete_session_file
 from teselagen.utils import get
 from teselagen.utils import get_credentials
@@ -23,6 +22,7 @@ from teselagen.utils import load_session_file
 from teselagen.utils import post
 from teselagen.utils import put
 from teselagen.utils import save_session_file
+from teselagen.utils import get_default_host_name
 from teselagen.utils.utils import ParsedJSONResponse
 from teselagen.utils.utils import Session
 
@@ -59,7 +59,7 @@ class TeselaGenClient:
 
     def __init__(
         self,
-        host_url: str = DEFAULT_HOST_URL,
+        host_url: str = get_default_host_name(),
         api_token_name: str = DEFAULT_API_TOKEN_NAME,
         module_name: Literal['design', 'build', 'test', 'discover'] = DEFAULT_MODULE_NAME,
     ) -> None:
@@ -71,7 +71,7 @@ class TeselaGenClient:
 
             host_url (str) : The Host URL of the API. Defaults to "https://platform.teselagen.com"
 
-            api_token_name (str) : The name of the API token to use. Defaults to "x-tg-cli-token"
+            api_token_name (str) : The name of the API token to use. Defaults to "x-tg-api-token"
         """
         self._design: Optional[DESIGNClient] = None
         self._test: Optional[TESTClient] = None
@@ -85,23 +85,23 @@ class TeselaGenClient:
 
         # Here we define a common Base URL. Using the DESIGN Module as the target server for these common endpoints.
         _module_name: str = module_name if module_name != 'discover' else 'evolve'
-        # module_url: str = urljoin(f'{self.host_url}/',_module_name)
-        # api_url_base: str = urljoin(self.host_url, f'{_module_name}/cli-api')
+
+        self.api_url_base: str = f'{self.host_url}/tg-api/'
+
 
         # Here we define the client endpoints. Using the DESIGN Module as the target server for these common endpoints.
-        self.register_url: str = urljoin(self.host_url, f'{_module_name}/register')
-        self.login_url: str = urljoin(self.host_url, f'{_module_name}/login')
-        self.info_url: str = urljoin(self.host_url, f'{_module_name}/cli-api/info')
+        self.register_url: str = urljoin(self.api_url_base, 'register')
+        self.login_url: str = urljoin(self.api_url_base, 'login')
+        self.info_url: str = urljoin(self.api_url_base, 'info')
 
         # self.status_url: str = f'{api_url_base}/public/status'
-        self.status_url: str = urljoin(self.host_url, f'{_module_name}/cli-api/public/status')
+        self.status_url: str = urljoin(self.api_url_base, f'public/status')
 
         # self.auth_url: str = f'{api_url_base}/public/auth'
-        self.auth_url: str = urljoin(self.host_url, f'{_module_name}/cli-api/public/auth')
+        self.auth_url: str = urljoin(self.api_url_base, f'public/auth')
 
         # Laboratories
-        # self.labs_url: str = '{self.host_url}/test/cli-api/laboratories'
-        self.labs_url: str = urljoin(self.host_url, f'{_module_name}/cli-api/laboratories')
+        self.labs_url: str = urljoin(self.api_url_base, f'laboratories')
 
         # NOTE : The authorization token will be updated with the "login" method.
         self.auth_token: Optional[str] = None
@@ -208,9 +208,12 @@ class TeselaGenClient:
             password=password,
             expiration_time=expiration_time,
         )
+
+        if auth_token is None:
+            raise ValueError('Login failed. Please check your credentials.')
+
         del username, password
-        # else:
-        #     auth_token = apiKey
+
         # It will update the auth token and headers.
         self.update_token(token=auth_token)
         return None

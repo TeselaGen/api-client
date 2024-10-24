@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import date
 from datetime import datetime
 from datetime import time
@@ -38,8 +39,8 @@ if TYPE_CHECKING:
     # _DecoratorFactoryType = Callable[[_DecoratorType], _DecoratorType]  # noqa: E800
 
 # CONSTANTS
-DEFAULT_HOST_URL: Literal['https://rc.teselagen.com'] = 'https://rc.teselagen.com'
-DEFAULT_API_TOKEN_NAME: Literal['x-tg-cli-token'] = 'x-tg-cli-token'
+DEFAULT_HOST_URL: Literal['https://rc-single.teselagen.com'] = 'https://rc-single.teselagen.com'
+DEFAULT_API_TOKEN_NAME: Literal['x-tg-api-token'] = 'x-tg-api-token'
 
 DEFAULT_MAX_DATAPOINTS: int = 100
 
@@ -100,6 +101,11 @@ def _(func: functools.partial[Any]) -> str:
     # NOTE: partial function has no `__name__` attribute, so we need to get it from its `func` attribute instead.
     return get_func_name(func.func)
 
+def get_default_host_name()->str:
+    cred_data = load_credentials_from_file()
+    if cred_data is not None and cred_data.host_url is not None:
+        return cred_data.host_url
+    return DEFAULT_HOST_URL
 
 def wrapped_partial(func: F, *args: object, **kwargs: object) -> F:
     """Partial that propagates `__name__` and `__doc__`."""
@@ -276,8 +282,9 @@ def get_credentials(
     """
     # Check if credentials are defined on a file
     file_credentials = load_credentials_from_file()
-    username = file_credentials[0] if username is None else username
-    password = file_credentials[1] if password is None else password
+    if file_credentials:
+        username = file_credentials.username if username is None else username
+        password = file_credentials.password if password is None else password
 
     # If credentials aren't defined, get them from user input
     try:
@@ -322,9 +329,13 @@ def delete_session_file(session_filepath: Optional[str] = None) -> None:
 
     if Path(session_filepath).is_file():
         Path(session_filepath).unlink()
+@dataclass
+class Credentials():
+    username: Optional[str]
+    password: Optional[str]
+    host_url: Optional[str]
 
-
-def load_credentials_from_file(path_to_credentials_file: str = None) -> Tuple[Optional[str], Optional[str]]:
+def load_credentials_from_file(path_to_credentials_file: Optional[str] = None) -> Optional[Credentials]:
     """Load credentials from json credentials file.
 
     The credentials file should contain a JSON object with the following keys (and the values)
@@ -348,11 +359,14 @@ def load_credentials_from_file(path_to_credentials_file: str = None) -> Tuple[Op
         path_to_credentials_file = str(get_credentials_path())
 
     if not Path(path_to_credentials_file).is_file():
-        return None, None
+        return None
 
     credentials: Dict = load_from_json(filepath=Path(path_to_credentials_file))
 
-    return credentials['username'], credentials['password']
+    return Credentials(
+            username=credentials['username'],
+            password=credentials['password'],
+            host_url=credentials['host_url'])
 
 
 def handler(func: F) -> F:

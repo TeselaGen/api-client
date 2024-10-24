@@ -65,7 +65,7 @@ class DISCOVERClient():
         self.headers = teselagen_client.headers
 
         # Here we define the Base CLI URL.
-        api_url_base: str = f'{self.host_url}/{module_name}/cli-api'
+        api_url_base: str = teselagen_client.api_url_base
 
         # Here we define the client endpoints
         # Example :
@@ -169,7 +169,10 @@ class DISCOVERClient():
         response['content'] = json.loads(response['content'])
 
         # Check output
-        return self._get_data_from_content(response['content'])
+        try:
+            return self._get_data_from_content(response['content'])
+        except Exception as e:
+            return ValueError(f"Found problem while gettig model of id {model_id}")
 
     def get_models_by_type(
         self,
@@ -739,10 +742,12 @@ class DISCOVERClient():
     def design_crispr_grnas(
         self,
         sequence: str,
+        run_name: str = 'CRISPR Guide RNA Run',
         target_indexes: Optional[Tuple[int, int]] = None,
         target_sequence: Optional[str] = None,
         pam_site: str = 'NGG',
         min_score: float = 40.0,
+        guide_length: int = 20,
         max_number: Optional[int] = 50,
         wait_for_results: bool = True,
     ) -> Dict[str, Any]:
@@ -780,27 +785,55 @@ class DISCOVERClient():
                 `wait_for_results` is `False` it will just return a dict with `taskID`, the id of the submitted \
                 task, and a `message` string.
         """
+        # TODO: include missing parameters as arguments
         body: Dict[str, Any] = {
-            'data': {
-                'sequence': sequence,
+            "guideRnaRunData": {
+                "name": run_name,
+                "genomeId": "no genome id",
+                "genomicRegionId": "no genomic region id",
+                "genomicReferenceSequenceId": "no genomic reference sequence id",
+                "sequenceFeatureId": "no sequence feature id",
+                "scaffoldSequence": {
+                    "sequence": "no scaffold sequence",
+                    "id": "no scaffold sequence id"
+                }
             },
-            'options': {
-                'pamSite': pam_site,
-                'minScore': min_score,
-            },
+            "CRISPRToolData": {
+                "data": {
+                    "targetSequence": "",
+                    "targetStart": 0,
+                    "targetEnd": 0,
+                    "genomeFilename": "",
+                    "targetIsForward": True
+                },
+                "options": {
+                    "pamSite": "NGG",
+                    "minScore": min_score,
+                    # "maxNumber": 50,
+                    "guideLength": guide_length
+                },
+                "scoring":{}
+
+            }
         }
+
         if target_indexes is not None:
-            body['data']['targetStart'] = target_indexes[0]
-            body['data']['targetEnd'] = target_indexes[1]
+            body['CRISPRToolData']['data']['targetStart'] = target_indexes[0]
+            body['CRISPRToolData']['data']['targetEnd'] = target_indexes[1]
 
         if target_sequence is not None:
-            body['data']['targetSequence'] = target_sequence
+            body['CRISPRToolData']['data']['targetSequence'] = target_sequence
 
         if max_number is not None:
-            body['options']['maxNumber'] = max_number
+            body['CRISPRToolData']['options']['maxNumber'] = max_number
 
         response = post(url=self.crispr_guide_rnas_url, headers=self.headers, json=body)
-        result = json.loads(response['content'])
+
+        if isinstance(response['content'], str):
+            result = json.loads(response['content'])
+        else:
+            print(f"Error in response: {response}")
+            result = {}
 
         if wait_for_results and 'taskId' in result:
             result = wait_for_status(
