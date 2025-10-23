@@ -60,6 +60,7 @@ tqdm = "^4.62.3"
 
 # optionals
 #   being used by examples
+python-dotenv = "^1.0.1"
 [tool.poetry.group.extras.dependencies]
 # examples = ["fastaparser", "jupyter_contrib_nbextensions", "jupyter-console", "jupyter", "pandas", "seaborn", "tqdm"]
 jupyter = { version = "^1.1.1"}
